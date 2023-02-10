@@ -1,0 +1,13 @@
+{:paths  ["src/clj" "resources"]
+ :deps {
+        org.clojure/clojure {:mvn/version "1.11.1"}
+        http-kit/http-kit   {:mvn/version "2.3.0"}}
+
+ :aliases
+ {:dev
+  {
+   :extra-paths ["env/dev/clj" "env/dev/resources" "test/clj" "target/classes/cljsbuild"]
+   :extra-deps {}
+        :jvm-opt ["-XX:-OmitStackTraceInFastThrow"]}}
+
+ }
