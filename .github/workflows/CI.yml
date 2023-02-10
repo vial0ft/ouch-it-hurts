@@ -1,5 +1,4 @@
-name: Clojure CI
-
+name: CI
 on:
   push:
     branches: [ "main" ]
@@ -7,26 +6,44 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
 
-    runs-on: ubuntu-latest
+  clojure:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-  
-    - name: Cache clojure dependencies
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.m2/repository
-          ~/.gitlibs
-          ~/.deps.clj
-        key: cljdeps-${{ hashFiles('project.clj') }}
-        restore-keys: cljdeps-
-        
-    - name: Install dependencies
-      run: lein deps
-      
-    - name: Run tests
-      run: lein test
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Prepare java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '19'
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@10.1
+        with:
+          cli: 1.11.1.1149  # Clojure CLI based on tools.deps
+
+      # Optional step:
+      - name: Cache clojure dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+            ~/.deps.clj
+          # List all files containing dependencies:
+          key: cljdeps-${{ hashFiles('deps.edn') }}
+          restore-keys: cljdeps-
+
+      - name: Run tests
+        run: clojure -M:test
+
+      - name: Finish
+        run: clojure -e "(println \"Done\")"
