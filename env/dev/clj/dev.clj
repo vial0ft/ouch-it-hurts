@@ -1,12 +1,15 @@
 (ns dev
   (:require
-   [ouch-it-hurts.core :as core]))
+   [ouch-it-hurts.core :as core]
+   [middlewares.dev-middlewares :as dm]))
 
 
 
 (defn prepare-dev-server []
     (-> (core/load-config "config.edn")
-        (core/add-handler core/app)
+        (core/add-handler (-> core/app
+                              (dm/log-request-response)
+                              ))
         ))
 
 

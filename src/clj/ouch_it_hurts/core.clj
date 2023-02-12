@@ -2,7 +2,8 @@
   (:require
    [clojure.java.io :as io]
    [org.httpkit.server :refer [run-server]]
-   [ouch-it-hurts.config-reader :as c])
+   [ouch-it-hurts.config-reader :as c]
+   [ouch-it-hurts.web.middlewares.core :refer :all])
   (:gen-class))
 
 
@@ -34,9 +35,15 @@
   (println (format "Server started with port %s" port))
     (reset! server (run-server handler {:port port})))
 
+
+(defn wrap-handler [handler]
+  (-> handler
+      (log-request-response)))
+
+
 (defn run [& args]
   (-> (load-config "system.edn")
-      (add-handler app)
+      (add-handler (wrap-handler app))
       (start-server server))
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server))
   )
@@ -51,7 +58,7 @@
 (comment
  
   (-> (load-config "system.edn")
-      (add-handler app)
+      (add-handler (wrap-handler app))
       (start-server server))
 
   (stop-server)
