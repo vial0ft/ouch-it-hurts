@@ -1,7 +1,13 @@
 {:paths  ["src/clj" "resources"]
  :deps {
         org.clojure/clojure {:mvn/version "1.11.1"}
-        http-kit/http-kit   {:mvn/version "2.3.0"}}
+
+        ;; server
+        http-kit/http-kit   {:mvn/version "2.3.0"}
+
+        ;; logging
+        org.clojure/tools.logging {:mvn/version "1.2.4"}
+        ch.qos.logback/logback-classic {:mvn/version "1.4.4"}}
 
  :aliases
  {
