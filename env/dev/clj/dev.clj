@@ -9,7 +9,7 @@
     (-> (core/load-config "config.edn")
         (core/add-handler (-> core/app
                               (dm/log-request-response)
-                              (dm/body-resolver)))
+                              ))
         ))
 
 
