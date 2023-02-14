@@ -3,7 +3,9 @@
    [clojure.java.io :as io]
    [org.httpkit.server :refer [run-server]]
    [ouch-it-hurts.config-reader :as c]
-   [ouch-it-hurts.web.middlewares.core :refer :all])
+   [ouch-it-hurts.web.middlewares.core :as mid]
+   [ouch-it-hurts.web.routes.core :as r]
+   [ouch-it-hurts.web.routes.api :as api])
   (:gen-class))
 
 
@@ -28,22 +30,26 @@
       (get-in [:server/http])
       (select-keys [:port])))
 
-(defn add-handler [config handler]
-  (assoc config :handler handler))
 
-(defn start-server [{:keys [handler port]} server]
+(defn routes [config routes-data]
+  (assoc config :routes routes-data))
+
+(defn add-handler [{:keys [routes] :as config}]
+  (assoc config :handler (r/routing routes)))
+
+
+(defn wrap-handler [config]
+  (update config :handler mid/wrap-handler))
+
+(defn start-server [{:keys [handler port routes]} server]
   (println (format "Server started with port %s" port))
     (reset! server (run-server handler {:port port})))
 
-
-(defn wrap-handler [handler]
-  (-> handler
-      (log-request-response)))
-
-
 (defn run [& args]
   (-> (load-config "system.edn")
-      (add-handler (wrap-handler app))
+      (routes api/routes-data)
+      (add-handler)
+      (wrap-handler)
       (start-server server))
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server))
   )
@@ -56,9 +62,11 @@
   (run args))
 
 (comment
- 
+
   (-> (load-config "system.edn")
-      (add-handler (wrap-handler app))
+      (routes (api/routes-data))
+      (add-handler)
+      (wrap-handler)
       (start-server server))
 
   (stop-server)

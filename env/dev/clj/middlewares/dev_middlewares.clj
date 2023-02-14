@@ -22,6 +22,11 @@
       resp)))
 
 
+(defn wrap-handler [handler]
+  (-> handler
+      (log-request-response)
+      ))
+
 
 
 

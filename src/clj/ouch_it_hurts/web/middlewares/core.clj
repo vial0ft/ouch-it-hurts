@@ -1,5 +1,6 @@
 (ns ouch-it-hurts.web.middlewares.core
-  (:require [clojure.tools.logging :as log]))
+  (:require
+   [clojure.tools.logging :as log]))
 
 
 (defn log-request-response [handler]
@@ -9,4 +10,8 @@
       resp)))
 
 
+(defn wrap-handler [handler]
+  (-> handler
+      (log-request-response)
+      ))
 
