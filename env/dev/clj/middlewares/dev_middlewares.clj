@@ -1,5 +1,7 @@
 (ns middlewares.dev-middlewares
-  (:require [clojure.tools.logging :as log]))
+  (:require
+   [clojure.tools.logging :as log]
+   [ouch-it-hurts.web.middlewares.format :refer :all]))
 
 
 (defn log-request [handler]
@@ -25,6 +27,8 @@
 (defn wrap-handler [handler]
   (-> handler
       (log-request-response)
+      (format-request-body)
+      (format-response-body)
       ))
 
 

@@ -8,5 +8,7 @@
   (fn [req]
     (let [[path-params handler :as routing-result] (r/get-path-params-and-handler req routes)]
       (if (empty? routing-result) bad-request)
-      (handler (assoc req :app/request {:path-params path-params})))
+      (handler (if-not (empty? path-params)
+                 (assoc-in req [:app/request :path-params] path-params)
+                 req)))
     ))
