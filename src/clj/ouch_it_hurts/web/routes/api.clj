@@ -19,7 +19,7 @@
 (defn routes-data []
   [
    ["/"
-    {:get {:handler app}}
+    {:get {:handler hello}}
     ]
    ["/echo"
     {:get {:handler echo}}]
