@@ -13,6 +13,7 @@
 (defn wrap-handler [handler]
   (-> handler
       (log-request-response)
+      (format-query-string)
       (format-request-body)
       (format-response-body)
       ))
