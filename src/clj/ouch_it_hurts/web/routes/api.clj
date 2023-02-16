@@ -5,14 +5,16 @@
 
 (defn hello [req]
   {:status  200
-   :headers {"Content-Type" "text/html"}
+   :headers {"Content-type" "text/html"}
    :body    "hello HTTP!"})
 
 
 (defn echo [req]
+  (println "Request params: " (get req :app/request))
+  (println (get req :app/request))
   {:status  200
-   :headers {"Content-Type" "text/plain"}
-   :body    req})
+   :headers {"Content-type" "application/json"}
+   :body   (get req :app/request)})
 
 
 
@@ -21,7 +23,7 @@
    ["/"
     {:get {:handler hello}}
     ]
-   ["/echo"
+   ["/echo/:id"
     {:get {:handler echo}}]
    ])
 
