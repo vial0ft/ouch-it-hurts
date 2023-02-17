@@ -1,5 +1,5 @@
 (ns ouch-it-hurts.web.routes.core
-  (:require [ouch-it-hurts.routing :as r]))
+  (:require [ouch-it-hurts.routing.core :as r]))
 
 
 (def bad-request {:status 400})

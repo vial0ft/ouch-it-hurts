@@ -1,4 +1,4 @@
-(ns ouch-it-hurts.routing
+(ns ouch-it-hurts.routing.core
   (:require [clojure.string :as s]))
 
 (defn- step-match [curr-request-uri-part curr-route-uri-part]

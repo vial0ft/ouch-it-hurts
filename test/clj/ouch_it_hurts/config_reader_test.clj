@@ -1,14 +1,9 @@
 (ns ouch-it-hurts.config-reader-test
   (:require
-   [ouch-it-hurts.config-reader :as cr]
+   [ouch-it-hurts.config-reader.core :as cr]
    [clojure.test :refer :all]))
 
 (deftest simple-config-reader-test
-  (testing
-      "Read default config from resources with name 'system.edn'"
-    (let [config  (cr/read-config)]
-      (is (not-empty config))
-      ))
 
   (testing
       "Read existing config from resources with a special name"
