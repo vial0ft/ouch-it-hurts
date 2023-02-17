@@ -1,6 +1,6 @@
 (ns ouch-it-hurts.config-reader-test
   (:require
-   [ouch-it-hurts.config-reader :as cr]
+   [ouch-it-hurts.config-reader.core :as cr]
    [clojure.test :refer :all]))
 
 (deftest simple-config-reader-test

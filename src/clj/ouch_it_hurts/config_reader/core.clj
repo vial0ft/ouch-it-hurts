@@ -1,9 +1,6 @@
-(ns ouch-it-hurts.config-reader
+(ns ouch-it-hurts.config-reader.core
   (:require
    [clojure.java.io :as io]))
-
-
-(def ^:const system-filename "system.edn")
 
 (defn get-env
   ([key] (get-env key nil))
@@ -17,6 +14,5 @@
       :else (if (map? props) (update-vals props resolve-props) props))))
 
 (defn read-config
-  ([] (read-config system-filename))
   ([config-filename] (read-string (slurp (io/resource config-filename))))
   ([config-filename keys] (select-keys (read-config config-filename) keys)))

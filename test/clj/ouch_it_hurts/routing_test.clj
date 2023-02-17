@@ -1,6 +1,6 @@
 (ns ouch-it-hurts.routing-test
   (:require
-   [ouch-it-hurts.routing :as r]
+   [ouch-it-hurts.routing.core :as r]
    [clojure.test :refer :all]))
 
 
@@ -9,14 +9,14 @@
   (testing
       "Uris are matched"
     (let [requet-uri "/foo/bar/baz"
-          route-uri "/foo/bar/baz"] 
+          route-uri "/foo/bar/baz"]
       (is (:match? (r/match-uri requet-uri route-uri)))
       ))
 
   (testing
       "Uris aren't matched"
     (let [requet-uri "/foo/bar/bazzzzz"
-          route-uri "/foo/bar/baz"] 
+          route-uri "/foo/bar/baz"]
       (is (not (:match? (r/match-uri requet-uri route-uri))))
       ))
 
@@ -24,7 +24,7 @@
       "Uris are matched with `*` in `route-uri`"
     (let [requet-uri1 "/foo/bar/bazzzzz"
           requet-uri2 "/foo/bar/baz/qwe"
-          route-uri "/foo/bar/*"] 
+          route-uri "/foo/bar/*"]
       (is (:match? (r/match-uri requet-uri1 route-uri)))
       (is (:match? (r/match-uri requet-uri2 route-uri)))
       )
@@ -33,7 +33,7 @@
   (testing
       "Uris are matched with `:id` path-param"
     (let [requet-uri "/foo/bar/baz"
-          route-uri "/foo/:id/baz"] 
+          route-uri "/foo/:id/baz"]
       (is (:match? (r/match-uri requet-uri route-uri)))
       (is (= (get-in (r/match-uri requet-uri route-uri) [:params :id]) "bar"))
       )
@@ -42,7 +42,7 @@
   (testing
       "Uris are matched with `:id` and `:name` path-params"
     (let [requet-uri "/foo/bar/baz"
-          route-uri "/foo/:id/:name"] 
+          route-uri "/foo/:id/:name"]
       (is (:match? (r/match-uri requet-uri route-uri)))
       (is (= (get-in (r/match-uri requet-uri route-uri) [:params :id]) "bar"))
       (is (= (get-in (r/match-uri requet-uri route-uri) [:params :name]) "baz"))
