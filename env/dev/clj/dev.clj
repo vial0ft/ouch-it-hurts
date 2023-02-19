@@ -19,9 +19,9 @@
     (let [config  (c/load-config "config.edn")]
       (-> config
           (assoc
-           :handler (-> (r/routing api/routes-data)
+           :handler (-> (r/routing (api/routes-data))
                         (dm/wrap-handler))
-           :port (get-port config) 
+           :port (get-port config)
            ))
       ))
 

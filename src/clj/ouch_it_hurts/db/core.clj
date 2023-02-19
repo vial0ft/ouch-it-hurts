@@ -11,8 +11,8 @@
 
 (defn close-db-conn []
   (when-not (nil? @ds)
-    (@ds :timeout 100)
     (close-datasource @ds)
     (reset! ds nil)
     (println "Database disconnected")))
+
 
