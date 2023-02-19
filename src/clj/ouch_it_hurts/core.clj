@@ -5,7 +5,8 @@
    [ouch-it-hurts.config-reader.core :as c]
    [ouch-it-hurts.web.middlewares.core :as mid]
    [ouch-it-hurts.web.routes.core :as r]
-   [ouch-it-hurts.web.routes.api :as api])
+   [ouch-it-hurts.web.routes.api :as api]
+   [ouch-it-hurts.db.core :as d])
   (:gen-class))
 
 (defonce server (atom nil))
@@ -41,19 +42,23 @@
     (reset! server (run-server handler {:port port}))))
 
 
-(defn stop-server [server]
+(defn stop-server []
   (when-not (nil? @server)
     ;; graceful shutdown: wait 100ms for existing requests to be finished
     ;; :timeout is optional, when no timeout, stop immediately
     (@server :timeout 100)
-    (reset! server nil)))
+    (reset! server nil)
+    (println "Server stopped")))
 
 (defn run [& args]
+  (let [db-init-f (fn [config]
+                    (d/init-db-conn (:db/connection config))
+                    config)]
   (-> (load-config "system.edn")
-      (routes api/routes-data)
-      (add-handler)
-      (wrap-handler)
-      (start-server server))
+        (routes api/routes-data)
+        (add-handler)
+        (wrap-handler)
+        (start-server server)))
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server))
   )
 

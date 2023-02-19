@@ -12,6 +12,11 @@
         ;; JSON
         cheshire/cheshire {:mvn/version "5.11.0"}
 
+        ;; DB
+        com.github.seancorfield/next.jdbc {:mvn/version "1.3.847"}
+        org.postgresql/postgresql {:mvn/version "42.5.4"}
+        hikari-cp/hikari-cp {:mvn/version "3.0.1"}
+
         }
 
  :aliases
