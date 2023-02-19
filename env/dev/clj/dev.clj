@@ -6,28 +6,35 @@
    [ouch-it-hurts.web.routes.api :as api]
    [ouch-it-hurts.db.core :as d]
    [next.jdbc :as jdbc]
-   [next.jdbc.connection :as connection]
+   [ouch-it-hurts.server.core :as serv]
+   [ouch-it-hurts.config-reader.core :as c]
    ))
 
-(defn wrap-handler [config]
-  (update config :handler dm/wrap-handler))
+
+
+(defn get-port [config]
+  (get-in config [:server/http :port]))
 
 (defn prepare-dev-server-config []
-    (-> (core/load-config "config.edn")
-        (core/routes (api/routes-data))
-        (core/add-handler)
-        (wrap-handler)
-        ))
+    (let [config  (c/load-config "config.edn")]
+      (-> config
+          (assoc
+           :handler (-> (r/routing api/routes-data)
+                        (dm/wrap-handler))
+           :port (get-port config) 
+           ))
+      ))
+
+(defn- db-init-f [config]
+  (d/init-db-conn (:db/connection config))
+  config)
 
 
 (defn start []
-  (let [db-init-f (fn [config]
-                    (d/init-db-conn (:db/connection config))
-                    config)]
     (-> (prepare-dev-server-config)
         (db-init-f)
-        (core/start-server core/server)
-        )))
+        (serv/start-server)
+        ))
 
 (defn stop []
   (d/close-db-conn)
@@ -39,13 +46,6 @@
 (comment
   (start)
   (stop)
-
-  (let [db-init-f (fn [config]
-                    (d/init-db-conn (:db/connection config))
-                    config)]
-    (-> (prepare-dev-server-config)
-        (db-init-f)
-        ))
 
   (.toLocalDateTime (:t (first (jdbc/execute! @d/ds ["select now() as t"]))))
     (into [] (jdbc/execute! ds ["select 'qwe' as qwe , a from (select 1 as a ) asq"]))
