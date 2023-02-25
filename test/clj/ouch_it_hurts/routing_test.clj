@@ -66,11 +66,12 @@
                    ["/foo/bar/bazzzz"
                     {:get {:handler (fn [req] :foo-bar-bazzzz-get)}
                      :post {:handler (fn [req] :foo-bar-bazzzz-post)}}]]
-           [path-params handler-f :as result] (r/get-path-params-and-handler request routes)]
-       (is (not (empty? result)))
-       (is (map? path-params))
-       (is (= (handler-f :request) :foo-bar-baz-get)
-       )))
+           [result details] (r/get-path-params-and-handler request routes)]
+       (is (= result :ok))
+       (let [[path-params handler-f :as result] details]
+         (is (map? path-params))
+         (is (= (handler-f :request) :foo-bar-baz-get))
+         )))
 
   (testing
       "Request should match with params and handler should return `42`"
@@ -87,11 +88,52 @@
                    ["/foo/bar/:number"
                     {:get {:handler (fn [req] (:number req))}
                      :post {:handler (fn [req] :foo-bar-number-post)}}]]
-           [path-params handler-f :as result] (r/get-path-params-and-handler request routes)]
-       (is (not (empty? result)))
-       (is (contains? path-params :number))
-       (is (= (handler-f path-params) "42")
-       )))
+           [result details] (r/get-path-params-and-handler request routes)]
+       (is (= result :ok))
+       (let [[path-params handler-f :as result] details]
+         (is (contains? path-params :number))
+         (is (= (handler-f path-params) "42"))
+         )))
+
+  (testing
+      "Request shouldn't match because there is no any route. Return `:not-found` by second element"
+     (let [request  {:uri "/foo/barrrr" :request-method :get}
+           routes [["/"
+                    {:get {:handler (fn [req] :root-get)}
+                     :post {:handler (fn [req] :root-post)}}]
+                   ["/foo/bar"
+                    {:get {:handler (fn [req] :foo-bar-get)}
+                     :post {:handler (fn [req] :foo-bar-post)}}]
+                   ["/foo/bar/baz"
+                    {:get {:handler (fn [req] :foo-bar-baz-get)}
+                     :post {:handler (fn [req] :foo-bar-baz-post)}}]
+                   ["/foo/bar/:number"
+                    {:get {:handler (fn [req] (:number req))}
+                     :post {:handler (fn [req] :foo-bar-number-post)}}]]
+           [result details] (r/get-path-params-and-handler request routes)]
+       (is (= result :error))
+       (is (= details :not-found))
+       ))
+
+  (testing
+      "Request shouldn't match because there is no route with same `:request-method`. Return `:method-not-allowed` by second element"
+    (let [request  {:uri "/foo/bar" :request-method :get}
+          routes [["/"
+                   {:get {:handler (fn [req] :root-get)}
+                    :post {:handler (fn [req] :root-post)}}]
+                  ["/foo/bar"
+                   {:post {:handler (fn [req] :foo-bar-post)}}]
+                  ["/foo/bar/baz"
+                   {:get {:handler (fn [req] :foo-bar-baz-get)}
+                    :post {:handler (fn [req] :foo-bar-baz-post)}}]
+                  ["/foo/bar/:number"
+                   {:get {:handler (fn [req] (:number req))}
+                    :post {:handler (fn [req] :foo-bar-number-post)}}]]
+          [result details] (r/get-path-params-and-handler request routes)]
+      (is (= result :error))
+      (is (= details :method-not-allowed))
+      ))
+
   )
 
 
