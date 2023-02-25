@@ -40,12 +40,15 @@
   (d/close-db-conn)
   (core/stop-server))
 
- (start)
+ ;;(start)
 
 
 (comment
   (start)
   (stop)
+
+  (-> (prepare-dev-server-config)
+      (db-init-f))
 
   (.toLocalDateTime (:t (first (jdbc/execute! @d/ds ["select now() as t"]))))
     (into [] (jdbc/execute! ds ["select 'qwe' as qwe , a from (select 1 as a ) asq"]))

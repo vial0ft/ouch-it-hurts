@@ -1,5 +1,7 @@
 (ns ouch-it-hurts.web.routes.api
-  (:require [ouch-it-hurts.web.routes.core :as core]))
+  (:require
+   [ouch-it-hurts.web.routes.core :as core]
+   [ouch-it-hurts.web.handlers.patient-info :as p]))
 
 
 
@@ -19,12 +21,12 @@
 
 
 (defn routes-data []
-  [
-   ["/"
-    {:get {:handler hello}}
-    ]
-   ["/echo/:id"
-    {:get {:handler echo}}]
-   ])
+  (reduce into [] [(p/routes)]))
 
+(comment
 
+  (reduce into [] [(routes-data) (p/routes)])
+
+  (routes-data)
+
+  )
