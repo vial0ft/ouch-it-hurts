@@ -52,12 +52,8 @@
 (defn format-response-body [handler]
   (fn [req]
     (let [response (handler req)]
-      (println response)
       (case (get-in response [:headers "Content-type"])
         "application/json" (update response :body json/encode)
         response
         ))))
-
-
-
 

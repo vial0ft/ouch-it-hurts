@@ -5,7 +5,6 @@
    [clojure.set :refer :all]))
 
 
-
 (def ^:private default-offset 0)
 (def ^:private default-limit 100)
 
@@ -82,12 +81,4 @@
       (error-when (nil? current-patient-info) (format "Can't update patient's info: the patient with id %s not exist" id))
       (repo/update-info (merge-info current-patient-info patient-info))
     )))
-
-
-(comment
-  )
-
-
-
-
 

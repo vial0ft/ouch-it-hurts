@@ -1,11 +1,6 @@
 (ns ouch-it-hurts.web.handlers.patient-info
   (:require [ouch-it-hurts.patients-info.service :as s]))
 
-
-
-
-
-
 (defn as-json-response [handler]
   (fn [req]
     {:status 200
