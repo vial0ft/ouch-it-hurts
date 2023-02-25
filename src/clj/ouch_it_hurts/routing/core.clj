@@ -37,11 +37,11 @@
 (defn get-path-params-and-handler [request routes]
   (loop [req request
          rts routes]
-    (if (empty? rts) []
+    (if (empty? rts) [:error :not-found]
         (let [[uri handlers-map] (first rts)
               match-result (match-uri (:uri req) uri)]
           (if (:match? match-result)
             (let [handler-f (get-in handlers-map [(:request-method req) :handler])]
-              (if-not (nil? handler-f) [(:params match-result) handler-f] []))
+              (if-not (nil? handler-f) [:ok [(:params match-result) handler-f]] [:error :method-not-allowed]))
             (recur req (next rts)))))))
 
