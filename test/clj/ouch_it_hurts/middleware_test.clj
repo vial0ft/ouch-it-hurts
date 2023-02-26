@@ -6,9 +6,9 @@
             [ouch-it-hurts.web.http-responses.core :as http-resp]
             [clojure.test :refer :all]))
 
-(defn- handler-f [params-key]
-  (fn [req]
-  (get-in req [:app/request params-key])))
+(defn- handler-f
+  ([] (fn [req] (get req :app/request)))
+  ([params-key] (fn [req] (get-in req [:app/request params-key]))))
 
 
 (defn- query-string-handler []
@@ -134,11 +134,32 @@
           handler-f (wrap-handler throwing-handler)
           {:keys [status body]} (handler-f request-like)]
       (is (= status (:status (http-resp/internal-server-error))))
-      (is (= (select-keys (:request body) [:headers :uri :query-string :request-method])))
+      (is (=
+           (select-keys (:request body) [:headers :uri :query-string :request-method])
+           (select-keys request-like [:headers :uri :query-string :request-method])))
       (is (= (get-in body [:request :app/request :body]) {:foo "bar"}))
       (is (= (get-in body [:request :app/request :query-params]) {:foo "1"
                                                                   :asd "1"
                                                                   :wwwa "asd"}))
       (is (= (:error body) {:reason "Something went wrong"}))
+      ))
+
+
+  (testing "Composition of application's middlewares should return `:app/request` info"
+    (let [request-like {
+                        :headers {"accept" "*/*" "content-type" "application/json"},
+                        :character-encoding "utf8",
+                        :uri "/patients",
+                        :query-string "foo=1&asd=1&wwwa=asd",
+                        :body (byte-input-stream {:foo "bar"}) ,
+                        :scheme :http,
+                        :request-method :get
+                        }
+          handler (wrap-handler (handler-f))
+          result (handler request-like)]
+      (is (= (:body result) {:foo "bar"}))
+      (is (= (:query-params result) {:foo "1"
+                                    :asd "1"
+                                    :wwwa "asd"}))
       ))
   )
