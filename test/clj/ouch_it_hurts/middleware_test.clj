@@ -1,6 +1,9 @@
 (ns ouch-it-hurts.middleware-test
   (:require [ouch-it-hurts.web.middlewares.format :refer :all]
+            [ouch-it-hurts.web.middlewares.exceptions :refer :all]
+            [ouch-it-hurts.web.middlewares.core :refer [wrap-handler]]
             [cheshire.core :as json]
+            [ouch-it-hurts.web.http-responses.core :as http-resp]
             [clojure.test :refer :all]))
 
 (defn- handler-f [params-key]
@@ -73,24 +76,17 @@
   )
 
 
-(defn- handler-echo-json-response
+(defn- echo-ok-json
   [req]
-  {:status  200
-   :headers {"Content-type" "application/json"}
-   :body req})
-
-
-(defn- handler-echo-response
-  [req]
-  {:status 200
-   :body req})
+  (-> (http-resp/ok req)
+      (http-resp/with-headers {"Content-type" "application/json"})))
 
 (deftest format-response-body-middleware-test
   (testing
       "According `handler-echo-response` should return map  with key `:body` with json-string
        when response contains `:headers {\"Content-type\" \"application/json\"}`"
     (let [request-like {:params [1 2 3 4]}
-          handler-f (format-response-body handler-echo-json-response)
+          handler-f (format-response-body echo-ok-json)
           {:keys [body]} (handler-f request-like)]
     (is (= body (json/encode request-like)))))
 
@@ -98,7 +94,51 @@
       "According `handler-echo-response` should return map  with `:body` as is
        when response not contains `:headers {\"Content-type\" \"application/json\"}`"
     (let [request-like {:params [1 2 3 4]}
-          handler-f (format-response-body handler-echo-response)
+          handler-f (format-response-body http-resp/ok)
           {:keys [body]} (handler-f request-like)]
       (is (= body request-like))))
+  )
+
+
+(defn throwing-handler
+  [_]
+  (throw (ex-info "Ooops!"
+                  {:reason "Something went wrong"}))
+  )
+
+(deftest exception-handle-wrapper-test
+  (testing "Wrapper should catch Exception and return `internal-error` status code"
+    (let [request-like {
+                        :headers {"header1" "value"}
+                        :uri "/"
+                        :request-method :get
+                        }
+          handler-f (exceptions-handler-wrapper throwing-handler)
+          {:keys [status body]} (handler-f request-like)]
+      (is (= status (:status (http-resp/internal-server-error))))
+      (is (= (:request body) (select-keys request-like [:headers :uri :query-string :request-method :app/request])))
+      (is (= (:error body) {:reason "Something went wrong"}))))
+  )
+
+(deftest appliation-middlewares-test
+  (testing "Composition of application's middlewares should handle exceptions"
+    (let [request-like {
+                        :headers {"accept" "*/*" "content-type" "application/json"},
+                        :character-encoding "utf8",
+                        :uri "/patients",
+                        :query-string "foo=1&asd=1&wwwa=asd",
+                        :body (byte-input-stream {:foo "bar"}) ,
+                        :scheme :http,
+                        :request-method :get
+                        }
+          handler-f (wrap-handler throwing-handler)
+          {:keys [status body]} (handler-f request-like)]
+      (is (= status (:status (http-resp/internal-server-error))))
+      (is (= (select-keys (:request body) [:headers :uri :query-string :request-method])))
+      (is (= (get-in body [:request :app/request :body]) {:foo "bar"}))
+      (is (= (get-in body [:request :app/request :query-params]) {:foo "1"
+                                                                  :asd "1"
+                                                                  :wwwa "asd"}))
+      (is (= (:error body) {:reason "Something went wrong"}))
+      ))
   )

@@ -32,3 +32,11 @@
    {:status 405
     :headers {}
     :body body}))
+
+
+(defn internal-server-error
+  ([] (internal-server-error nil))
+  ([body]
+   {:status 500
+    :headers {}
+    :body body}))
