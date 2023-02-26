@@ -18,7 +18,7 @@
     (-> config
         (assoc
          :handler (-> (r/routing (api/routes-data))
-                      (mid/wrap-handler))
+                      (mid/wrap-handler-with-logging))
          :port (get-port config)
          ))
     ))

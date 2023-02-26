@@ -1,6 +1,7 @@
 (ns ouch-it-hurts.web.middlewares.core
   (:require
    [clojure.tools.logging :as log]
+   [ouch-it-hurts.web.middlewares.exceptions :refer [exceptions-handler-wrapper]]
    [ouch-it-hurts.web.middlewares.format :refer :all]))
 
 
@@ -12,9 +13,12 @@
 
 (defn wrap-handler [handler]
   (-> handler
-      (log-request-response)
+      (exceptions-handler-wrapper)
+      (format-response-body)
       (format-query-string)
       (format-request-body)
-      (format-response-body)
       ))
+
+(defn wrap-handler-with-logging [handler]
+  (log-request-response handler))
 

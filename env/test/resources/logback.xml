@@ -9,9 +9,9 @@
     <import class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP"/>
 
     <appender name="FILE" class="RollingFileAppender">
-        <file>log/ouch-it-hurts.log</file>
+        <file>log/ouch-it-hurts-tests.log</file>
         <rollingPolicy class="TimeBasedRollingPolicy">
-            <fileNamePattern>log/ouch-it-hurts.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>log/ouch-it-hurts-tests.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
@@ -24,14 +24,7 @@
         </encoder>
     </appender>
 
-    <appender name="STDOUT" class="ConsoleAppender">
-        <encoder class="PatternLayoutEncoder">
-            <pattern>%date{ISO8601} %-4level %logger{36} - %msg %n</pattern>
-        </encoder>
-    </appender>
-
     <root level="warn">
         <appender-ref ref="FILE"/>
-        <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
