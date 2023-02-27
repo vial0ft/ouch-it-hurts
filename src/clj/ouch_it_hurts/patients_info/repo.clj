@@ -64,7 +64,8 @@
                          :birth-date
                          :sex
                          :address
-                         :oms]))
+                         :oms
+                         :update-at]))
                    {:id (:id patient-info-for-update) :deleted false}
                    jdbc/unqualified-snake-kebab-opts)
       (:next.jdbc/update-count)))
