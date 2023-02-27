@@ -73,5 +73,5 @@
 
 (comment
 
-  (get-info-by-id 5)
+  (delete-info 5)
   )

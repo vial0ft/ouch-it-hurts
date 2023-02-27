@@ -36,9 +36,9 @@
                req))))
 
 (defn format-request-body [handler]
-  (fn [req]
-    (handler (if-let [body (:body req)]
-               (case (get-in req [:headers "content-type"])
+  (fn [{:keys [body headers] :as req}]
+    (handler (if-not (nil? body)
+               (case (get headers "content-type")
                  "application/json" (let [req-body (transduce
                                                     key-keyword-f
                                                     into {}

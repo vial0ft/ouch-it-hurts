@@ -1,7 +1,7 @@
 (ns middlewares.dev-middlewares
   (:require
    [clojure.tools.logging :as log]
-   [ouch-it-hurts.web.middlewares.format :refer :all]))
+   [ouch-it-hurts.web.middlewares.core :as middlewares]))
 
 
 (defn log-request [handler]
@@ -24,12 +24,10 @@
       resp)))
 
 
-(defn wrap-handler [handler]
+(defn wrap-handler-dev [handler]
   (-> handler
+      (middlewares/wrap-handler)
       (log-request-response)
-      (format-query-string)
-      (format-request-body)
-      (format-response-body)
       ))
 
 

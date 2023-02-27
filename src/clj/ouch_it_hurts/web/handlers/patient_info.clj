@@ -1,28 +1,34 @@
 (ns ouch-it-hurts.web.handlers.patient-info
-  (:require [ouch-it-hurts.patients-info.service :as s]))
+  (:require
+   [ouch-it-hurts.patients-info.service :as s]
+   [ouch-it-hurts.web.http-responses.core :as http-resp]))
 
-(defn as-json-response [handler]
-  (fn [req]
-    {:status 200
-     :headers {"Content-type" "application/json"}
-     :body   (handler req)}
-    ))
+(defn- get-all [{{{:keys [offset limit] :as query-params} :query-params} :app/request}]
+  (-> (s/get-all query-params)
+      (http-resp/json-ok)))
 
-(defn get-all [req]
-  (as-json-response )
-  )
+(defn- add-new [{{:keys [body]} :app/request}]
+  (-> (s/add-patient-info body)
+      (http-resp/json-ok)))
 
-(defn get-by-id [req]
-  {:status  200
-   :headers {"Content-type" "application/json"}
-   :body   (get-in req [:app/request :path-params :id])}
-  )
+(defn- get-by-id [{{{:keys [id]} :path-params} :app/request}]
+  (-> (s/get-by-id (parse-long id))
+      (http-resp/json-ok)))
+
+(defn- update-info [{{body :body {:keys [id]} :path-params} :app/request}]
+  (-> (s/update-patient-info (parse-long id) body)
+      (http-resp/json-ok)))
+
+
+(defn- delete [{{{:keys [id]} :path-params} :app/request}]
+  (-> (s/delete-patient-info (parse-long id))
+      (http-resp/json-ok)))
 
 (defn routes []
   [
-   ["/patients" {:get {:handler (as-json-response s/get-all)}
-                 :post {:handler (as-json-response s/add-patient-info)}}]
-   ["/patient/:id" {:get {:handler (as-json-response s/get-by-id)}
-                    :put {:handler (as-json-response s/update-patient-info)}
-                    :delete {:handler (as-json-response s/delete-patient-info)}}]
+   ["/patients" {:get {:handler get-all}
+                 :post {:handler add-new}}]
+   ["/patient/:id" {:get {:handler get-by-id}
+                    :put {:handler update-info}
+                    :delete {:handler delete}}]
    ])
