@@ -40,3 +40,10 @@
    {:status 500
     :headers {}
     :body body}))
+
+
+(defn json-ok
+  ([body] (-> (ok body)
+              (with-headers {"Content-type" "application/json"}))))
+
+(defn json [resp])

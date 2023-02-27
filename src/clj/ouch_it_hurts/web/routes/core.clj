@@ -9,13 +9,9 @@
       (case [result details]
         [:error :not-found] (http-responses/not-found (format "%s %s" (:request-method req) (:uri req)))
         [:error :method-not-allowed] (http-responses/method-not-allowed (format "%s %s" (:request-method req) (:uri req)))
-        :else (let [[path-params handler :as result] details]
-                (if (nil? handler) (http-responses/method-not-allowed)
-                    (handler (if-not (empty? path-params)
-                               (assoc-in req [:app/request :path-params] path-params)
-                               req))))))
+        (let [[path-params handler :as result] details]
+          (if (nil? handler) (http-responses/method-not-allowed)
+              (handler (if-not (empty? path-params)
+                         (assoc-in req [:app/request :path-params] path-params)
+                         req))))))
     ))
-
-
-(comment
-  )

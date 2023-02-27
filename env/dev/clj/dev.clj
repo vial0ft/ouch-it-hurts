@@ -20,7 +20,7 @@
       (-> config
           (assoc
            :handler (-> (r/routing (api/routes-data))
-                        (dm/wrap-handler))
+                        (dm/wrap-handler-dev))
            :port (get-port config)
            ))
       ))

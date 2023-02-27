@@ -30,34 +30,39 @@
                       })))
 
 
-(defn- error-when [cond error-msg]
+(defn- error-when [cond msg details]
   (if cond
-    (throw (ex-info error-msg))))
+    (throw (ex-info msg details))))
 
 (defn get-by-id
-  "Fetch patient's info by `id`. Returns `nil` if patient's info isn't exist"
-  [req]
-  (let [id (parse-long (get-in req [:app/request :path-params :id]))]
-  (repo/get-info-by-id id)))
+  "Fetch patient's info by `id` long. Returns `nil` if patient's info isn't exist"
+  [id]
+  (log/debug id)
+  (repo/get-info-by-id id))
 
 (defn add-patient-info
-  "Add information about new patient. There cannot be any `id` or already existed `oms`."
+  "Add information about new patient. There cannot be patient with already existed `oms`."
   [patient-info]
-  (error-when (not (nil? (:id patient-info)))
-              "Can't add new patient with defined id")
   (when-some [oms (:oms patient-info)]
-    (error-when (not (nil? (repo/get-info-by-oms oms)))
-                (format "Can't add the patient's info: the patient with oms %s already exists" oms)))
+    (error-when
+     (not (nil? (repo/get-info-by-oms oms)))
+     "Can't add the patient's info: the patient with oms that already exists"
+     {:reason :already-exist
+      :oms oms}))
   (repo/insert-info patient-info))
 
 
 (defn delete-patient-info
   "Mark patient's info record with `id` as deleted. Throw error if record not found."
-  [req]
-  (let [id (parse-long (get-in req [:app/request :path-params :id]))
-        count-deleted (repo/delete-info id)]
-    (error-when (zero? count-deleted)
-                (format "Can't delete the patient's info: the patient with id %s not exist" id))))
+  [id]
+  (let [count-deleted (repo/delete-info id)]
+    (error-when
+     (zero? count-deleted)
+     "Can't delete the patient's info: the patient isn't exist or already deleted"
+     {:reason :not-exist-or-already-deleted
+      :id id})
+    {:id id}
+    ))
 
 
 
@@ -74,11 +79,18 @@
 
 (defn update-patient-info
   "Merge current patient's info with new patient's info."
-  [patient-info]
-  (let [id (:id patient-info)]
-    (error-when (nil? id) "Can't update patient info without id")
-    (let [current-patient-info (repo/get-info-by-id id)]
-      (error-when (nil? current-patient-info) (format "Can't update patient's info: the patient with id %s not exist" id))
-      (repo/update-info (merge-info current-patient-info patient-info))
-    )))
+  [id patient-info]
+  (error-when
+   (nil? id)
+   "Can't update patient info without id"
+     {:reason :not-exists
+      :id id})
+  (let [current-patient-info (repo/get-info-by-id id)]
+    (error-when
+     (nil? current-patient-info)
+     "Can't update patient's info: the patient isn't exist"
+     {:reason :not-exist
+      :id id})
+    (repo/update-info (merge-info current-patient-info patient-info))
+    ))
 

@@ -1,6 +1,6 @@
 (ns ouch-it-hurts.web.handlers.health
   (:require
-   [ring.util.http-response :as http-response])
+   [ouch-it-hurts.web.http-responses.core :as http-response])
   (:import
    [java.util Date]))
 
@@ -11,3 +11,10 @@
     :up-since (str (Date. (.getStartTime (java.lang.management.ManagementFactory/getRuntimeMXBean))))
     :app      {:status  "up"
                :message ""}}))
+
+
+
+(defn routes []
+  [
+   ["/health" {:get {:handler healthcheck!}}]
+   ])
