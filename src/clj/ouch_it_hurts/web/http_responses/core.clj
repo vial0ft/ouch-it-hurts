@@ -46,4 +46,3 @@
   ([body] (-> (ok body)
               (with-headers {"Content-type" "application/json"}))))
 
-(defn json [resp])

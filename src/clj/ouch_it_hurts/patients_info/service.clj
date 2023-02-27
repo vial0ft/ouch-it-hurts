@@ -37,7 +37,6 @@
 (defn get-by-id
   "Fetch patient's info by `id` long. Returns `nil` if patient's info isn't exist"
   [id]
-  (log/debug id)
   (repo/get-info-by-id id))
 
 (defn add-patient-info
