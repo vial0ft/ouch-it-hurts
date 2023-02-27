@@ -90,6 +90,6 @@
      "Can't update patient's info: the patient isn't exist"
      {:reason :not-exist
       :id id})
-    (repo/update-info (merge-info current-patient-info patient-info))
+    (repo/update-info (assoc (merge-info current-patient-info patient-info) :update-at (java.time.OffsetDateTime/now)))
     ))
 
