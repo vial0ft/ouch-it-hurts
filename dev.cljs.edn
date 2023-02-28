@@ -1,0 +1,8 @@
+{:main ouch-it-hurts.core
+ :optimizations :none
+ :pretty-print true
+ :source-map true
+ :log-file "log/figwheel/figwheel-main.log"
+ :asset-path "/js/compiled/out"
+ :output-to "env/dev/resources/public/js/compiled/app.js"
+ :output-dir "env/dev/resources/public/js/compiled/out"}

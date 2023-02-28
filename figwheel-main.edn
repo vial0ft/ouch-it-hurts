@@ -1,0 +1,3 @@
+{:open-url false
+ :watch-dirs ["src/cljs/ouch_it_hurts"]
+ :css-dirs ["resources/public"]}
