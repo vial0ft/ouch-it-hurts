@@ -1,4 +1,4 @@
-{:paths  ["src/clj" "resources"]
+{:paths  ["src/clj" "src/cljs" "resources"]
  :deps {
         org.clojure/clojure {:mvn/version "1.11.1"}
 
@@ -6,8 +6,8 @@
         http-kit/http-kit   {:mvn/version "2.3.0"}
 
         ;; logging
-        org.clojure/tools.logging {:mvn/version "1.2.4"}
-        ch.qos.logback/logback-classic {:mvn/version "1.4.4"}
+       ;; org.clojure/tools.logging {:mvn/version "1.2.4"}
+       ;; ch.qos.logback/logback-classic {:mvn/version "1.4.4"}
 
         ;; JSON
         cheshire/cheshire {:mvn/version "5.11.0"}
@@ -17,17 +17,29 @@
         org.postgresql/postgresql {:mvn/version "42.5.4"}
         hikari-cp/hikari-cp {:mvn/version "3.0.1"}
 
+
+        ;; cljs
+        org.clojure/clojurescript {:mvn/version "1.11.54"}
+
+        reagent/reagent {:mvn/version "1.2.0"}
+
+        cljsjs/react {:mvn/version "18.2.0-1"}
+        cljsjs/react-dom {:mvn/version "18.2.0-1"}
+
         }
 
  :aliases
  {
   :dev
   {
-   :extra-paths ["env/dev/clj" "env/dev/resources" "target/classes/cljsbuild"]
-   :extra-deps {}
+   :extra-paths ["env/dev/clj" "env/dev/cljs" "env/dev/resources" "target"]
+   :extra-deps {
+                cider/piggieback {:mvn/version "0.5.3"}
+                com.bhauman/figwheel-main {:mvn/version "0.2.18"}
+                com.bhauman/rebel-readline {:mvn/version "0.1.4"}
+                }
    :jvm-opt ["-XX:-OmitStackTraceInFastThrow"]
    }
-
   :test
   {
    :extra-paths ["env/test/resources" "test/clj"]
