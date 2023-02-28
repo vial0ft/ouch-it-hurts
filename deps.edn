@@ -32,7 +32,7 @@
  {
   :dev
   {
-   :extra-paths ["env/dev/clj" "env/dev/cljs" "env/dev/resources" "target"]
+   :extra-paths ["env/dev" "target"]
    :extra-deps {
                 cider/piggieback {:mvn/version "0.5.3"}
                 com.bhauman/figwheel-main {:mvn/version "0.2.18"}
