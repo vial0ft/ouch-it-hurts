@@ -11,6 +11,14 @@
       (log/infof "\n>>> %s\n-------\n<<< %s" req resp)
       resp)))
 
+(defn cors [handler]
+  (fn [req]
+    (let [resp (handler req)]
+      (-> resp
+          (assoc-in [:headers "Access-Control-Allow-Origin"]  "*")
+          (assoc-in [:headers "Access-Control-Allow-Methods"] "GET,PUT,POST,DELETE,OPTIONS")
+          (assoc-in [:headers "Access-Control-Allow-Headers"] "X-Requested-With,Content-Type,Cache-Control")))))
+
 (defn wrap-handler [handler]
   (-> handler
       (exceptions-handler-wrapper)

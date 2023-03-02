@@ -11,14 +11,13 @@
       (catch Exception e
         (-> (http-responses/internal-server-error
          {
-          :request (select-keys req [:headers :uri :query-string :request-method :app/request])
           :error {
                   :message (ex-message e)
                   :details (or (ex-data e) e)
                   }
           }
          )
-            (http-responses/with-headers {"Content-type" "application/json"}))
+            (http-responses/response-as-json))
         ))
     )
   )

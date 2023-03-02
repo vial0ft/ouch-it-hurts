@@ -78,8 +78,7 @@
 
 (defn- echo-ok-json
   [req]
-  (-> (http-resp/ok req)
-      (http-resp/with-headers {"Content-type" "application/json"})))
+  (http-resp/json-ok req))
 
 (deftest format-response-body-middleware-test
   (testing
@@ -102,8 +101,7 @@
 
 (defn throwing-handler
   [_]
-  (throw (ex-info "Ooops!" {:reason "Something went wrong"}))
-  )
+  (throw (ex-info "Ooops!" {:reason "Something went wrong"})))
 
 (deftest exception-handle-wrapper-test
   (testing "Wrapper should catch Exception and return `internal-error` status code"
@@ -115,7 +113,6 @@
           handler-f (exceptions-handler-wrapper throwing-handler)
           {:keys [status body]} (handler-f request-like)]
       (is (= status (:status (http-resp/internal-server-error))))
-      (is (= (:request body) (select-keys request-like [:headers :uri :query-string :request-method :app/request])))
       (is (= (:error body) {:message "Ooops!"
                             :details {:reason "Something went wrong"}}))))
   )
@@ -133,18 +130,8 @@
                         }
           handler-f (wrap-handler throwing-handler)
           {:keys [status body]} (handler-f request-like)
-          decoded-body  (json/decode body)
-          request-info (get decoded-body "request")]
+          decoded-body  (json/decode body)]
       (is (= status (:status (http-resp/internal-server-error))))
-      (is (= (get request-info "headers") (:headers request-like)))
-      (is (= (get request-info "uri") (:uri request-like)))
-      (is (= (get request-info "query-string") (:query-string request-like)))
-      (is (= (keyword (get request-info "request-method")) (:request-method request-like)))
-      (is (= (get-in decoded-body ["request" "app/request" "body"]) {"foo" "bar"}))
-      (is (= (get-in decoded-body ["request" "app/request" "query-params"])
-             {"foo" "1"
-              "asd" "1"
-              "wwwa" "asd"}))
       (is (= (decoded-body "error")
              {"message" "Ooops!"
               "details" {"reason" "Something went wrong"}}))

@@ -42,7 +42,12 @@
     :body body}))
 
 
+
+(defn response-as-json
+  [response]
+  (with-headers response {"content-type" "application/json"}))
+
+
 (defn json-ok
   ([body] (-> (ok body)
-              (with-headers {"Content-type" "application/json"}))))
-
+              (response-as-json))))

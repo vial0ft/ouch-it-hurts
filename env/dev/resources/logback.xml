@@ -28,6 +28,11 @@
         <encoder class="PatternLayoutEncoder">
             <pattern>%date{ISO8601} %-4level %logger{36} - %msg %n</pattern>
         </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
     </appender>
 
     <logger name="com.zaxxer.hikari" level="info" />
