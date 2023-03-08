@@ -1,0 +1,87 @@
+.patient-info-table-grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto;
+}
+
+
+.patients-info-table-header-grid-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.patients-info-table-grid-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+
+
+.filter-form {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.filter-form-block {
+    margin-right: 10px;
+    width: 50%
+}
+
+.filter-form-block-item {
+    display: flex;
+    margin: 5px;
+}
+
+.filter-form-block-item-lable {
+    width: 40%;
+    display: block;
+}
+
+.filter-form-buttons-block {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.filter-form-button {
+    margin: 5px
+}
+
+#ck-button {
+    margin:4px;
+    background-color:#EFEFEF;
+    border-radius:4px;
+    border:1px solid #D0D0D0;
+    overflow:auto;
+    float:left;
+}
+
+#ck-button:hover {
+    background: darkgray;
+}
+
+#ck-button label {
+    float: left;
+    width:4.0em;
+}
+
+#ck-button label span {
+    text-align:center;
+    padding:3px 0px;
+    display:block;
+}
+
+#ck-button label input {
+    position:absolute;
+    top:-20px;
+}
+
+#ck-button input:checked + span {
+    background-color:#911;
+    color:#fff;
+}

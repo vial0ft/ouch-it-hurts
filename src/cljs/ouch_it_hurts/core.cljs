@@ -2,18 +2,33 @@
   (:require
    [reagent.core :as r]
    [reagent.dom :as d]
-   [reagent.dom.client :as c])
+   [ouch-it-hurts.components.filter.filter-form :refer [FilterForm]]
+   [ouch-it-hurts.components.footer :refer [Footer]]
+   [ouch-it-hurts.components.header :refer [Header]]
+   [ouch-it-hurts.components.table-block :refer [TableBlock]]
+   [ouch-it-hurts.components.patients-table-container :refer [PatientsTableContainer]]
+   )
   )
 
 
 (enable-console-print!)
 
 
-(defn simple-component []
+
+;; -------------------------
+;; States
+
+
+
+(defn MainPage []
   [:div
-   [:p "Hello"]
+   [Header]
+   [PatientsTableContainer
+    FilterForm
+    TableBlock]
+   [Footer]
    ])
 
-(d/render [simple-component]
+(d/render [MainPage]
           (js/document.getElementById "main"))
 
