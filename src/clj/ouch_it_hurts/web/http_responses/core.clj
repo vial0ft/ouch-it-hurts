@@ -51,3 +51,7 @@
 (defn json-ok
   ([body] (-> (ok body)
               (response-as-json))))
+
+(defn page [body]
+  (-> (ok body)
+      (with-headers {"content-type" "text/html"})))

@@ -4,6 +4,8 @@
                :host {:env "HTTP_HOST" :default "0.0.0.0"}
                }
 
+ :application/assets ["public"]
+
  :routes/api {
               :base-url "/api"
               }

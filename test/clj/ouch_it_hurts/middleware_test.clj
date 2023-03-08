@@ -2,6 +2,8 @@
   (:require [ouch-it-hurts.web.middlewares.format :refer :all]
             [ouch-it-hurts.web.middlewares.exceptions :refer :all]
             [ouch-it-hurts.web.middlewares.core :refer [wrap-handler]]
+            [ouch-it-hurts.web.middlewares.assets-resolver :refer :all]
+            [clojure.java.io :as io]
             [cheshire.core :as json]
             [ouch-it-hurts.web.http-responses.core :as http-resp]
             [clojure.test :refer :all]))
@@ -156,3 +158,26 @@
                                     :wwwa "asd"}))
       ))
   )
+
+(deftest asset-resolver-middleware-test
+  (testing "Resolver should ignore `handler` and return asset by `:uri`"
+    (let [asset-dir "public"
+          resource-path "/test_resource.txt"
+          file-content (slurp (io/resource (str asset-dir resource-path )))
+          request-like {:uri resource-path}
+          handler (assets-resolver-wrapper nil [asset-dir])
+          {:keys [status body]} (handler request-like)]
+      (is (= status (:status (http-resp/ok))))
+      (is (= body file-content))
+      ))
+
+(testing "Resolver should use `handler` if asset not found  by `:uri`"
+  (let [asset-dir "public"
+        resource-path "/not_existed_file.txt"
+        request-handler (fn [req] (http-resp/ok :response-but-not-asset))
+        request-like {:uri resource-path}
+        handler (assets-resolver-wrapper request-handler [asset-dir])
+        {:keys [status body]} (handler request-like)]
+    (is (= status (:status (http-resp/ok))))
+    (is (= body :response-but-not-asset))
+    )))
