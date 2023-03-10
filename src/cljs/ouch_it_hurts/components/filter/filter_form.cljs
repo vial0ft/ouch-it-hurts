@@ -9,19 +9,16 @@
 
 
 (def ^private default-filter {
-                              :id ""
                               :first-name ""
                               :second-name ""
                               :middle-name ""
                               :address ""
-                              :birth-date {
-                                           :from nil
-                                           :to nil}
+                              :birth-date {:error {:error? false :message ""}}
                               :sex #{}
-                              :oms ""
+                              :oms {:error {:error? false :message ""}}
                               })
 
-(def all-sex-options #{"all" "male" "female" "other"})
+(def all-sex-options #{"male" "female" "other" "none"})
 
 (def ^private filter-form (r/atom default-filter))
 
@@ -30,34 +27,7 @@
 
 
 (defn- change-key [key-path]
-  (fn [e]
-    (reset! (filter-form-cursor key-path) (.-value (.-target e)))))
-
-
-(defn- choose-all-selected [selector-id]
-  (let [selector (js/document.getElementById selector-id)
-        selected-options (.. selector -selectedOptions)
-        values (-> (.from js/Array selected-options)
-                   (.map #(.. % -value))
-                   (js->clj))]
-    values
-    ))
-
-(defn- clean-selected [selector-id]
-  (let [selector (js/document.getElementById selector-id)
-        selected-options (.. selector -selectedOptions)]
-    (-> (.from js/Array selected-options)
-        (.forEach #(set! (.. % -selected) false)))
-    ))
-
-(defn- select-filter-item [{:keys [item-key mutable on-change options]}]
-   [:select {:id item-key
-             :name item-key
-             :multiple mutable
-             :on-change on-change}
-   (for [opt options]
-     [:option (second opt) (first opt)]
-     )])
+  (fn [new-value] (reset! key-path new-value)))
 
 (defn- filter-clean-button []
   [:button.filter-form-button
@@ -79,44 +49,51 @@
    [LabledField {:key "first-name"
                  :label-text "First name: "
                  :input-type "text"
-                 :on-change (change-key [:first-name])}]
+                 :on-change (change-key (filter-form-cursor [:first-name]))}]
    [LabledField {:key "middle-name"
                  :label-text "Middle name: "
                  :input-type "text"
-                 :on-change (change-key [:middle-name])}]
+                 :on-change (change-key (filter-form-cursor [:middle-name]))}]
    [LabledField {:key "second-name"
                  :label-text "Second name: "
                  :input-type "text"
-                 :on-change (change-key [:second-name])}]
+                 :on-change (change-key (filter-form-cursor [:second-name]))}]
    ])
 
 
-(defn- update-filter [path]
-  (fn [e] (r/swap! filter-form assoc-in path )))
+(defn- set-elems-value [id-value-pairs]
+  (doseq [[id value]  id-value-pairs]
+    (when-let [elem (js/document.getElementById id)]
+      (set! (.-checked elem) value))
+    ))
 
+(defn- sex-filter-on-change [sex-keys]
+  (fn [e]
+    (let [checked? (.-checked (.-target e))
+          id (.-id (.-target e))]
+      (case [id checked?]
+        ["all" true] (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
+        (if checked? (set-elems-value {"all" false id true})))
+      )))
 
 (defn- patient-sex-filter-selector []
   [FieldSet "Sex"
    [CheckboxButton {:key "all"
                     :label "All"
-                    :opt {
-                          :defaultChecked true
-                          :on-change #(println (.-checked (.-target %)))
-                          }}]
+                    :opt {:defaultChecked true
+                          :on-change (sex-filter-on-change all-sex-options)}}]
    [CheckboxButton {:key "male"
                     :label "Male"
-                    :on-click #(js/alert %)}]
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
    [CheckboxButton {:key "female"
                     :label "Female"
-                    :on-click #(js/alert %)}]
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
    [CheckboxButton {:key "other"
                     :label "Other"
-                    :on-click #(js/alert %)}]
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
    [CheckboxButton {:key "none"
                     :label "None"
-                    :on-click #(js/alert %)}]
-
-
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
    ]
   )
 
@@ -134,33 +111,29 @@
     {:legend "Address"
      :key "address"
      :input-type "text"
-     :on-change (change-key [:address])
+     :on-change (change-key (filter-form-cursor [:address]))
      }]
    [SingleFieldSet
     {:legend "CMI number"
      :key "cmi"
      :input-type "text"
-     :on-change (change-key [:oms])
+     :on-change (change-key (filter-form-cursor [:oms :value]))
+     :error @(filter-form-cursor [:oms :error])
      }]
    [DateRangeField
     {:legend "Birth date"
      :key "birth-date"
-     :on-change-from (change-key [:birth-date :from])
-     :on-change-to (change-key [:birth-date :to])}]
-  ])
-
-
-
+     :from {:on-change (change-key (filter-form-cursor [:birth-date :from]))}
+     :to {:on-change (change-key (filter-form-cursor [:birth-date :to]))}
+     :error @(filter-form-cursor [:birth-date :error])
+   }]])
 
 
 (defn FilterForm [callback]
   [:div {:style {:padding "10px"}}
    [:p {:hidden false} (str @filter-form)]
-   [:form {:on-submit (fn [e]
-                        (println e)
-                        (println  (.preventDefault e))
-                        )}
-    [:div.filter-form
+   [:form {:on-submit (fn [e] "")} ;; TODO add validation before callback
+    [:div.filter-form {:name "filterForm"}
      [patient-left-filter-block]
      [patient-right-filter-block]]
     [:div.filter-form-buttons-block
@@ -171,5 +144,5 @@
 
 
 (comment
-
+ 
 )
