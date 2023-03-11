@@ -21,7 +21,7 @@
 
 (defn PatientsTableContainer [FilterBlock TableBlock]
   [:div
-   [FilterBlock #(println %)]
+   [FilterBlock #(println "We got filter info: " %)]
    [TableBlock @patients-info]
    ]
   )

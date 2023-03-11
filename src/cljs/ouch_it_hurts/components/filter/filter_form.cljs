@@ -31,7 +31,8 @@
 
 (defn- filter-clean-button []
   [:button.filter-form-button
-   {:on-click #(reset! filter-form default-filter)
+   {
+    :on-click #(reset! filter-form default-filter)
     :type :reset}
    "Clear filters"
    ]
@@ -39,8 +40,10 @@
 
 (defn- filter-apply-button [filter-callback]
   [:button.filter-form-button
-   {:on-click #(filter-callback @filter-form)
-    :type :submit}
+   {
+   ;; :on-click #(filter-callback @filter-form)
+    :type :submit
+    }
    "Apply filters"
    ])
 
@@ -64,7 +67,8 @@
 (defn- set-elems-value [id-value-pairs]
   (doseq [[id value]  id-value-pairs]
     (when-let [elem (js/document.getElementById id)]
-      (set! (.-checked elem) value))
+      (set! (.-checked elem) value)
+      )
     ))
 
 (defn- sex-filter-on-change [sex-keys]
@@ -72,8 +76,13 @@
     (let [checked? (.-checked (.-target e))
           id (.-id (.-target e))]
       (case [id checked?]
-        ["all" true] (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
-        (if checked? (set-elems-value {"all" false id true})))
+        ["all" true] (do
+                       (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
+                       (reset! (filter-form-cursor [:sex]) #{}))
+        (if checked? (do
+                       (set-elems-value {"all" false id true})
+                       (swap! (filter-form-cursor [:sex]) conj id))
+                       ))
       )))
 
 (defn- patient-sex-filter-selector []
@@ -132,7 +141,10 @@
 (defn FilterForm [callback]
   [:div {:style {:padding "10px"}}
    [:p {:hidden false} (str @filter-form)]
-   [:form {:on-submit (fn [e] "")} ;; TODO add validation before callback
+   [:form {:on-submit (fn [e]
+                        (callback @filter-form)
+                        (println "submit")
+                        (.preventDefault e))} ;; TODO add validation before callback
     [:div.filter-form {:name "filterForm"}
      [patient-left-filter-block]
      [patient-right-filter-block]]
@@ -144,5 +156,11 @@
 
 
 (comment
- 
+
+  (def test-atom (r/atom #{1}))
+
+  (swap! test-atom (fn [old]  (println old ) old))
+
+
+  (conj #{1} 2)
 )
