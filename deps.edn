@@ -30,6 +30,9 @@
         ;; Reagent deps
         cljsjs/react {:mvn/version "18.2.0-1"}
         cljsjs/react-dom {:mvn/version "18.2.0-1"}
+
+        ;; Request
+        cljs-ajax/cljs-ajax {:mvn/version "0.8.4"}
         }
 
  :aliases
