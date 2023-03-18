@@ -79,9 +79,12 @@
         ["all" true] (do
                        (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
                        (reset! (filter-form-cursor [:sex]) #{}))
-        (if checked? (do
-                       (set-elems-value {"all" false id true})
-                       (swap! (filter-form-cursor [:sex]) conj id))
+        (if checked?
+          (do
+            (set-elems-value {"all" false id true})
+            (swap! (filter-form-cursor [:sex]) conj id))
+          (swap! (filter-form-cursor [:sex]) (fn [old]
+                                               (into (hash-set) (filter #(not= % id) old))))
                        ))
       )))
 
