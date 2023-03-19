@@ -7,14 +7,23 @@
 ;; -------------------------
 ;; States
 
-(def ^:private patients-info (r/atom [{
-                                   :id 1
-                                   :first-name "Иванов"
-                                   :second-name "Иван"
-                                   :middle-name "Иванович"
-                                   :sex "m"
-                                   :oms "00000"
-                                   }])
+(def ^:private patients-info (r/atom [{:id 1
+                                       :first-name "Иванов"
+                                       :second-name "Иван"
+                                       :middle-name "Иванович"
+                                       :birth-date "qweqwe"
+                                       :address "asdasd"
+                                       :sex "m"
+                                       :oms "00000"}
+                                      {:id 2
+                                       :first-name "Иванов"
+                                       :second-name "Иван"
+                                       :middle-name "Иванович"
+                                       :birth-date "qweqwe"
+                                       :address "qqqq"
+                                       :sex "m"
+                                       :oms "00000"}
+                                      ])
   )
 
 
