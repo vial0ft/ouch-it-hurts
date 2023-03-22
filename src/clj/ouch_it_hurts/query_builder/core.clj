@@ -43,7 +43,8 @@
 
 
 (defn where
-  ([conditions] (->> (build-condition-part conditions []) (s/join " ") (str "where ")))
+  ([] "")
+  ([conditions] (when conditions (->> (build-condition-part conditions []) (s/join " ") (str "where "))))
   ([query conditions] (str query " " (where conditions))))
 
 (defn- asc-desc [field rest]
@@ -59,14 +60,40 @@
 
 
 (defn order-by
-  ([orders] (->> (build-ordering-part orders []) (s/join ", ") (str "order by ")))
-  ([query & orders] (str query " " (order-by orders))))
+  ([] "")
+  ([orders] (when orders (->> (build-ordering-part orders []) (s/join ", ") (str "order by "))))
+  ([query orders] (str query " " (order-by orders))))
 
 (defn offset
+  ([] "")
   ([offset-num] (str "offset " offset-num))
   ([query offset-num] (str query " " (offset offset-num))))
 
 (defn limit
+  ([] "")
   ([limit-num] (str "limit " limit-num))
   ([query limit-num] (str query " " (limit limit-num))))
 
+
+
+
+
+
+(comment
+
+  (select [:id :as "'qwe'" :app/f :as "q" "asd"]
+          (from [:tablename :as :t]))
+
+  (-> (select :id :as "'qwe'")
+      (from :tablename :as :t :table2 :as :t2)
+      (where (ops/_or (ops/eq :id 1) (ops/between :date (java.time.LocalDate/now) (java.time.LocalDate/now))))
+      (order-by :id :desc)
+      (offset 100)
+      (limit 100)
+      )
+
+  (where [])
+
+  (order-by " "  [:id :desc :date :asc])
+
+  )
