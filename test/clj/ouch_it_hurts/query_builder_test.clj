@@ -63,7 +63,7 @@
                                                :date
                                                (java.time.LocalDate/of 2023 01 01)
                                                (java.time.LocalDate/of 2023 01 02))))
-               (order-by :id :desc)
+               (order-by [:id :desc])
                (offset 100)
                (limit 100)
                )
