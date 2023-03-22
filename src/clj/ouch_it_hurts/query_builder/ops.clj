@@ -6,11 +6,13 @@
 
 
 (defn _or
+  ([] nil)
   ([single] single)
   ([first & seq] (reduce (fn [acc el] (conj acc :or el)) [first] seq)))
 
 
 (defn _and
+  ([] nil)
   ([single] single)
   ([first & seq] (reduce (fn [acc el] (conj acc :and el)) [first] seq)))
 
