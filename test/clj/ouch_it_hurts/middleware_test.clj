@@ -54,10 +54,18 @@
           handler-f (format-query-string (query-string-handler))
           result (handler-f request-like)]
       (is (= (count result) 1))
-      (is (and (some? (get-in result ["key1"])) (map? (get-in result ["key1"]))))
-      (is (and (some? (get-in result ["key1" "id"])) (= (get-in result ["key1" "id"]) "1")))
-      (is (and (some? (get-in result ["key1" "date"])) (= (get-in result ["key1" "date"]) "2023-01-01")))
-      (is (and (some? (get-in result ["key1" "flag"])) (= (get-in result ["key1" "flag"]) "true")))
+      (is (and (some? (get-in result [:key1])) (map? (get-in result [:key1]))))
+      (is (and (some? (get-in result [:key1 :id])) (= (get-in result [:key1 :id]) "1")))
+      (is (and (some? (get-in result [:key1 :date])) (= (get-in result [:key1 :date]) "2023-01-01")))
+      (is (and (some? (get-in result [:key1 :flag])) (= (get-in result [:key1 :flag]) "true")))
+      ))
+
+  (testing
+      "If for SOME REASON someone pass an object through query params. According `query-string-handler` should return deep map"
+    (let [request-like {:query-string "key1[a][b][c]=1"}
+          handler-f (format-query-string (query-string-handler))
+          result (handler-f request-like)]
+      (is (and (some? (get-in result [:key1 :a :b :c])) (= (get-in result [:key1 :a :b :c]) "1")))
       ))
 
 
