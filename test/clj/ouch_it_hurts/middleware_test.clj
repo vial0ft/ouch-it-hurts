@@ -42,10 +42,24 @@
           handler-f (format-query-string (query-string-handler))
           {:keys [key1] :as response-like}  (handler-f request-like)
           params-set (into #{} key1)]
-      (is (count key1) 2)
+      (is (= (count key1) 2))
       (is (contains? params-set "qwe"))
       (is (contains? params-set "foo"))
       ))
+
+
+  (testing
+      "According `query-string-handler` should return map where key is `key1` and value is map when query does have object"
+    (let [request-like {:query-string "key1[id]=1&key1[date]=2023-01-01&key1[flag]=true"}
+          handler-f (format-query-string (query-string-handler))
+          result (handler-f request-like)]
+      (is (= (count result) 1))
+      (is (and (some? (get-in result ["key1"])) (map? (get-in result ["key1"]))))
+      (is (and (some? (get-in result ["key1" "id"])) (= (get-in result ["key1" "id"]) "1")))
+      (is (and (some? (get-in result ["key1" "date"])) (= (get-in result ["key1" "date"]) "2023-01-01")))
+      (is (and (some? (get-in result ["key1" "flag"])) (= (get-in result ["key1" "flag"]) "true")))
+      ))
+
 
   (testing
       "No `:query-params` in the response when `:query-string` is `nil`"

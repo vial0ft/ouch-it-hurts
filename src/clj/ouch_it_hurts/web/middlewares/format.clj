@@ -12,15 +12,24 @@
    key-keyword-f
    ))
 
+(defn- make-deep-key [m k v]
+  (let [root-key  (->> (re-find #"(\w+)\[" (name k)) (second))
+        path-keys (->> (re-seq #"\[(\w+)\]" (name k)) (map second))
+        _ (println (vec (cons root-key path-keys))) ]
+    (-> (dissoc m k)
+        (assoc-in (vec (cons root-key path-keys)) v)
+        )))
+
 (defn- reducer-f [acc [pair-k pair-v]]
-  (if (get acc pair-k)
-    (update acc pair-k #(vec (flatten [%1 %2])) pair-v)
-    (assoc acc pair-k pair-v)))
+  (if-not (empty? (re-seq #"\[(\w+)\]" (name pair-k)))
+    (make-deep-key acc pair-k pair-v)
+    (if (get acc pair-k)
+      (update acc pair-k #(vec (flatten [%1 %2])) pair-v)
+      (assoc acc pair-k pair-v))))
 
 
 (defn- group-query-params [query-str]
-  (let [pairs  (-> (java.net.URLDecoder/decode query-str)
-                   (s/split #"&"))
+  (let [pairs  (-> (java.net.URLDecoder/decode query-str) (s/split #"&"))
         seq-pairs (transduce xf into [] pairs)]
     (reduce reducer-f {} seq-pairs)))
 
