@@ -5,8 +5,9 @@
    [clojure.set :refer :all]))
 
 
-(def ^:private default-offset 0)
-(def ^:private default-limit 100)
+(def ^:private default-offset "0")
+(def ^:private default-limit "100")
+(def ^:private default-sorting {:id :asc})
 
 
 (defn- filter-map [m pred f]
@@ -18,16 +19,23 @@
    into {}
    m))
 
+(comment
+  )
 
 (defn get-all
-  "Fetch all patient infos according `offset`, `limit` and `filters`"
+  "Fetch all patient infos according `offset`, `limit`, `filters`, `sorting`"
   [get-all-req]
-  (let [{:keys [offset limit filters] :or {offset default-offset limit default-limit}} get-all-req]
-    (repo/query-infos {
-                      :offset offset
-                      :limit limit
-                      :filters filters
-                      })))
+  (log/infof "%s" (str get-all-req))
+  (let [{:keys [offset limit filters sorting]
+         :or {offset default-offset limit default-limit sorting default-sorting}} get-all-req
+        result (repo/query-infos {
+                                  :offset offset
+                                  :limit limit
+                                  :filters filters
+                                  :sorting (update-vals sorting keyword)
+                                  })
+        _ (log/debug result)]
+    result))
 
 
 (defn- error-when [cond msg details]
