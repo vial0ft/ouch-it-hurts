@@ -3,7 +3,8 @@
    [ouch-it-hurts.patients-info.service :as s]
    [ouch-it-hurts.web.http-responses.core :as http-resp]))
 
-(defn- get-all [{{{:keys [offset limit] :as query-params} :query-params} :app/request}]
+(defn- get-all
+  [{{{:keys [offset limit filters sorting] :as query-params} :query-params} :app/request}]
   (-> (s/get-all query-params)
       (http-resp/json-ok)))
 
