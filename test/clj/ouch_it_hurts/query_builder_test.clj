@@ -12,8 +12,7 @@
     (is (= "select foo" (select :foo)))
     (is (= "select foo.bar" (select :foo/bar)))
     (is (= "select foo as bar" (select :foo :as :bar)))
-    (is (= "select foo as bar, baz as qwe" (select :foo :as :bar :baz :as "qwe")))
-    (is (= "select foo" (select "foo")))
+    (is (= "select foo as bar, baz as \"qwe\"" (select :foo :as :bar :baz :as "\"qwe\"")))
     (is (= "select 1" (select 1)))
     )
 
@@ -51,13 +50,13 @@
   (testing
       "complex query"
     (is (= (clojure.string/join " "
-                               ["select id as 'qwe'"
+                               ["select id as \"qwe\""
                                 "from tablename as t, table2 as t2"
                                 "where id = 1 or date between 2023-01-01 and 2023-01-02"
                                 "order by id desc"
                                 "offset 100 limit 100"]
                                 )
-           (-> (select :id :as "'qwe'")
+           (-> (select :id :as "\"qwe\"")
                (from :tablename :as :t :table2 :as :t2)
                (where (_or (eq :id 1) (between
                                                :date

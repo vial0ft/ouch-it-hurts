@@ -5,10 +5,10 @@
 
 (defn- convert-value [value]
   (cond
-    (string? value) (str "'" value "'")
-    (keyword? value) (if-not (keyword? value) (str value)
-                             (if-let [ns (namespace value)] (s/join "." [(namespace value) (name value)])
-                                     (name value)))
+    (and (string? value)
+         (and (not (s/includes? value "'")) (not (s/includes? value "\"")))) (str "'" value "'")
+    (keyword? value) (if-let [ns (namespace value)] (s/join "." [(namespace value) (name value)])
+                                     (name value))
     :else (str value)))
 
 (defn- aliasing [head rest]
