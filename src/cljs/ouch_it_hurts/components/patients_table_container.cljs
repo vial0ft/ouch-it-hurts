@@ -32,17 +32,8 @@
 (defn PatientsTableContainer [app-state]
     (fetch-patients-info patients-info @app-state)
     (fn [app-state]
-      (println @app-state)
       (fetch-patients-info patients-info @app-state)
       [:div
        [FilterForm (r/cursor app-state [:filters])]
-       [TableBlock patients-info (r/cursor app-state [:sorting])]
-       ]
+       [TableBlock patients-info (r/cursor app-state [:sorting])]]
       ))
-
-
-(comment
-
-  @patients-info-store
-
-  )

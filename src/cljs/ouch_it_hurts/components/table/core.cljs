@@ -102,9 +102,7 @@
 (defn TableBlock [patients-info sorting]
     (fn [patients-info sorting]
       (let [patients-info-records @patients-info
-            _ (println (map :id patients-info-records))
             all-ids (map :id patients-info-records)]
-        ;;(println patients-info-records)
         [:div
          [:p {:hidden false } @state]
          (-> [:div.patient-info-table-grid-container]
