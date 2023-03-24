@@ -1,4 +1,4 @@
-(ns ouch-it-hurts.components.filter.filter-items
+(ns ouch-it-hurts.components.filter.items
   (:require [ouch-it-hurts.utils.datetime-utils :as dtu]))
 
 
