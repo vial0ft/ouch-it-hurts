@@ -20,7 +20,7 @@
     (let [config  (c/load-config "config.edn")]
       (-> config
           (assoc
-           :handler (-> (r/routing (api/routes-data))
+           :handler (-> (r/routing (api/routes-data nil))
                         (dm/wrap-handler-dev)
                         (assets-resolver-wrapper (:application/asserts config))
                         )
@@ -43,7 +43,7 @@
   (d/close-db-conn)
   (core/stop-server))
 
- ;;(start)
+;;(start)
 
 
 (comment

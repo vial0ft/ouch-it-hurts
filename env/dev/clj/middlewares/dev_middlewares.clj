@@ -26,6 +26,7 @@
 
 (defn wrap-handler-dev [handler]
   (-> handler
+      (middlewares/cors)
       (middlewares/wrap-handler)
       (middlewares/wrap-handler-with-logging)
       ))
