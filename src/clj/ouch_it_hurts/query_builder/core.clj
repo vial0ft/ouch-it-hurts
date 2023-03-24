@@ -4,9 +4,12 @@
 
 
 (defn- convert-value [value]
-  (if-not (keyword? value) (str value)
-     (if-let [ns (namespace value)] (s/join "." [(namespace value) (name value)])
-             (name value))))
+  (cond
+    (and (string? value)
+         (and (not (s/includes? value "'")) (not (s/includes? value "\"")))) (str "'" value "'")
+    (keyword? value) (if-let [ns (namespace value)] (s/join "." [(namespace value) (name value)])
+                                     (name value))
+    :else (str value)))
 
 (defn- aliasing [head rest]
   (if-not (= (first rest) :as) [head rest]
@@ -40,7 +43,6 @@
           (if-not linked-word (conj acc (build-converted-expression condition))
                   (recur rest (conj acc (build-converted-expression condition) (convert-value linked-word)))
           )))
-
 
 (defn where
   ([] "")
