@@ -16,12 +16,12 @@
 
 
 (def app-state (r/atom {:filters {}
-                :sorting {:id :asc}
-                :offset 0
-                :limit 100
-                :error {:ok? true
-                        :message ""}
-                }))
+                        :sorting {:id :asc}
+                        :offset 0
+                        :limit 100
+                        :error {:ok? true
+                                :message ""}
+                        }))
 ;; -------------------------
 ;; States
 
