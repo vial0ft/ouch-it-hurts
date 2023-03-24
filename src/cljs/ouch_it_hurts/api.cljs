@@ -8,14 +8,15 @@
   (println r))
 
 
-(defn fetch-patients-info [{:keys [offset limit filters]}]
+(defn fetch-patients-info [request-params on-success on-error]
+  (let [params (select-keys request-params [:filters :sorting :offset :limit])]
   (GET "http://localhost:3000/patients"
-       {:params {
-                 :offset offset
-                 :limit limit}
+       {:params params
         :format :json
-        :handler just-log
-        :error-handler just-log}))
+        :response-format :json
+        :keywords? true
+        :handler on-success
+        :error-handler on-error})))
 
 
 (defn get-patient-info-by-id [id on-success on-error]
@@ -44,14 +45,5 @@
           {:format :json
            :handler on-success
            :error-handler on-error}))
-
-
-(comment
-
-  (GET "http://localhost:3000/patient/5"
-       {:format :json
-        :handler just-log
-        :error-handler just-log})
-)
 
 

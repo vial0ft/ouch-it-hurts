@@ -1,37 +1,39 @@
 (ns ouch-it-hurts.components.patients-table-container
-  (:require [reagent.core :as r]))
+  (:require [reagent.core :as r]
+            [ouch-it-hurts.components.filter.core :refer [FilterForm]]
+            [ouch-it-hurts.components.table.core :refer [TableBlock]]
+            [ouch-it-hurts.api :as api]))
 
 
+
+(def patients-info (r/atom []))
 
 
 ;; -------------------------
 ;; States
 
-(def ^:private patients-info (r/atom [{:id 1
-                                       :first-name "Иванов"
-                                       :second-name "Иван"
-                                       :middle-name "Иванович"
-                                       :birth-date "qweqwe"
-                                       :address "asdasd"
-                                       :sex "m"
-                                       :oms "00000"}
-                                      {:id 2
-                                       :first-name "Иванов"
-                                       :second-name "Иван"
-                                       :middle-name "Иванович"
-                                       :birth-date "qweqwe"
-                                       :address "qqqq"
-                                       :sex "m"
-                                       :oms "00000"}
-                                      ])
-  )
 
+(defn error-handler [error]
+  (fn[err]
+    (reset! error {:ok? false
+                   :message err})))
 
+(defn result-handler [store opt]
+  (fn [resp]
+    (reset! (r/cursor opt [:error]) {:ok? true})
+    (reset! patients-info resp)))
 
-(defn PatientsTableContainer [FilterBlock TableBlock]
-  [:div
-   [FilterBlock #(println "We got filter info: " %)]
-   [TableBlock @patients-info]
-   ]
-  )
+(defn fetch-patients-info [store opt]
+  (api/fetch-patients-info
+   (select-keys opt [:filters :offset :limit :sorting])
+   (result-handler store opt)
+   (error-handler (r/cursor opt [:error]))))
 
+(defn PatientsTableContainer [app-state]
+    (fetch-patients-info patients-info @app-state)
+    (fn [app-state]
+      (fetch-patients-info patients-info @app-state)
+      [:div
+       [FilterForm (r/cursor app-state [:filters])]
+       [TableBlock patients-info (r/cursor app-state [:sorting])]]
+      ))

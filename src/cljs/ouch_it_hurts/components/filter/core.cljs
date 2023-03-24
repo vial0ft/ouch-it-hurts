@@ -1,7 +1,7 @@
-(ns ouch-it-hurts.components.filter.filter-form
+(ns ouch-it-hurts.components.filter.core
   (:require [reagent.core :as r]
             [ouch-it-hurts.utils.datetime-utils :as dtu]
-            [ouch-it-hurts.components.filter.filter-items :refer [LabledField DateRangeField SingleFieldSet FieldSet CheckboxButton]]))
+            [ouch-it-hurts.components.filter.items :refer [LabledField DateRangeField SingleFieldSet FieldSet CheckboxButton]]))
 
 
 ;; -------------------------
@@ -9,13 +9,13 @@
 
 
 (def ^private default-filter {
-                              :first-name ""
-                              :second-name ""
-                              :middle-name ""
-                              :address ""
-                              :birth-date {:error {:error? false :message ""}}
-                              :sex #{}
-                              :oms {:error {:error? false :message ""}}
+                              :first-name {:value ""}
+                              :second-name {:value ""}
+                              :middle-name {:value ""}
+                              :address {:value ""}
+                              :birth-date {:value {} :error {:error? false :message ""}}
+                              :sex {:value #{}}
+                              :oms {:value "" :error {:error? false :message ""}}
                               })
 
 (def all-sex-options #{"male" "female" "other" "none"})
@@ -29,16 +29,16 @@
 (defn- change-key [key-path]
   (fn [new-value] (reset! key-path new-value)))
 
-(defn- filter-clean-button []
+(defn- filter-clean-button [on-click]
   [:button.filter-form-button
    {
-    :on-click #(reset! filter-form default-filter)
+    :on-click on-click
     :type :reset}
    "Clear filters"
    ]
   )
 
-(defn- filter-apply-button [filter-callback]
+(defn- filter-apply-button []
   [:button.filter-form-button
    {
    ;; :on-click #(filter-callback @filter-form)
@@ -52,15 +52,15 @@
    [LabledField {:key "first-name"
                  :label-text "First name: "
                  :input-type "text"
-                 :on-change (change-key (filter-form-cursor [:first-name]))}]
+                 :on-change (change-key (filter-form-cursor [:first-name :value]))}]
    [LabledField {:key "middle-name"
                  :label-text "Middle name: "
                  :input-type "text"
-                 :on-change (change-key (filter-form-cursor [:middle-name]))}]
+                 :on-change (change-key (filter-form-cursor [:middle-name :value]))}]
    [LabledField {:key "second-name"
                  :label-text "Second name: "
                  :input-type "text"
-                 :on-change (change-key (filter-form-cursor [:second-name]))}]
+                 :on-change (change-key (filter-form-cursor [:second-name :value]))}]
    ])
 
 
@@ -123,7 +123,7 @@
     {:legend "Address"
      :key "address"
      :input-type "text"
-     :on-change (change-key (filter-form-cursor [:address]))
+     :on-change (change-key (filter-form-cursor [:address :value]))
      }]
    [SingleFieldSet
     {:legend "CMI number"
@@ -135,35 +135,46 @@
    [DateRangeField
     {:legend "Birth date"
      :key "birth-date"
-     :from {:on-change (change-key (filter-form-cursor [:birth-date :from]))}
-     :to {:on-change (change-key (filter-form-cursor [:birth-date :to]))}
+     :from {:on-change (change-key (filter-form-cursor [:birth-date :value :from]))}
+     :to {:on-change (change-key (filter-form-cursor [:birth-date :value :to]))}
      :error @(filter-form-cursor [:birth-date :error])
    }]])
 
 
-(defn FilterForm [callback]
-  [:div {:style {:padding "10px"}}
-   [:p {:hidden false} (str @filter-form)]
-   [:form {:on-submit (fn [e]
-                        (callback @filter-form)
-                        (println "submit")
-                        (.preventDefault e))} ;; TODO add validation before callback
-    [:div.filter-form {:name "filterForm"}
-     [patient-left-filter-block]
-     [patient-right-filter-block]]
-    [:div.filter-form-buttons-block
-     [filter-clean-button]
-     [filter-apply-button callback]
-     ]
-   ]])
+(def xform
+  (comp
+   (filter (fn[[k v]] (not (empty? (:value v)))))
+   (map (fn [[k v]] {k (:value v)}))
+   )
+  )
+
+(defn- local-2-global [local-filters]
+  (transduce
+   xform
+   into {}
+   @local-filters))
+
+(defn- on-click-clean-button [app-filter]
+  (fn [_]
+    (reset! app-filter {})
+    (reset! filter-form default-filter)
+    ))
 
 
-(comment
+(defn FilterForm [filter-state]
+  (fn [filter-state]
+    [:div {:style {:padding "10px"}}
+     [:p {:hidden false} (str @filter-form)]
+     [:form {:on-submit (fn [e]
+                          (reset! filter-state (local-2-global filter-form))
+                          (println "submit")
+                          (.preventDefault e))} ;; TODO add validation before callback
+      [:div.filter-form {:name "filterForm"}
+       [patient-left-filter-block]
+       [patient-right-filter-block]]
+      [:div.filter-form-buttons-block
+       [filter-clean-button (on-click-clean-button filter-state)]
+       [filter-apply-button]
+       ]
+      ]]))
 
-  (def test-atom (r/atom #{1}))
-
-  (swap! test-atom (fn [old]  (println old ) old))
-
-
-  (conj #{1} 2)
-)
