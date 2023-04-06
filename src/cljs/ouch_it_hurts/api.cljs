@@ -33,8 +33,8 @@
          :handler on-success
          :error-handler on-error}))
 
-(defn update-patient-info [id patient-info on-success on-error]
-  (PUT (gstr/format "http://localhost:3000/patient/%d" id)
+(defn update-patient-info [patient-info on-success on-error]
+  (PUT (gstr/format "http://localhost:3000/patient/%d" (:id patient-info))
       {:params patient-info
        :format :json
        :handler on-success
@@ -45,5 +45,4 @@
           {:format :json
            :handler on-success
            :error-handler on-error}))
-
 

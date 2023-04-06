@@ -115,3 +115,102 @@ span.spaced:before {
     background-color: #911;
     color: #fff;
 }
+
+
+#paging-number-button {
+    margin: 4px;
+    background-color: #EFEFEF;
+    border-radius: 4px;
+    border: 1px solid #D0D0D0;
+    overflow: auto;
+    float: left;
+}
+
+#paging-number-button:hover {
+    background: darkgray;
+}
+
+#paging-number-button label {
+    float: left;
+    width: 4.0em;
+}
+
+#paging-number-button label span {
+    text-align: center;
+    padding: 3px 0px;
+    display: block;
+}
+
+#paging-number-button label input {
+    position: absolute;
+    top: -20px;
+}
+
+#ck-button input:checked + span {
+    background-color: #911;
+    color: #fff;
+}
+
+.modal-wrapper {
+    position: absolute;
+    display: flex;
+    direction: row;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal {
+    background-color: white;
+    height: max-content;
+    width: 75%;
+
+}
+
+.modal-buttom {
+    display: block;
+}
+
+
+
+.filter-form {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.filter-form-block {
+    margin-right: 10px;
+    width: 50%
+}
+
+.view-modal-block-item {
+    display: flex;
+    margin: 5px;
+}
+
+.view-modal-block-item-lable {
+    width: 30%;
+    display: block;
+}
+
+.view-modal-block-item-text-input {
+    width: 300px;
+    display: block;
+    border: none;
+}
+
+
+.close-button {
+    display: block;
+    float: right;
+    border: none;
+    width: 25px;
+    height: 25px;
+    font-size: 20px;
+    font-weight: bold;
+}
