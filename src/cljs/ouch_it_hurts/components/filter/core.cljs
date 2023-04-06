@@ -1,7 +1,8 @@
 (ns ouch-it-hurts.components.filter.core
   (:require [reagent.core :as r]
             [ouch-it-hurts.utils.datetime-utils :as dtu]
-            [ouch-it-hurts.components.filter.items :refer [LabledField DateRangeField SingleFieldSet FieldSet CheckboxButton]]))
+            [ouch-it-hurts.components.filter.items :refer [DateRangeField CheckboxButton]]
+            [ouch-it-hurts.components.common.core :refer [FieldSet LabledField SingleFieldSet]]))
 
 
 ;; -------------------------
@@ -41,7 +42,6 @@
 (defn- filter-apply-button []
   [:button.filter-form-button
    {
-   ;; :on-click #(filter-callback @filter-form)
     :type :submit
     }
    "Apply filters"
@@ -50,17 +50,23 @@
 (defn- patient-name-filter-block []
   [FieldSet "Patient name"
    [LabledField {:key "first-name"
-                 :label-text "First name: "
-                 :input-type "text"
-                 :on-change (change-key (filter-form-cursor [:first-name :value]))}]
+                 :class "filter-form-block-item"
+                 :lable {:class "filter-form-block-item-lable" :text "First name: "}
+                 :input {:class "filter-form-block-item-text-input"
+                         :type "text"
+                         :on-change (change-key (filter-form-cursor [:first-name :value]))}}]
    [LabledField {:key "middle-name"
-                 :label-text "Middle name: "
-                 :input-type "text"
-                 :on-change (change-key (filter-form-cursor [:middle-name :value]))}]
+                 :class "filter-form-block-item"
+                 :lable {:class "filter-form-block-item-lable" :text "Middle name: "}
+                 :input {:class "filter-form-block-item-text-input"
+                         :type "text"
+                         :on-change (change-key (filter-form-cursor [:middle-name :value]))}}]
    [LabledField {:key "second-name"
-                 :label-text "Second name: "
-                 :input-type "text"
-                 :on-change (change-key (filter-form-cursor [:second-name :value]))}]
+                 :class "filter-form-block-item"
+                 :lable {:class "filter-form-block-item-lable" :text "Second name: "}
+                 :input {:class "filter-form-block-item-text-input"
+                         :type "text"
+                         :on-change (change-key (filter-form-cursor [:second-name :value]))}}]
    ])
 
 
@@ -78,12 +84,12 @@
       (case [id checked?]
         ["all" true] (do
                        (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
-                       (reset! (filter-form-cursor [:sex]) #{}))
+                       (reset! (filter-form-cursor [:sex :value]) #{}))
         (if checked?
           (do
             (set-elems-value {"all" false id true})
-            (swap! (filter-form-cursor [:sex]) conj id))
-          (swap! (filter-form-cursor [:sex]) (fn [old]
+            (swap! (filter-form-cursor [:sex :value]) conj id))
+          (swap! (filter-form-cursor [:sex :value]) (fn [old]
                                                (into (hash-set) (filter #(not= % id) old))))
                        ))
       )))
@@ -91,21 +97,16 @@
 (defn- patient-sex-filter-selector []
   [FieldSet "Sex"
    [CheckboxButton {:key "all"
-                    :label "All"
                     :opt {:defaultChecked true
-                          :on-change (sex-filter-on-change all-sex-options)}}]
+                          :on-change (sex-filter-on-change all-sex-options)}}  "All" ]
    [CheckboxButton {:key "male"
-                    :label "Male"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Male"]
    [CheckboxButton {:key "female"
-                    :label "Female"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Female"]
    [CheckboxButton {:key "other"
-                    :label "Other"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Other"]
    [CheckboxButton {:key "none"
-                    :label "None"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}}]
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "None"]
    ]
   )
 
@@ -120,25 +121,25 @@
 (defn- patient-right-filter-block []
   [:div.filter-form-block
    [SingleFieldSet
-    {:legend "Address"
-     :key "address"
-     :input-type "text"
-     :on-change (change-key (filter-form-cursor [:address :value]))
-     }]
+    {:key "address"
+     :input {:type "text"
+             :style {:width "100%"}
+             :on-change (change-key (filter-form-cursor [:address :value]))
+             }}
+    "Address"]
    [SingleFieldSet
-    {:legend "CMI number"
-     :key "cmi"
-     :input-type "text"
-     :on-change (change-key (filter-form-cursor [:oms :value]))
-     :error @(filter-form-cursor [:oms :error])
-     }]
+    {:key "cmi"
+     :input {:type "text"
+             :style {:width "100%"}
+             :on-change (change-key (filter-form-cursor [:oms :value]))}
+     :error @(filter-form-cursor [:oms :error])}
+    "CMI number"]
    [DateRangeField
-    {:legend "Birth date"
-     :key "birth-date"
+    {:key "birth-date"
      :from {:on-change (change-key (filter-form-cursor [:birth-date :value :from]))}
      :to {:on-change (change-key (filter-form-cursor [:birth-date :value :to]))}
-     :error @(filter-form-cursor [:birth-date :error])
-   }]])
+     :error @(filter-form-cursor [:birth-date :error])}
+    "Birth date"]])
 
 
 (def xform

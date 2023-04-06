@@ -1,0 +1,67 @@
+(ns ouch-it-hurts.components.modal.view-patient-form
+  (:require [ouch-it-hurts.components.common.core :refer [SingleFieldSet DatePicker CloseButton FieldSet LabledField Select LabledSelectField]]
+            [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]))
+
+
+
+(defn ViewPatientForm [modal-state {:keys [patient-info edit-callback]}]
+  [:div {:style {:margin "20px"}}
+   [:h1 "Patient's Info"]
+   [FieldSet "Patient name"
+      [LabledField {:key "first-name"
+                    :class "view-modal-block-item"
+                    :lable {:class "view-modal-block-item-lable" :text "First name: "}
+                    :input {:class "view-modal-block-item-text-input"
+                            :type "text"
+                            :disabled true
+                            :value (:first-name patient-info)}}]
+      [LabledField {:key "middle-name"
+                    :class "view-modal-block-item"
+                    :lable {:class "view-modal-block-item-lable" :text "Middle name: "}
+                    :input {:class "view-modal-block-item-text-input"
+                            :type "text"
+                            :disabled true
+                            :value (:middle-name patient-info) }}]
+      [LabledField {:key "second-name"
+                    :class "view-modal-block-item"
+                    :lable {:class "view-modal-block-item-lable" :text "Second name: "}
+                    :input {:class "view-modal-block-item-text-input"
+                            :type "text"
+                            :disabled true
+                            :value (:second-name patient-info)}}]]
+   [SingleFieldSet
+    {:key "sex"
+     :input {:type "text"
+             :class "view-modal-block-item-text-input"
+             :disabled true
+             :value (:sex patient-info)}}
+    "Sex"]
+   [SingleFieldSet
+    {:key "birth-date"
+     :input {:type "text"
+             :class "view-modal-block-item-text-input"
+             :disabled true
+             :value (:birth-date patient-info)}}
+    "Birth date"]
+   [SingleFieldSet
+    {:key "address"
+     :input {:type "text"
+             :class "view-modal-block-item-text-input"
+             :disabled true
+             :value (:address patient-info)}}
+    "Address"]
+   [SingleFieldSet
+    {:key "cmi"
+     :input {:type "text"
+             :class "view-modal-block-item-text-input"
+             :disabled true
+             :value (:oms patient-info)}}
+    "CMI number"]
+   [:button {:on-click #(reset! modal-state {:visible? true
+                                       :form EditPatientForm
+                                       :args {:patient-info patient-info
+                                              :edit-callback edit-callback}
+                                       })} "Edit"]
+   [:button {:on-click #(reset! modal-state {:visible? false})} "Ok"]
+   ]
+  )
