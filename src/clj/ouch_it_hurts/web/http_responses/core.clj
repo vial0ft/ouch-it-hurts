@@ -49,6 +49,7 @@
 
 
 (defn json-ok
+  ([] (json-ok nil))
   ([body] (-> (ok body)
               (response-as-json))))
 

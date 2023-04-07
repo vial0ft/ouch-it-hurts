@@ -43,7 +43,7 @@
   (d/close-db-conn)
   (core/stop-server))
 
-;;(start)
+(start)
 
 
 (comment
