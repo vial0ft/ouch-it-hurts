@@ -152,11 +152,12 @@ span.spaced:before {
 }
 
 .modal-wrapper {
-    position: absolute;
     display: flex;
     direction: row;
-    top: 0;
-    left: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100vw;
     height: 100vh;
     z-index: 100;
