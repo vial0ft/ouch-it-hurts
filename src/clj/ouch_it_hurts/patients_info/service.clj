@@ -5,8 +5,8 @@
    [clojure.set :refer :all]))
 
 
-(def ^:private default-offset "0")
-(def ^:private default-limit "100")
+(def ^:private default-page-number "0")
+(def ^:private default-page-size "100")
 (def ^:private default-sorting {:id :asc})
 
 
@@ -19,22 +19,32 @@
    into {}
    m))
 
-(comment
-  )
+(defn- show-records-filter [filter]
+  (-> (case (:show-records filter)
+        :all (dissoc filter :deleted)
+        :deleted-only (assoc filter :deleted true)
+        (assoc filter :deleted false))
+      (dissoc :show-records)))
+
+(defn- page-number->offset [pn ps]
+  (let [int-pn (Integer/parseInt (str pn))
+        int-ps (Integer/parseInt (str ps))]
+  (inc (* (dec int-pn) int-ps))))
 
 (defn get-all
-  "Fetch all patient infos according `offset`, `limit`, `filters`, `sorting`"
+  "Fetch all patient infos according `page-number`, `page-size`, `filters`, `sorting`"
   [get-all-req]
   (log/infof "%s" (str get-all-req))
-  (let [{:keys [offset limit filters sorting]
-         :or {offset default-offset limit default-limit sorting default-sorting}} get-all-req
+  (let [{:keys [page-number page-size filters sorting]
+         :or {page-number default-page-number page-size default-page-size sorting default-sorting}} get-all-req
         result (repo/query-infos {
-                                  :offset offset
-                                  :limit limit
-                                  :filters filters
+                                  :offset (page-number->offset page-number page-size)
+                                  :limit page-size
+                                  :filters (show-records-filter filters)
                                   :sorting (update-vals sorting keyword)
                                   })
-        _ (log/debug result)]
+        ;;_ (log/debug result)
+        ]
     result))
 
 

@@ -21,6 +21,12 @@
       (let [[new-part new-rest] (aliasing (convert-value head) rest)]
         (recur new-rest join-f (join-f acc new-part)))))
 
+
+(defn count
+  ([& columns] (->> (build-with-aliasing columns #(conj %1 %2) [])
+                   (s/join ", ")
+                   (format "select count(%s)"))))
+
 (defn select
   ([& columns] (->> (build-with-aliasing columns #(conj %1 %2) [])
                          (s/join ", ")

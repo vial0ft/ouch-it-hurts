@@ -6,47 +6,30 @@
             [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]
             [ouch-it-hurts.api :as api]))
 
+(defn- selected-true [selected-ids]
+  (filter #(= (val %) true) selected-ids))
 
-
-(defn ButtonsLine [modal selected-ids {:keys [add-callback del-callback edit-callback view-callback]}]
-  ;;(println selected-ids)
-  (let [[disable-show disable-del] (case (count @selected-ids)
-                                                  0 [true true]
-                                                  1 [false false]
-                                                  [true false]
-                                                  )]
-  [:div
-   [:button.filter-form-button
-    {
-     :disabled false
-     :on-click #(view-callback (first (keys @selected-ids)) modal edit-callback)
-     }
-    "Show patient's info"
-    ]
-   [:button.filter-form-button
-    {
-     :on-click #(reset! modal {:visible? true
-                               :form AddPatientForm
-                               :args {:add-callback add-callback}})
-     }
-    "Add patient"
-    ]
-   [:button.filter-form-button
-    {
-     :disabled false
-     :on-click #(reset! modal {:visible? true
-                               :form DelPatientForm
-                               :args {:del-callback del-callback}})
-     }
-    "Delete patient(s)"
-    ]
-   [:button.filter-form-button
-    {
-     :on-click #(reset! modal {:visible? true
-                               :form EditPatientForm
-                               :args {:patient-info {} :edit-callback (fn [_] println "Edit")}})
-     }
-    "Edit patient"
-    ]
-   ]
-  ))
+(defn ButtonsLine [modal selected-ids {:keys [add-callback delete-callback edit-callback view-callback]}]
+  (fn [modal selected-ids {:keys [add-callback del-callback edit-callback view-callback]}]
+    (let [selected (selected-true @selected-ids) 
+          [disable-show disable-del] (case (count selected)
+                                       0 [true true]
+                                       1 [false false]
+                                       [true false])]
+      [:div
+       [:button.filter-form-button
+        {:disabled disable-show
+         :on-click #(view-callback (first (keys selected)) modal edit-callback)}
+        "Show patient's info"]
+       [:button.filter-form-button
+        {:on-click #(reset! modal {:visible? true
+                                   :form AddPatientForm
+                                   :args {:add-callback add-callback}})}
+        "Add patient"]
+       [:button.filter-form-button
+        {:disabled disable-del
+         :on-click #(reset! modal {:visible? true
+                                   :form DelPatientForm
+                                   :args {:ids (keys selected)
+                                          :delete-callback delete-callback}})}
+        "Delete patient(s)"]])))
