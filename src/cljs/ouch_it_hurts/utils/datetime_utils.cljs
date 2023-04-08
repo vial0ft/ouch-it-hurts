@@ -28,3 +28,15 @@
       (.toISOString)
       (.split "T")
       (first)))
+
+
+(defn parse-date [date-str]
+  (new js/Date date-str))
+
+(comment
+
+  (let [date (parse-date "2023-02-23T21:00:00Z")]
+    
+    )
+
+  )
