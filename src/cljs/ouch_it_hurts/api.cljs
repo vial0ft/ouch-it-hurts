@@ -9,7 +9,7 @@
 
 
 (defn fetch-patients-info [request-params on-success on-error]
-  (let [params (select-keys request-params [:filters :sorting :offset :limit])]
+  (let [params (select-keys request-params [:filters :sorting :page-size :page-number])]
   (GET "http://localhost:3000/patients"
        {:params params
         :format :json
@@ -23,6 +23,8 @@
   (GET  (gstr/format "http://localhost:3000/patient/%d" id)
         {
          :format :json
+         :response-format :json
+         :keywords? true
          :handler on-success
          :error-handler on-error}))
 
@@ -30,6 +32,7 @@
   (POST "http://localhost:3000/patients"
         {:params patient-info
          :format :json
+         :keywords? true
          :handler on-success
          :error-handler on-error}))
 
@@ -37,12 +40,16 @@
   (PUT (gstr/format "http://localhost:3000/patient/%d" (:id patient-info))
       {:params patient-info
        :format :json
+       :response-format :json
+       :keywords? true
        :handler on-success
        :error-handler on-error}))
 
 (defn delete-patient-info [id on-success on-error]
   (DELETE (gstr/format "http://localhost:3000/patient/%d" id)
           {:format :json
+           :response-format :json
+           :keywords? true
            :handler on-success
            :error-handler on-error}))
 

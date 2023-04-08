@@ -28,5 +28,5 @@
 
 
 
-(defn RowCell [{:keys [value]}]
-  [:div.patients-info-table-grid-item value])
+(defn RowCell [{:keys [class value]}]
+  [:div {:class class} value])

@@ -16,78 +16,86 @@
 ;; States
 
 
-(defn- error-handler [error]
+(defn- error-handler [app-state]
   (fn[err]
-    (reset! error {:ok? false
-                   :message err})))
+    (reset! (r/cursor app-state [:error]) {:ok? false
+                                           :message err})))
 
-(defn- result-handler [store opt]
+
+(defn- go-to-page [state pn]
+  (reset! (r/cursor state [:paging :page-number]) pn))
+
+(defn- result-handler [store app-state]
   (fn [resp]
-    (reset! (r/cursor opt [:error]) {:ok? true})
-    (reset! patients-info resp)))
+   ;; (println "resp" resp)
+    (when-not @(r/cursor app-state [:error :ok?])
+      (reset! (r/cursor app-state [:error]) {:ok? true}))
+    (reset! store resp)))
 
-(defn- fetch-patients-info [store opt]
+(defn- fetch-patients-info [store app-state]
   (println "do fetch")
+  (let [filters-sorting (select-keys @app-state [:filters :sorting])
+        paging (:paging @app-state)]
   (api/fetch-patients-info
-   (select-keys opt [:filters :offset :limit :sorting])
-   (result-handler store opt)
-   (error-handler (r/cursor opt [:error]))))
+   (merge filters-sorting paging)
+   (result-handler store app-state)
+   (error-handler app-state))))
 
 (defn- add-callback [app-state]
   (fn [patient-info]
     (api/add-patient-info
      patient-info
-     (fn [_] (reset! (r/cursor app-state [:current-page]) 1))
-     error-handler)))
+     (fn [_] (go-to-page app-state 1))
+     (error-handler app-state))))
 
 (defn- edit-callback [app-state]
   (fn [patients-info]
     (api/update-patient-info
      patients-info
-     (fn [_] (reset! (r/cursor app-state [:current-page]) 1))
-     error-handler)
+     (fn [_] (go-to-page app-state 1))
+     (error-handler app-state))
     ))
 
 (defn- delete-callback [app-state]
-  (fn [id]
+  (fn [ids]
+    (println "to delete" ids)
     (api/delete-patient-info
-     id
-     (fn [_] (reset! (r/cursor app-state [:current-page]) 1))
-     error-handler)))
+     (first ids)
+     (fn [_] (go-to-page app-state 1))
+     (error-handler app-state))))
 
-(defn- view-callback []
+(defn- view-callback [app-state]
   (fn [id modal-state edit-callback]
     (api/get-patient-info-by-id
      id
-     (fn [patient-info] (reset! modal-state {:visible? true
-                                             :form EditPatientForm
-                                             :args {:patient-info patient-info
-                                                    :edit-callback edit-callback}
-                                        }))
-     error-handler
+     (fn [patient-info]
+       (println patient-info)
+       (reset! modal-state {:visible? true
+                            :form ViewPatientForm
+                            :args {:patient-info patient-info
+                                   :edit-callback edit-callback}
+                            }))
+     (error-handler app-state)
      )))
 
-
 (defn PatientsTableContainer [app-state]
-  (let [patients-info (r/atom [])
+  (let [
         selected-ids (r/atom {:ids {} :all-selected? false})
         !modal (r/atom {:visible? false})
-        fetch  (fn [patients-info app-state] (fetch-patients-info patients-info @app-state))]
-    (fetch patients-info app-state)
+        fetch  (fn [patients-info app-state] (fetch-patients-info patients-info app-state))]
     (fn [app-state]
       ;;(println @app-state)
-      (fetch patients-info app-state)
+     ;; (fetch patients-info app-state)
       [:div
        [FilterForm (r/cursor app-state [:filters])]
        [TableBlock
         patients-info
         selected-ids
         (r/cursor app-state [:sorting])
-        (r/cursor app-state [:current-page])
-        (r/cursor app-state [:page-size])]
-       [ButtonsLine !modal selected-ids {:delete-callback (delete-callback app-state)
-                                         :add-callback (add-callback app-state)
-                                         :edit-callback (edit-callback app-state)
-                                         :view-callback (view-callback)}]
+        (r/cursor app-state [:paging])]
+       [ButtonsLine !modal (r/cursor selected-ids [:ids]) {:delete-callback (delete-callback app-state)
+                                                           :add-callback (add-callback app-state)
+                                                           :edit-callback (edit-callback app-state)
+                                                           :view-callback (view-callback app-state)}]
        [PatientModal !modal]]
       )))

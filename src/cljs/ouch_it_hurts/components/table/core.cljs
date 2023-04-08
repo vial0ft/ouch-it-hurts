@@ -54,21 +54,22 @@
    [OrderedHeaderCell {:value "CHI number" :on-click (order-for-key :oms ordering-state)}]))
 
 
-(defn- TableRow [selected-ids-store all-ids-count {:keys [id first-name middle-name second-name sex birth-date address oms]}]
+(defn- TableRow [selected-ids-store all-ids-count {:keys [id first-name middle-name second-name sex birth-date address oms deleted]}]
+  (let [class (if-not deleted "patients-info-table-grid-item" "patients-info-table-grid-deleted-item")]
   (list
-   [RowCell {:value [:input {:id id
+   [RowCell {:class class :value [:input {:id id
              		             :type "checkbox"
              		             :checked @(r/cursor selected-ids-store [:ids id])
              	   	           :on-change (select-row-handler selected-ids-store all-ids-count)}]}]
-   [RowCell {:value id }]
-   [RowCell {:value first-name }]
-   [RowCell {:value middle-name }]
-   [RowCell {:value second-name }]
-   [RowCell {:value sex }]
-   [RowCell {:value birth-date }]
-   [RowCell {:value address }]
-   [RowCell {:value oms }]
-   ))
+   [RowCell {:class class :value id }]
+   [RowCell {:class class :value first-name }]
+   [RowCell {:class class :value middle-name }]
+   [RowCell {:class class :value second-name }]
+   [RowCell {:class class :value sex }]
+   [RowCell {:class class :value birth-date }]
+   [RowCell {:class class :value address }]
+   [RowCell {:class class :value oms }]
+   )))
 
 (defn- transform-to-rows [selected-ids-store all-ids records]
     (transduce
@@ -76,18 +77,14 @@
      into [] records))
 
 
-(defn TableBlock [patients-info selected-ids-store sorting current-page page-size]
-    (fn [patients-info selected-ids-store sorting current-page page-size]
-      (let [patients-info-records @patients-info
-            all-ids (map :id patients-info-records)
-            total (:total patients-info-records)]
+(defn TableBlock [patients-info selected-ids-store sorting paging]
+    (fn [patients-info selected-ids-store sorting paging]
+      (let [{:keys [data total]} @patients-info
+            all-ids (map :id data)]
         [:div
-         [:p {:hidden false } @selected-ids-store]
+         [:p {:hidden false} @selected-ids-store]
          (-> [:div.patient-info-table-grid-container]
              (into (HeaderRow selected-ids-store all-ids sorting))
-             (into (transform-to-rows selected-ids-store all-ids patients-info-records)))
-         [Paging total current-page page-size]
-        ;; [ButtonsLine !modal all-ids]
-        ;; [PatientModal !modal]
-         ]
+             (into (transform-to-rows selected-ids-store all-ids data)))
+         [Paging total paging]]
         )))

@@ -17,8 +17,8 @@
 
 (def app-state (r/atom {:filters {}
                         :sorting {:id :asc}
-                        :current-page 1
-                        :page-size 100
+                        :paging {:page-number 1
+                                 :page-size 10}
                         :error {:ok? true
                                 :message ""}
                         }))

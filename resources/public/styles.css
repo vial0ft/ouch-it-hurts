@@ -21,6 +21,15 @@
     text-align: center;
 }
 
+.patients-info-table-grid-deleted-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    font-size: 14px;
+    text-align: center;
+    color: grey;
+}
+
 
 
 .filter-form {
@@ -126,6 +135,11 @@ span.spaced:before {
     float: left;
 }
 
+#paging-number-button label input {
+    position: absolute;
+    top: -20px;
+}
+
 #paging-number-button:hover {
     background: darkgray;
 }
@@ -144,6 +158,31 @@ span.spaced:before {
 #paging-number-button label input {
     position: absolute;
     top: -20px;
+}
+
+#paging-current-number-button {
+    margin: 4px;
+    background: darkgray;
+    border-radius: 4px;
+    border: 1px solid #D0D0D0;
+    overflow: auto;
+    float: left;
+}
+
+#paging-current-number-button label {
+    float: left;
+    width: 4.0em;
+}
+
+#paging-current-number-button label input {
+    position: absolute;
+    top: -20px;
+}
+
+#paging-current-number-button label span {
+    text-align: center;
+    padding: 3px 0px;
+    display: block;
 }
 
 #ck-button input:checked + span {
