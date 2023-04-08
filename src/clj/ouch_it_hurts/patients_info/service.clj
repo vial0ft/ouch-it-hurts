@@ -29,7 +29,7 @@
 (defn- page-number->offset [pn ps]
   (let [int-pn (Integer/parseInt (str pn))
         int-ps (Integer/parseInt (str ps))]
-  (inc (* (dec int-pn) int-ps))))
+  (* (dec int-pn) int-ps)))
 
 (defn get-all
   "Fetch all patient infos according `page-number`, `page-size`, `filters`, `sorting`"
