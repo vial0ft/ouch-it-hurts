@@ -84,8 +84,7 @@
         !modal (r/atom {:visible? false})
         fetch  (fn [patients-info app-state] (fetch-patients-info patients-info app-state))]
     (fn [app-state]
-      ;;(println @app-state)
-     ;; (fetch patients-info app-state)
+     (fetch patients-info app-state)
       [:div
        [FilterForm (r/cursor app-state [:filters])]
        [TableBlock

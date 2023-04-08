@@ -30,15 +30,15 @@
   (let [condition (map->where filters)
         query       (-> (qb/select :*)
                         (qb/from :patients.info)
-                        (qb/where condition))
+                        (qb/where condition)
+                        (qb/order-by (map->order-by sorting))
+                        (qb/offset offset)
+                        (qb/limit limit))
         total-query (-> (qb/count :*)
                         (qb/from :patients.info)
                         (qb/where condition))]
     (jdbc/with-transaction [tx @ds]
-      (let [result (sql/query @ds [(-> query
-                                       (qb/order-by (map->order-by sorting))
-                                       (qb/offset offset)
-                                       (qb/limit limit))] {:builder-fn rs/as-unqualified-kebab-maps})
+      (let [result (sql/query @ds [query] {:builder-fn rs/as-unqualified-kebab-maps})
             [{:keys [count]}] (sql/query @ds [total-query])]
         (println "total " count)
         {:data result
