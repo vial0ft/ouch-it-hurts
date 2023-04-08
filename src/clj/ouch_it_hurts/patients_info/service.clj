@@ -20,7 +20,7 @@
    m))
 
 (defn- show-records-filter [filter]
-  (-> (case (:show-records filter)
+  (-> (case (keyword (:show-records filter))
         :all (dissoc filter :deleted)
         :deleted-only (assoc filter :deleted true)
         (assoc filter :deleted false))

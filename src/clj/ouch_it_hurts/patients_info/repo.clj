@@ -34,7 +34,7 @@
                         (qb/order-by (map->order-by sorting))
                         (qb/offset offset)
                         (qb/limit limit))
-        total-query (-> (qb/count :*)
+        total-query (-> (qb/select-count :*)
                         (qb/from :patients.info)
                         (qb/where condition))]
     (jdbc/with-transaction [tx @ds]

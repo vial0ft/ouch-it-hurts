@@ -13,14 +13,14 @@
    ))
 
 (defn- make-deep-key [m k v]
-  (let [root-key  (->> (re-find #"(\w+)\[" (name k)) (second))
-        path-keys (->> (re-seq #"\[(\w+)\]" (name k)) (map second))]
+  (let [root-key  (->> (re-find #"(.*)\[" (name k)) (second))
+        path-keys (->> (re-seq #"\[(.*)\]" (name k)) (map second))]
     (-> (dissoc m k)
         (assoc-in (map keyword (vec (cons root-key path-keys))) v)
         )))
 
 (defn- reducer-f [acc [pair-k pair-v]]
-  (if-not (empty? (re-seq #"\[(\w+)\]" (name pair-k)))
+  (if-not (empty? (re-seq #"\[(.*)\]" (name pair-k)))
     (make-deep-key acc pair-k pair-v)
     (if (get acc pair-k)
       (update acc pair-k #(vec (flatten [%1 %2])) pair-v)
