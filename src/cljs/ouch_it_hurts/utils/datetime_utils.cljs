@@ -1,5 +1,5 @@
 (ns ouch-it-hurts.utils.datetime-utils
-  (:require [clojure.string :as str]))
+  (:require [goog.string :as gstr]))
 
 
 
@@ -24,7 +24,11 @@
               (new js/Date (- (.getTime date) (* offset 60 1000))))))
 
 (defn to-date [date-time]
-  (-> date-time
-      (.toISOString)
-      (.split "T")
-      (first)))
+  (let [y (.getFullYear date-time)
+        m (inc (.getMonth date-time))
+        d (.getDate date-time)]
+    (gstr/format "%d-%02d-%02d" y m d)))
+
+(defn parse-date [date-str]
+  (new js/Date date-str))
+

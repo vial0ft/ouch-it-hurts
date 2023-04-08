@@ -6,7 +6,7 @@
 (defn DelPatientForm [modal-state {:keys [ids delete-callback]}]
   [:div
    [:h1 "Patient's Info"]
-   [:div (gstr/format "Are you sure you want to delete % record(s)?" (count ids))]
+   [:div (gstr/format "Are you sure you want to delete %s record(s)?" (count ids))]
    [:div
     [:button {:on-click #(do
                            (delete-callback ids)
