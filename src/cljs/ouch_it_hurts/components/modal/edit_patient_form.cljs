@@ -12,8 +12,8 @@
   [:div {:style {:margin "20px"}}
    [:h1 "Edit Patient's Info"]
    [:form {:on-submit (fn [e]
-                        (edit-callback info)
-                        (.preventDefault e))}
+                        (.preventDefault e)
+                        (edit-callback info))}
     [FieldSet "Patient name"
      [LabledField {:key "first-name"
                    :class "filter-form-block-item"

@@ -1,6 +1,7 @@
 (ns ouch-it-hurts.components.modal.view-patient-form
   (:require [ouch-it-hurts.components.common.core :refer [SingleFieldSet DatePicker CloseButton FieldSet LabledField Select LabledSelectField]]
-            [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]))
+            [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]
+            [ouch-it-hurts.utils.datetime-utils :as dtu]))
 
 
 
@@ -41,7 +42,9 @@
      :input {:type "text"
              :class "view-modal-block-item-text-input"
              :disabled true
-             :value (:birth-date patient-info)}}
+             :value (-> (:birth-date patient-info)
+                        (dtu/parse-date)
+                        (dtu/to-date))}}
     "Birth date"]
    [SingleFieldSet
     {:key "address"
