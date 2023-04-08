@@ -2,7 +2,7 @@
   (:require [reagent.core :as r]
             [ouch-it-hurts.utils.datetime-utils :as dtu]
             [ouch-it-hurts.components.filter.items :refer [DateRangeField CheckboxButton]]
-            [ouch-it-hurts.components.common.core :refer [FieldSet LabledField SingleFieldSet]]))
+            [ouch-it-hurts.components.common.core :refer [FieldSet LabledField SingleFieldSet Select]]))
 
 
 ;; -------------------------
@@ -14,6 +14,7 @@
                               :second-name {:value ""}
                               :middle-name {:value ""}
                               :address {:value ""}
+                              :show-records {:value ""}
                               :birth-date {:value {} :error {:error? false :message ""}}
                               :sex {:value #{}}
                               :oms {:value "" :error {:error? false :message ""}}
@@ -110,12 +111,25 @@
    ]
   )
 
+(defn patient-show-options []
+  [FieldSet "Show record options"
+   [Select {:key "show-record-options"
+            :options (let [default :not-deleted-only
+                           all [{:value :not-deleted-only :lable "Not deleted only"}
+                                {:value :deleted-only :lable "Deleted only"}
+                                {:value :all :lable "All"}]]
+                       (map #(if (not= (:value %) default) % (assoc % :default true)) all))
+            :on-change #(reset! (filter-form-cursor [:show-records :value])  %)}]
+   ]
+  )
+
 
 
 (defn- patient-left-filter-block []
   [:div.filter-form-block
    [patient-name-filter-block]
-   [patient-sex-filter-selector]]
+   [patient-sex-filter-selector]
+   [patient-show-options]]
    )
 
 (defn- patient-right-filter-block []
