@@ -8,48 +8,61 @@
   (println r))
 
 
-(defn fetch-patients-info [request-params on-success on-error]
+(defn fetch-patients-info [request-params]
   (let [params (select-keys request-params [:filters :sorting :page-size :page-number])]
-  (GET "http://localhost:3000/patients"
-       {:params params
-        :format :json
-        :response-format :json
-        :keywords? true
-        :handler on-success
-        :error-handler on-error})))
+    (new js/Promise
+         (fn [resolve reject]
+           (GET "http://localhost:3000/patients"
+                {:params params
+                 :format :json
+                 :response-format :json
+                 :keywords? true
+                 :handler resolve
+                 :error-handler reject})))
+    ))
 
 
-(defn get-patient-info-by-id [id on-success on-error]
-  (GET  (gstr/format "http://localhost:3000/patient/%d" id)
-        {
-         :format :json
-         :response-format :json
-         :keywords? true
-         :handler on-success
-         :error-handler on-error}))
+(defn get-patient-info-by-id [id]
+  (new js/Promise
+       (fn [resolve reject]
+         (GET  (gstr/format "http://localhost:3000/patient/%d" id)
+               {:format :json
+                :response-format :json
+                :keywords? true
+                :handler resolve
+                :error-handler reject}))
+       ))
 
-(defn add-patient-info [patient-info on-success on-error]
-  (POST "http://localhost:3000/patients"
-        {:params patient-info
-         :format :json
-         :keywords? true
-         :handler on-success
-         :error-handler on-error}))
+(defn add-patient-info [patient-info]
+  (new js/Promise
+       (fn [resolve reject]
+         (POST "http://localhost:3000/patients"
+               {:params patient-info
+                :format :json
+                :keywords? true
+                :handler resolve
+                :error-handler reject}))
+       ))
 
-(defn update-patient-info [patient-info on-success on-error]
-  (PUT (gstr/format "http://localhost:3000/patient/%d" (:id patient-info))
-      {:params patient-info
-       :format :json
-       :response-format :json
-       :keywords? true
-       :handler on-success
-       :error-handler on-error}))
+(defn update-patient-info [{:keys [id] :as patient-info}]
+  (new js/Promise
+       (fn [resolve reject]
+         (PUT (gstr/format "http://localhost:3000/patient/%d" id)
+              {:params patient-info
+               :format :json
+               :response-format :json
+               :keywords? true
+               :handler resolve
+               :error-handler reject}))
+       ))
 
-(defn delete-patient-info [id on-success on-error]
-  (DELETE (gstr/format "http://localhost:3000/patient/%d" id)
+(defn delete-patient-info [id]
+  (new js/Promise
+       (fn [resolve reject]
+         (DELETE (gstr/format "http://localhost:3000/patient/%d" id)
           {:format :json
            :response-format :json
            :keywords? true
-           :handler on-success
-           :error-handler on-error}))
-
+           :handler resolve
+           :error-handler reject}))
+       ))

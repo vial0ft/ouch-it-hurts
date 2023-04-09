@@ -30,7 +30,12 @@
 (defn MainPage []
   [:div
    [Header]
-   [:p {:hidden @(r/cursor app-state [:error :ok?])} @(r/cursor app-state [:error :message])]
+   [:div {:hidden @(r/cursor app-state [:error :ok?])}
+    [:span (str @(r/cursor app-state [:error :message]))]
+
+    [:button {:style {:float "right"} :on-click #(reset! (r/cursor app-state [:error]) {:ok? true
+                                                                :message ""})}
+    "Refresh"]]
    [:p {:hidden false} @app-state]
    [PatientsTableContainer app-state]
    [Footer]
@@ -38,4 +43,3 @@
 
 (d/render [MainPage]
           (js/document.getElementById "main"))
-
