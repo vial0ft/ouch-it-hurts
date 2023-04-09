@@ -20,14 +20,26 @@
 (defn get-info-by-oms [oms]
   (first (sql/find-by-keys @ds :patients.info {:oms oms} jdbc/unqualified-snake-kebab-opts)))
 
-(defn- map->where [filters]
-  (apply ops/_and (map (fn [[k v]] (ops/eq k v)) filters)))
+(defn- as-snake-name [value]
+  (let [replacement-f #(str/replace % #"-" "_")]
+    (cond
+      (keyword? value) (if-let [ns (namespace value)]
+                         (keyword ns (replacement-f (name value)))
+                         (keyword (replacement-f (name value))))
+      (string? value) (replacement-f value)
+      :else value)
+    ))
+
+(defn- map->where [filters column-names-converter]
+  (->> filters
+      (map (fn [[k v]] (ops/eq (column-names-converter k) v)))
+      (apply ops/_and)))
 
 (defn- map->order-by [orders]
   (let [res (flatten (vec orders))] (if-not (empty? res) res nil)))
 
 (defn query-infos [{:keys [offset limit filters sorting]}]
-  (let [condition (map->where filters)
+  (let [condition (map->where filters as-snake-name)
         query       (-> (qb/select :*)
                         (qb/from :patients.info)
                         (qb/where condition)
@@ -38,11 +50,12 @@
                         (qb/from :patients.info)
                         (qb/where condition))]
     (jdbc/with-transaction [tx @ds]
-      (let [result (sql/query @ds [query] {:builder-fn rs/as-unqualified-kebab-maps})
-            [{:keys [count]}] (sql/query @ds [total-query])]
+      (let [result (sql/query tx [query] {:builder-fn rs/unqualified-snake-kebab-opts})
+            [{:keys [count]}] (sql/query tx [total-query])]
         (println "total " count)
         {:data result
          :total count}))))
+
 
 (defn insert-info [new-patient-info]
   (sql/insert!
