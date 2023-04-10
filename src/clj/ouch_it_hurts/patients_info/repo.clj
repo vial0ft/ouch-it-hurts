@@ -50,7 +50,7 @@
                         (qb/from :patients.info)
                         (qb/where condition))]
     (jdbc/with-transaction [tx @ds]
-      (let [result (sql/query tx [query] {:builder-fn rs/unqualified-snake-kebab-opts})
+      (let [result (sql/query tx [query] {:builder-fn rs/as-unqualified-kebab-maps})
             [{:keys [count]}] (sql/query tx [total-query])]
         (println "total " count)
         {:data result
