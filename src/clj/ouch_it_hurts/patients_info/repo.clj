@@ -35,26 +35,35 @@
       (map (fn [[k v]] (ops/eq (column-names-converter k) v)))
       (apply ops/_and)))
 
-(defn- map->order-by [orders]
-  (let [res (flatten (vec orders))] (if-not (empty? res) res nil)))
+(defn- map->order-by [orders column-names-converter]
+  (let [res   (->> orders
+                   (map (fn [[k v]] [(column-names-converter k) v]))
+                   (flatten))]
+    (if-not (empty? res) res nil)))
 
 (defn query-infos [{:keys [offset limit filters sorting]}]
   (let [condition (map->where filters as-snake-name)
         query       (-> (qb/select :*)
                         (qb/from :patients.info)
                         (qb/where condition)
-                        (qb/order-by (map->order-by sorting))
+                        (qb/order-by (map->order-by sorting as-snake-name))
                         (qb/offset offset)
                         (qb/limit limit))
         total-query (-> (qb/select-count :*)
                         (qb/from :patients.info)
                         (qb/where condition))]
+    (println query)
     (jdbc/with-transaction [tx @ds]
       (let [result (sql/query tx [query] {:builder-fn rs/as-unqualified-kebab-maps})
             [{:keys [count]}] (sql/query tx [total-query])]
         (println "total " count)
         {:data result
          :total count}))))
+
+(comment
+  (query-infos {:filters {:first-name "Иван"}})
+
+  )
 
 
 (defn insert-info [new-patient-info]
