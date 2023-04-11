@@ -4,13 +4,13 @@
 
 
 (defn DelPatientForm [modal-state {:keys [ids delete-callback]}]
-  [:div
-   [:h1 "Patient's Info"]
+  [:div {:style {:margin "20px"}}
+   [:h1 "Delete patient's Info"]
    [:div (gstr/format "Are you sure you want to delete %s record(s)?" (count ids))]
    [:div
-    [:button {:on-click #(do
-                           (delete-callback ids)
-                           (reset! modal-state {:visible? false}))} "Yes"]
-     [:button {:on-click #(reset! modal-state {:visible? false})} "No"]
+    [:button.filter-form-button {:on-click #(do
+                           (reset! modal-state {:visible? false})
+                           (delete-callback ids))} "Yes"]
+    [:button.filter-form-button {:on-click #(reset! modal-state {:visible? false})} "No"]
     ]
    ])

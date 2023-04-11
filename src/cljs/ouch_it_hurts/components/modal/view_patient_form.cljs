@@ -42,9 +42,11 @@
      :input {:type "text"
              :class "view-modal-block-item-text-input"
              :disabled true
-             :value (-> (:birth-date patient-info)
-                        (dtu/parse-date)
-                        (dtu/to-date))}}
+             :value
+             (when-let [birth-date (:birth-date patient-info)]
+               (-> birth-date
+                   (dtu/parse-date)
+                   (dtu/to-date)))}}
     "Birth date"]
    [SingleFieldSet
     {:key "address"
@@ -60,11 +62,11 @@
              :disabled true
              :value (:oms patient-info)}}
     "CMI number"]
-   [:button {:on-click #(reset! modal-state {:visible? true
+   [:button.filter-form-button {:on-click #(reset! modal-state {:visible? true
                                        :form EditPatientForm
                                        :args {:patient-info patient-info
                                               :edit-callback edit-callback}
                                        })} "Edit"]
-   [:button {:on-click #(reset! modal-state {:visible? false})} "Ok"]
+   [:button.filter-form-button {:on-click #(reset! modal-state {:visible? false})} "Ok"]
    ]
   )
