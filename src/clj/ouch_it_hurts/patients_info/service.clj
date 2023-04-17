@@ -66,6 +66,7 @@
      "Can't add the patient's info: the patient with oms that already exists"
      {:reason :already-exist
       :oms oms}))
+  (println patient-info)
   (repo/insert-info patient-info))
 
 

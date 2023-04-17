@@ -77,9 +77,12 @@
      into [] records))
 
 
-(defn TableBlock [patients-info selected-ids-store sorting paging]
-    (fn [patients-info selected-ids-store sorting paging]
-      (let [{:keys [data total]} @patients-info
+(defn TableBlock [patients-info sorting paging]
+  (println "table init")
+    (fn [patients-info sorting paging]
+      (println "table up")
+      (let [selected-ids-store (r/cursor patients-info [:selected-ids])
+            {:keys [data total]} @(r/cursor patients-info [:table-info])
             all-ids (map :id data)]
         [:div
          [:p {:hidden false} @selected-ids-store]

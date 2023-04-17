@@ -15,3 +15,5 @@ pom.xml.asc
 profiles.clj
 /log
 /env/dev/resources/public/
+.idea
+ouch-it-hurts.iml

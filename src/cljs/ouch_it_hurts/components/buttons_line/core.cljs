@@ -11,7 +11,8 @@
 
 (defn ButtonsLine [modal selected-ids {:keys [add-callback delete-callback edit-callback view-callback]}]
   (fn [modal selected-ids {:keys [add-callback del-callback edit-callback view-callback]}]
-    (let [selected (selected-true @selected-ids) 
+    (let [
+          selected (selected-true @selected-ids)
           [disable-show disable-del] (case (count selected)
                                        0 [true true]
                                        1 [false false]

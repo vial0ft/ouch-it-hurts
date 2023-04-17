@@ -11,7 +11,9 @@
 
 
 
-(def patients-info (r/atom []))
+(def patients-info (r/atom {:selected-ids {:ids {}
+                                           :all-selected? false}
+                            }))
 
 ;; -------------------------
 ;; States
@@ -22,7 +24,8 @@
 
 (defn- go-to-page [state pn] (reset! (r/cursor state [:paging :page-number]) pn))
 
-(defn- result-handler [store] #(reset! store %))
+(defn- handle-fetch-result [store]
+  #(reset! store {:ids {} :selected-all false :table-info % }))
 
 (defn- fetch-patients-info [store app-state]
   (println "do fetch")
@@ -30,61 +33,71 @@
     (let [filters-sorting (select-keys @app-state [:filters :sorting])
           paging (:paging @app-state)]
       (-> (promises/retry #(api/fetch-patients-info (merge filters-sorting paging)) 5)
-          (.then (result-handler store))
+          (.then (handle-fetch-result store))
           (.catch (error-handler app-state))))
     ))
 
-(defn- add-callback [app-state]
+
+(defn post-update-action [app-state store]
+  #(if-not (= @(r/cursor app-state [:paging :page-number]) 1)
+     (go-to-page app-state 1)
+     (fetch-patients-info store app-state)))
+
+(defn- add-callback [app-state store]
   (fn [patient-info]
     (-> (api/add-patient-info patient-info)
-        (.then #(go-to-page app-state 1))
+        (.then (post-update-action app-state store))
         (.catch (error-handler app-state)))
     ))
 
 
-(defn- edit-callback [app-state]
+(defn- edit-callback [app-state store]
   (fn [patients-info]
     (-> (api/update-patient-info patients-info)
-     (.then #(go-to-page app-state 1))
-     (.catch (error-handler app-state)))
+        (.then (post-update-action app-state store))
+        (.catch (error-handler app-state)))
     ))
 
-(defn- delete-callback [app-state]
+(defn- delete-callback [app-state store]
   (fn [ids]
     (println "to delete" ids)
-    (-> (api/delete-patient-info (first ids))
-     (.then #(go-to-page app-state 1))
-     (.catch (error-handler app-state)))
+    (-> (map api/delete-patient-info ids)
+        (js/Promise.all)
+        (.then #(go-to-page app-state 1))
+        (.catch (error-handler app-state)))
+    ;; (-> (api/delete-patient-info (first ids))
+    ;;     (.then (post-update-action app-state store))
+    ;;     (.catch (error-handler app-state)))
     ))
 
 (defn- view-callback [app-state]
   (fn [id modal-state edit-callback]
     (-> (api/get-patient-info-by-id id)
-        (.then #(do
-                  (println %)
-                  (reset! modal-state {:visible? true
-                                       :form ViewPatientForm
-                                       :args {:patient-info % :edit-callback edit-callback}})))
+        (.then #(reset! modal-state {:visible? true
+                                     :form ViewPatientForm
+                                     :args {:patient-info % :edit-callback edit-callback}}))
         (.catch (error-handler app-state)))
     ))
 
 (defn PatientsTableContainer [app-state]
-  (let [
-        selected-ids (r/atom {:ids {} :all-selected? false})
-        !modal (r/atom {:visible? false})
-        ]
+  (let [!modal (r/atom {:visible? false})]
+    (fetch-patients-info patients-info app-state)
     (fn [app-state]
       (fetch-patients-info patients-info app-state)
       [:div
        [FilterForm (r/cursor app-state [:filters])]
        [TableBlock
         patients-info
-        selected-ids
         (r/cursor app-state [:sorting])
         (r/cursor app-state [:paging])]
-       [ButtonsLine !modal (r/cursor selected-ids [:ids]) {:delete-callback (delete-callback app-state)
-                                                           :add-callback (add-callback app-state)
-                                                           :edit-callback (edit-callback app-state)
-                                                           :view-callback (view-callback app-state)}]
+       [ButtonsLine
+        !modal
+        (r/cursor patients-info [:selected-ids :ids])
+        {:delete-callback (delete-callback app-state patients-info)
+         :add-callback (add-callback app-state patients-info)
+         :edit-callback (edit-callback app-state patients-info)
+         :view-callback (view-callback app-state)}]
        [PatientModal !modal]]
       )))
+
+
