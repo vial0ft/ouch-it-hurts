@@ -1,6 +1,7 @@
-{:paths  ["src/clj" "src/cljs" "resources"]
+{:paths  ["src/clj" "src/cljs" "src/cljc" "resources"]
  :deps {
         org.clojure/clojure {:mvn/version "1.11.1"}
+        metosin/spec-tools {:mvn/version "0.10.5"}
 
         ;;;; server
 
