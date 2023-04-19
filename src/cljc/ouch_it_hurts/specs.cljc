@@ -1,5 +1,5 @@
 (ns ouch-it-hurts.specs
-  (:require [clojure.spec.alpha :as s]
+  (:require #?(:clj [clojure.spec.alpha :as s] :cljs [cljs.spec.alpha :as s])
             [spec-tools.core :as st]
             [spec-tools.data-spec :as ds]
             [clojure.string :as string]))
@@ -10,7 +10,6 @@
 (def parse-id-number #?(:clj bigint :cljs js/parseInt))
 
 
-
 (defmacro ^:private one-or-more-keys [ks]
   (let [keyset (set (map (comp keyword name) ks))]
     `(s/and (s/keys :opt-un ~ks)
@@ -19,6 +18,8 @@
 (def oms-numbers-count 16)
 (def sex-enum #{:male :female :other :unknown})
 (def order-enum #{:asc :desc})
+
+(def show-records-opts #{:not-deleted-only :deleted-only :all})
 
 (def page-size-limit 100)
 
@@ -112,6 +113,9 @@
    )
   )
 
+(s/def ::deleted boolean?)
+
+
 (s/def ::new-patient-info
   (st/spec
    {:spec (s/and map? #(not-empty %) (s/keys :opt-un  [::first-name
@@ -129,8 +133,8 @@
 
 (s/def ::patient-info
   (st/spec
-   {:spec (s/and ::new-patient-info (s/keys :req-un [::id]))
-    :desciption "'Patient info' of an existed patient must contain 'id'"
+   {:spec (s/and ::new-patient-info (s/keys :req-un [::id ::deleted]))
+    :desciption "'Patient info' of an existed patient must contain 'id' and 'deleted'"
     })
   )
 
@@ -141,41 +145,50 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 
 
-(s/def ::date-period
+(s/def ::birth-date-period
   (st/spec
    {:spec (s/and map? #(not-empty %) (s/map-of #{:from :to} ::date-YYYY-MM-DD))
-    :description "Date period must contain 'from' or 'to' values or both"
+    :description "Birth date period must contain 'from' or 'to' or both values formatted by 'YYYY-MM-DD'"
     })
   )
 
 
-(s/def :filters/sex
+(s/def ::sex-opts
   (st/spec
    {:spec (s/and coll? #(not-empty %) (s/coll-of ::sex :into #{}))
-    :description (str-format "Filter by 'Sex' must contain at least one of: %s" (str sex-enum))
+    :description (str-format "'Sex' options must contain at least one of: %s" (str sex-enum))
     }
     ))
 
-(s/def :filters/birth-date ::date-period)
-(s/def :filters/oms ::oms)
-(s/def :filters/first-name ::first-name)
-(s/def :filters/second-name ::second-name)
-(s/def :filters/middle-name ::middle-name)
-(s/def :filters/address ::address)
 
-(s/def :paging/page-number
+(s/def ::show-records-opts ::deleted?)
+
+(s/def ::filters
+  (s/keys :opt-un [::first-name
+                   ::second-name
+                   ::middle-name
+                   ::address
+                   ::oms
+                   ::birth-date-period
+                   ::sex-opts
+                   ::show-records-opts
+                   ]))
+
+(s/def ::page-number
   (st/spec
    {:spec (s/and pos-int?)
     :description "'Page number' must be positive integer"
     })
   )
 
-(s/def :paging/page-size
+(s/def ::page-size
   (st/spec
    {:spec (s/and pos-int?)
     :description (str-format "'Page size' must be positive integer and limited by %s" page-size-limit)
     })
   )
+
+(s/def ::paging (s/keys :req-un [::page-number ::page-size]))
 
 (s/def ::order
   (st/spec
@@ -184,7 +197,7 @@
     })
   )
 
-(s/def :query-request/sorting
+(s/def ::sorting
   (st/spec
   {:spec (s/map-of #{:id
                      :first-name
@@ -200,30 +213,14 @@
    })
   )
 
-
-
-
-
-(s/def :query-request/paging (s/keys :req-un [:paging/page-number :paging/page-size]))
-
-(s/def :query-request/filters
-  (one-or-more-keys [:filters/first-name
-                     :filters/second-name
-                     :filters/middle-name
-                     :filters/sex
-                     :filters/address
-                     :filters/birth-date
-                     :filters/oms]))
-
-
 (s/def ::query-request
    (st/spec
-    {:spec (s/and map? (s/keys :opt-un [:query-request/filters :query-request/sorting]) (s/keys :req-un [:query-request/paging]))
+    {:spec (s/and map? (s/keys :opt-un [::filters ::sorting]) (s/keys :req-un [::paging]))
      :desciption "Request of patients records by filters, sorting and paging. Paging is require. Filters and sorting optional"
      })
   )
 
-(s/def :query-response/data
+(s/def ::data
   (st/spec
    {
     :spec (s/coll-of ::patient-info)
@@ -231,7 +228,7 @@
     })
   )
 
-(s/def :query-response/total
+(s/def ::total
   (st/spec
    {:spec pos-int?
     :desciption "Total number of record according filter must be positive integer"
@@ -240,18 +237,39 @@
 
 (s/def ::query-response
   (st/spec
-   {:spec (s/keys :req-un [:query-response/data :query-response/total])
+   {:spec (s/keys :req-un [::data ::total])
     :description ""
     })
   )
 
 
-(s/def ::add-patient-request ::new-patient-info)
+(s/def ::add-patient-form ::new-patient-info)
 (s/def ::add-patient-response ::patient-info)
 
-(s/def ::edit-patient-request ::patient-info)
+(s/def ::edit-patient-form ::patient-info)
 (s/def ::edit-patient-response ::patient-info)
 
 (s/def ::delete-patient-request ::id)
 (s/def ::delete-patient-response ::id)
 
+
+(def xform
+  (comp
+   (filter (fn[[k v]] (= (keyword (name k)) :problems)))
+   (mapcat (fn [[k v]] v))
+   (map (fn [problem] (last (:via problem))))
+   (map (fn [problem-spec] [(:description (s/spec problem-spec))]))
+   )
+  )
+
+(defn validation-messages [explain-data]
+  (transduce xform into [] explain-data))
+
+
+(defn confirm-if-valid [spec data]
+  (println spec)
+  (println data)
+  (let [result (st/coerce spec data st/string-transformer)]
+    (if (s/valid? spec result) [:ok result]
+        [:error (validation-messages (s/explain-data spec result))]
+        )))
