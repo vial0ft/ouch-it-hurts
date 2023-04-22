@@ -30,10 +30,16 @@
       :else value)
     ))
 
+(defn- qb-operator [k v]
+  (cond
+    (and (map? v) (not-empty (clojure.set/intersection (set (keys v)) #{:from :to}))) ops/between
+    (coll? v) ops/in
+    :else ops/eq))
+
 (defn- map->where [filters column-names-converter]
   (->> filters
-      (map (fn [[k v]] (ops/eq (column-names-converter k) v)))
-      (apply ops/_and)))
+       (map (fn [[k v]] ((qb-operator k v) (column-names-converter k) v)))
+       (apply ops/_and)))
 
 (defn- map->order-by [orders column-names-converter]
   (let [res   (->> orders
@@ -59,11 +65,6 @@
         (println "total " count)
         {:data result
          :total count}))))
-
-(comment
-  (query-infos {:filters {:first-name "Иван"}})
-
-  )
 
 
 (defn insert-info [new-patient-info]
@@ -91,7 +92,6 @@
       (:next.jdbc/update-count)))
 
 
-
 (defn update-info [patient-info-for-update]
   (-> (sql/update! @ds
                    :patients.info
@@ -105,7 +105,7 @@
                          :sex
                          :address
                          :oms
-                         :update-at]))
+                         :updated-at]))
                    {:id (:id patient-info-for-update) :deleted false}
                    jdbc/unqualified-snake-kebab-opts)
       (:next.jdbc/update-count)))
