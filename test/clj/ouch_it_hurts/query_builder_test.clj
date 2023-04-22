@@ -48,6 +48,24 @@
     (is (= "where id is null" (where (in :id [nil])))))
 )
 
+(deftest where-between
+  (testing
+      "where `between` for map where keys [`from` `to`] exist"
+    (is (= "where k between 'a' and 'b'" (where (between :k {:from "a" :to "b"}))))
+    )
+
+  (testing
+      "where `between` for map where only `from` exist"
+    (is (= "where k >= 'a'" (where (between :k {:from "a"}))))
+    )
+
+
+  (testing
+      "where `between` for map where only `to` exist"
+    (is (= "where k <= 'a'" (where (between :k {:to "a"}))))
+    )
+  )
+
 (deftest ordering-test
   (testing
       "order by fragment"
