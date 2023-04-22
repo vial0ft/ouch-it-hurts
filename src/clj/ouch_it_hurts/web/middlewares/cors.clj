@@ -18,4 +18,5 @@
 (defn cors [handler]
   (fn [request]
     (-> (if (preflight? request) (http-resp/json-ok) (handler request))
-        (http-resp/with-headers cors-headers))))
+                  (http-resp/with-headers cors-headers))
+    ))
