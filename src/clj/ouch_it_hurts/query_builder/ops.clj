@@ -3,9 +3,6 @@
 
 (def supported-ops #{:between :is :in :or :and := :> :< :>= :<= :<>})
 
-(defn between [field from to]
-  [field :between from :and to])
-
 (defn is-null
   ([] nil)
   ([key] [key :is :null]))
@@ -49,3 +46,12 @@
                          (->> (in key without-nil) (_or (is-null key)))
                          (is-null key)))
      :absent-nil [key :in seq])))
+
+(defn between
+  ([field {:keys [from to]}] (between field from to))
+  ([field from to]
+   (case [(nil? from) (nil? to)]
+     [true true] nil
+     [true false] (lte field to)
+     [false true] (gte field from)
+     [field :between from :and to])))
