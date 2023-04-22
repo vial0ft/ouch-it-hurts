@@ -12,24 +12,20 @@
    key-keyword-f
    ))
 
-(defn- make-deep-key [m k v]
+(defn- make-key-path [k]
   (let [root-key  (->> (re-find #"([A-Za-z0-9-]+)\[" (name k)) (second))
         path-keys (->> (re-seq #"\[([A-Za-z0-9-]+)\]" (name k)) (map second))]
-    (-> (dissoc m k)
-        (assoc-in (map keyword (vec (cons root-key path-keys))) v)
-        )))
-
-(comment
-  (->> (re-find #"([A-Za-z0-9-]+)\[" "key1[a][b][c]") (second))
-
-  )
+    (vec (map keyword (cons root-key path-keys)))))
 
 (defn- reducer-f [acc [pair-k pair-v]]
-  (if-not (empty? (re-seq #"\[([A-Za-z0-9-]+)\]" (name pair-k)))
-    (make-deep-key acc pair-k pair-v)
-    (if (get acc pair-k)
-      (update acc pair-k #(vec (flatten [%1 %2])) pair-v)
-      (assoc acc pair-k pair-v))))
+  (let [key-path (if-not (empty? (re-seq #"\[([A-Za-z0-9-]+)\]" (name pair-k)))
+                    (make-key-path pair-k)
+                    [pair-k])
+        nilable-value (if (= pair-v "null") nil pair-v)
+        existed-value (get-in acc key-path)]
+      (if existed-value
+        (update-in acc key-path #(vec (flatten [%1 %2])) nilable-value)
+        (assoc-in acc key-path nilable-value))))
 
 
 (defn- group-query-params [query-str]

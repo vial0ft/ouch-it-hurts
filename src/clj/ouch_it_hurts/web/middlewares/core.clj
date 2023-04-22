@@ -13,10 +13,10 @@
 
 (defn wrap-handler [handler]
   (-> handler
-      (exceptions-handler-wrapper)
       (format-response-body)
       (format-query-string)
       (format-request-body)
+      (exceptions-handler-wrapper)
       ))
 
 (defn wrap-handler-with-logging [handler]

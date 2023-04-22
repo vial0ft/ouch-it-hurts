@@ -153,12 +153,11 @@
                         :request-method :get
                         }
           handler-f (wrap-handler throwing-handler)
-          {:keys [status body]} (handler-f request-like)
-          decoded-body  (json/decode body)]
+          {:keys [status body]} (handler-f request-like)]
       (is (= status (:status (http-resp/internal-server-error))))
-      (is (= (decoded-body "error")
-             {"message" "Ooops!"
-              "details" {"reason" "Something went wrong"}}))
+      (is (= (:error body)
+             {:message "Ooops!"
+              :details {:reason "Something went wrong"}}))
       ))
 
 

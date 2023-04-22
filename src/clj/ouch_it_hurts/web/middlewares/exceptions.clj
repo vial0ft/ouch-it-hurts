@@ -10,13 +10,13 @@
       (handler req)
       (catch Exception e
         (-> (http-responses/internal-server-error
-         {
-          :error {
-                  :message (ex-message e)
-                  :details (or (ex-data e) e)
-                  }
-          }
-         )
+             {
+              :error {
+                      :message (ex-message e)
+                      :details (or (ex-data e) e)
+                      }
+              }
+             )
             (http-responses/response-as-json))
         ))
     )
