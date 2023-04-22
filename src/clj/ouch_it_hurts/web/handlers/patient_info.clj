@@ -1,34 +1,61 @@
 (ns ouch-it-hurts.web.handlers.patient-info
   (:require
    [ouch-it-hurts.patients-info.service :as s]
-   [ouch-it-hurts.web.http-responses.core :as http-resp]))
+   [ouch-it-hurts.web.http-responses.core :as http-resp]
+   [ouch-it-hurts.specs :as specs]))
+
+(defn- result
+  ([action ok-action] (result action ok-action nil))
+  ([action ok-action fail-action]
+   (let [[result-key result] (action)]
+        (case result-key
+          :ok (ok-action result)
+          (fail-action result)))))
+
 
 (defn- get-all
-  [{{{:keys [offset limit filters sorting] :as query-params} :query-params} :app/request}]
-  (-> (s/get-all query-params)
-      (http-resp/json-ok)))
+  [{{:keys [query-params]} :app/request}]
+  (println (str query-params))
+  (result
+   #(specs/confirm-if-valid :ouch-it-hurts.specs/query-request query-params)
+   #(-> (s/get-all %) (http-resp/json-ok))
+   #(http-resp/json-bad-request {:error % }))
+   )
 
 (defn- add-new [{{:keys [body]} :app/request}]
-  (-> (s/add-patient-info body)
-      (http-resp/json-ok)))
+  (result
+   #(specs/confirm-if-valid :ouch-it-hurts.specs/add-patient-form body)
+   #(-> (s/add-patient-info %) (http-resp/json-ok))
+   #(http-resp/json-bad-request {:error % }))
+  )
+
 
 (defn- get-by-id [{{{:keys [id]} :path-params} :app/request}]
-  (-> (s/get-by-id (parse-long id))
-      (http-resp/json-ok)))
+  (result
+   #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
+   #(-> (s/get-by-id %) (http-resp/json-ok))
+   #(http-resp/json-bad-request {:error % }))
+  )
 
-(defn- update-info [{{body :body {:keys [id]} :path-params} :app/request}]
-  (-> (s/update-patient-info (parse-long id) body)
-      (http-resp/json-ok)))
+(defn- update-info [{{existed-patient :body {:keys [id]} :path-params} :app/request}]
+  (result
+   #(specs/confirm-if-valid :ouch-it-hurts.specs/patient-info existed-patient)
+   #(-> (s/update-patient-info (:id %)  %) (http-resp/json-ok))
+   #(http-resp/json-bad-request {:error % }))
+  )
 
 
 (defn- delete [{{{:keys [id]} :path-params} :app/request}]
-  (-> (s/delete-patient-info (parse-long id))
-      (http-resp/json-ok)))
+  (result
+   #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
+   #(-> (s/delete-patient-info %) (http-resp/json-ok))
+   #(http-resp/json-bad-request {:error % }))
+  )
 
 (defn routes []
   [
-   ["/patients" {:get {:handler get-all}
-                 :post {:handler add-new}}]
+   ["/patients" {:get {:handler get-all}}]
+   ["/patient" {:post {:handler add-new}}]
    ["/patient/:id" {:get {:handler get-by-id}
                     :put {:handler update-info}
                     :delete {:handler delete}}]

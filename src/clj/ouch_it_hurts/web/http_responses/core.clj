@@ -12,6 +12,12 @@
     :headers {}
     :body body}))
 
+(defn bad-request
+  ([]  (bad-request nil))
+  ([body]
+   {:status 400
+    :headers {}
+    :body body}))
 
 (defn not-modified []
    {:status 304
@@ -51,6 +57,11 @@
 (defn json-ok
   ([] (json-ok nil))
   ([body] (-> (ok body)
+              (response-as-json))))
+
+(defn json-bad-request
+  ([] (json-bad-request nil))
+  ([body] (-> (bad-request body)
               (response-as-json))))
 
 (defn page [body]
