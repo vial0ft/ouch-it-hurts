@@ -7,16 +7,13 @@
 
 (def str-format #?(:clj format :cljs goog.string/format))
 
-(def parse-id-number #?(:clj bigint :cljs js/parseInt))
-
-
 (defmacro ^:private one-or-more-keys [ks]
   (let [keyset (set (map (comp keyword name) ks))]
     `(s/and (s/keys :opt-un ~ks)
             #(some ~keyset (keys %)))))
 
 (def oms-numbers-count 16)
-(def sex-enum #{:male :female :other :unknown})
+(def sex-enum #{"male" "female"})
 (def order-enum #{:asc :desc})
 
 (def show-records-opts #{:not-deleted-only :deleted-only :all})
@@ -37,27 +34,18 @@
   (st/spec
    {:spec (s/and number? pos?)
     :description (str-format "'Id' value must be positive integer number")
-    :name ::id
-    :json-schema/type {:type "positiveInteger", :format "bigint"}
-    :json-schema/example "42"
-    :decode/string #(-> %2 parse-id-number)
-    :encode/string #(.toString %2)})
+    })
   )
-
-(def sex-enum? (s/and keyword? sex-enum))
 
 (s/def ::sex
   (st/spec
-   {:spec sex-enum?
+   {:spec (s/nilable (s/and string? #(contains? sex-enum %)))
     :description (str-format "'Sex' value must be one of %s" (str sex-enum))
-    :json-schema/type {:type "string", :format "keyword"}
-    :json-schema/example "male"
-    :decode/string #(-> %2 name string/lower-case keyword)
-    :encode/string #(-> %2 name string/lower-case)}))
+    }))
 
 (s/def ::first-name
   (st/spec
-   {:spec (s/and string? #(< (count %) 255))
+   {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'First name' value limited by %s letters" 255)
     :json-schema/type {:type "string", :format "string"}
     :json-schema/example "John"})
@@ -66,7 +54,7 @@
 
 (s/def ::second-name
   (st/spec
-   {:spec (s/and string? #(< (count %) 255))
+   {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'Second name' value limited by %s letters" 255)
     :json-schema/type {:type "string", :format "string"}
     :json-schema/example "Dou"})
@@ -75,40 +63,36 @@
 
 (s/def ::middle-name
   (st/spec
-   {:spec (s/and string? #(< (count %) 255))
+   {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'Middle name' value limited by %s letters" 255)
-    :json-schema/type {:type "string", :format "string"}
-    :json-schema/example "Joe"})
+    })
   )
 
 (s/def ::address
   (st/spec
-   {:spec (s/and string? #(< (count %) 255))
+   {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'Address' value limited by %s letters" 255)
-    :json-schema/type {:type "string", :format "string"}
-    :json-schema/example "Joe"})
+    })
   )
 
 (s/def ::oms
   (st/spec
-   {:spec (s/and string? valid-oms?)
+   {:spec (s/nilable (s/and string? valid-oms?))
     :description (str-format "'CMI' value must fit the format '%s'" (string/join (repeat oms-numbers-count "0")))
-    :json-schema/type {:type "string", :format "string"}
-    :json-schema/example "Joe"})
+    })
   )
 
 
-(s/def ::date-YYYY-MM-DD
+(s/def ::maybe-date-YYYY-MM-DD
   (st/spec
-   {:spec (s/and string? valid-date-format?)
+   {:spec (s/nilable (s/and string? valid-date-format?))
     :description (str-format "Date value must be valid date and fit format %s" "YYYY-MM-DD")
-    :json-schema/type {:type "string", :format "string"}
-    :json-schema/example "2021-01-01"})
+    })
   )
 
 (s/def ::birth-date
   (merge
-   (s/spec ::date-YYYY-MM-DD)
+   (s/spec ::maybe-date-YYYY-MM-DD)
    {:description (str-format "'Birth date' value must be valid date and fit the format %s" "YYYY-MM-DD")}
    )
   )
@@ -147,7 +131,7 @@
 
 (s/def ::birth-date-period
   (st/spec
-   {:spec (s/and map? #(not-empty %) (s/map-of #{:from :to} ::date-YYYY-MM-DD))
+   {:spec (s/and map? #(not-empty %) (s/map-of #{:from :to} ::maybe-date-YYYY-MM-DD))
     :description "Birth date period must contain 'from' or 'to' or both values formatted by 'YYYY-MM-DD'"
     })
   )
@@ -155,13 +139,22 @@
 
 (s/def ::sex-opts
   (st/spec
-   {:spec (s/and coll? #(not-empty %) (s/coll-of ::sex :into #{}))
+   {:spec (s/or :many (s/and coll? not-empty (s/coll-of ::sex :into #{})) :one ::sex)
     :description (str-format "'Sex' options must contain at least one of: %s" (str sex-enum))
     }
     ))
 
 
-(s/def ::show-records-opts ::deleted?)
+(s/def ::show-records-opts
+  (st/spec
+   {:spec (s/and keyword? #(contains? show-records-opts %))
+
+    }
+   ))
+
+(comment
+  (st/coerce ::sex-opts ["male" nil] st/string-transformer)
+  )
 
 (s/def ::filters
   (s/keys :opt-un [::first-name
@@ -188,7 +181,12 @@
     })
   )
 
-(s/def ::paging (s/keys :req-un [::page-number ::page-size]))
+(s/def ::paging
+  (st/spec
+   {:spec (s/keys :req-un [::page-number ::page-size])
+    :description "Paging must contain 'page-number' and 'page-size'"
+    })
+  )
 
 (s/def ::order
   (st/spec
@@ -216,7 +214,7 @@
 (s/def ::query-request
    (st/spec
     {:spec (s/and map? (s/keys :opt-un [::filters ::sorting]) (s/keys :req-un [::paging]))
-     :desciption "Request of patients records by filters, sorting and paging. Paging is require. Filters and sorting optional"
+     :description "Request of patients records by filters, sorting and paging. Paging is require. Filters and sorting optional"
      })
   )
 
@@ -242,7 +240,6 @@
     })
   )
 
-
 (s/def ::add-patient-form ::new-patient-info)
 (s/def ::add-patient-response ::patient-info)
 
@@ -257,19 +254,15 @@
   (comp
    (filter (fn[[k v]] (= (keyword (name k)) :problems)))
    (mapcat (fn [[k v]] v))
-   (map (fn [problem] (last (:via problem))))
+   (map (fn [{:keys [via]}] (last via)))
    (map (fn [problem-spec] [(:description (s/spec problem-spec))]))
-   )
-  )
+   ))
 
 (defn validation-messages [explain-data]
-  (transduce xform into [] explain-data))
+  (transduce xform into #{} explain-data))
 
 
 (defn confirm-if-valid [spec data]
-  (println spec)
-  (println data)
   (let [result (st/coerce spec data st/string-transformer)]
     (if (s/valid? spec result) [:ok result]
-        [:error (validation-messages (s/explain-data spec result))]
-        )))
+        [:error (validation-messages (s/explain-data spec result))])))
