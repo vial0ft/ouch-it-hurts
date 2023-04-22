@@ -152,10 +152,6 @@
     }
    ))
 
-(comment
-  (st/coerce ::sex-opts ["male" nil] st/string-transformer)
-  )
-
 (s/def ::filters
   (s/keys :opt-un [::first-name
                    ::second-name
