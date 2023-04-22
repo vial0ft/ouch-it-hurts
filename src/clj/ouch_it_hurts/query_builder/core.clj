@@ -9,6 +9,7 @@
          (and (not (s/includes? value "'")) (not (s/includes? value "\"")))) (str "'" value "'")
     (keyword? value) (if-let [ns (namespace value)] (s/join "." [(namespace value) (name value)])
                                      (name value))
+    (coll? value) (str "(" (s/join "," (map convert-value value)) ")")
     :else (str value)))
 
 (defn- aliasing [head rest]
@@ -41,7 +42,11 @@
 
 
 (defn- build-converted-expression [expr]
-  (s/join " " (map convert-value expr)))
+  (cond
+    (and (coll? expr) (contains? ops/supported-ops (second expr))) (str "(" (s/join " " (map build-converted-expression expr)) ")")
+    :else (convert-value expr)
+    )
+  )
 
 
 (defn- build-condition-part [[condition linked-word & rest]  acc]
