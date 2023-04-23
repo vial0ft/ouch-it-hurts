@@ -55,8 +55,3 @@
      [true false] (lte field to)
      [false true] (gte field from)
      [field :between from :and to])))
-
-(comment
-  (in :k nil)
-
-  )

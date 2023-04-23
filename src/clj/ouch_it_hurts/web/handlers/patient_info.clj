@@ -20,7 +20,6 @@
    #(specs/confirm-if-valid :ouch-it-hurts.specs/query-request query-params)
    (fn [ok-query-params]
      (let [resp  (s/get-all ok-query-params)]
-       (println "resp" resp)
        (-> (update-in resp [:data] #(when-let [data %] (map m/patient-info-serializer data)))
            (http-resp/json-ok))))
    #(http-resp/json-bad-request {:error % }))
