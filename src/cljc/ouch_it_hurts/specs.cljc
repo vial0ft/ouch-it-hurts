@@ -13,7 +13,7 @@
             #(some ~keyset (keys %)))))
 
 (def oms-numbers-count 16)
-(def sex-enum #{"male" "female"})
+(def sex-enum #{"male" "female" "unknown"})
 (def order-enum #{:asc :desc})
 
 (def show-records-opts #{:not-deleted-only :deleted-only :all})
