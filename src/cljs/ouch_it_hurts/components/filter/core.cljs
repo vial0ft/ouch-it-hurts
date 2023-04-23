@@ -2,7 +2,9 @@
   (:require [reagent.core :as r]
             [ouch-it-hurts.utils.datetime-utils :as dtu]
             [ouch-it-hurts.components.filter.items :refer [DateRangeField CheckboxButton]]
-            [ouch-it-hurts.components.common.core :refer [FieldSet LabledField SingleFieldSet Select]]))
+            [ouch-it-hurts.components.common.core :refer [FieldSet LabledField SingleFieldSet Select ErrorSpan]]
+            [ouch-it-hurts.specs :as specs]
+            [clojure.string :refer [join]]))
 
 
 ;; -------------------------
@@ -14,18 +16,23 @@
                               :second-name {:value ""}
                               :middle-name {:value ""}
                               :address {:value ""}
-                              :show-records {:value ""}
-                              :birth-date {:value {} :error {:error? false :message ""}}
-                              :sex {:value #{}}
-                              :oms {:value "" :error {:error? false :message ""}}
+                              :birth-date-period {:value {}}
+                              :sex-opts {:value #{}}
+                              :oms {:value "" }
+                              :show-records-opts {:value ""}
                               })
+
+(def ^private error-state (r/atom nil))
 
 (def all-sex-options #{"male" "female" "other" "none"})
 
-(def ^private filter-form (r/atom default-filter))
+(def ^private filter-form (r/atom {:filters default-filter
+                                   :error nil
+                                   }))
 
-(defn- filter-form-cursor [path]
-  (r/cursor filter-form path))
+(defn- filter-form-cursor
+  ([] (r/cursor filter-form [:filters]))
+  ([path] (r/cursor filter-form (into [:filters] path))))
 
 
 (defn- change-key [key-path]
@@ -85,13 +92,12 @@
       (case [id checked?]
         ["all" true] (do
                        (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
-                       (reset! (filter-form-cursor [:sex :value]) #{}))
+                       (reset! (filter-form-cursor [:sex-opts :value]) #{}))
         (if checked?
           (do
             (set-elems-value {"all" false id true})
-            (swap! (filter-form-cursor [:sex :value]) conj id))
-          (swap! (filter-form-cursor [:sex :value]) (fn [old]
-                                               (into (hash-set) (filter #(not= % id) old))))
+            (swap! (filter-form-cursor [:sex-opts :value]) conj id))
+          (swap! (filter-form-cursor [:sex-opts :value]) (fn [old] (disj old id)))
                        ))
       )))
 
@@ -104,22 +110,20 @@
                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Male"]
    [CheckboxButton {:key "female"
                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Female"]
-   [CheckboxButton {:key "other"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Other"]
-   [CheckboxButton {:key "none"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "None"]
+   [CheckboxButton {:key "unknown"
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Not defined"]
    ]
   )
 
 (defn patient-show-options []
   [FieldSet "Show record options"
    [Select {:key "show-record-options"
-            :options (let [default :not-deleted-only
+            :options (let [default :all
                            all [{:value :not-deleted-only :lable "Not deleted only"}
                                 {:value :deleted-only :lable "Deleted only"}
                                 {:value :all :lable "All"}]]
-                       (map #(if (not= (:value %) default) % (assoc % :default true)) all))
-            :on-change #(reset! (filter-form-cursor [:show-records :value])  %)}]
+                       (map #(if (= (:value %) default) (assoc % :selected true) %) all))
+            :on-change #(reset! (filter-form-cursor [:show-records-opts :value])  %)}]
    ]
   )
 
@@ -142,17 +146,15 @@
              }}
     "Address"]
    [SingleFieldSet
-    {:key "cmi"
+    {:key "oms"
      :input {:type "text"
              :style {:width "100%"}
-             :on-change (change-key (filter-form-cursor [:oms :value]))}
-     :error @(filter-form-cursor [:oms :error])}
+             :on-change (change-key (filter-form-cursor [:oms :value]))}}
     "CMI number"]
    [DateRangeField
     {:key "birth-date"
-     :from {:on-change (change-key (filter-form-cursor [:birth-date :value :from]))}
-     :to {:on-change (change-key (filter-form-cursor [:birth-date :value :to]))}
-     :error @(filter-form-cursor [:birth-date :error])}
+     :from {:on-change (change-key (filter-form-cursor [:birth-date-period :value :from]))}
+     :to {:on-change (change-key (filter-form-cursor [:birth-date-period :value :to]))}}
     "Birth date"]])
 
 
@@ -169,27 +171,35 @@
    into {}
    @local-filters))
 
-(defn- on-click-clean-button [app-filter]
+(defn- on-click-clean-button [filter-state-update-callback]
   (fn [_]
-    (reset! app-filter {})
-    (reset! filter-form default-filter)
-    ))
+    (do
+      (reset! filter-form  {:filters default-filter :error nil})
+      (filter-state-update-callback {})
+      )))
 
 
-(defn FilterForm [filter-state]
-  (fn [filter-state]
+(defn FilterForm [filter-state-update-callback]
+  (fn [filter-state-update-callback]
     [:div {:style {:padding "10px"}}
      [:p {:hidden false} (str @filter-form)]
      [:form {:on-submit (fn [e]
-                          (reset! filter-state (local-2-global filter-form))
-                          (println "submit")
-                          (.preventDefault e))} ;; TODO add validation before callback
+                          (.preventDefault e)
+                          (let [[result details]
+                                (->> (local-2-global (filter-form-cursor))
+                                     (specs/confirm-if-valid :ouch-it-hurts.specs/filters))]
+                            (case result
+                              :ok (do
+                                    (reset! (r/cursor filter-form [:error]) nil)
+                                    (filter-state-update-callback details))
+                              (reset! (r/cursor filter-form [:error]) (join "\n" details)))
+                          ))}
       [:div.filter-form {:name "filterForm"}
        [patient-left-filter-block]
        [patient-right-filter-block]]
+      [ErrorSpan @(r/cursor filter-form [:error])]
       [:div.filter-form-buttons-block
-       [filter-clean-button (on-click-clean-button filter-state)]
-       [filter-apply-button]
-       ]
+       [filter-clean-button (on-click-clean-button filter-state-update-callback)]
+       [filter-apply-button]]
       ]]))
 

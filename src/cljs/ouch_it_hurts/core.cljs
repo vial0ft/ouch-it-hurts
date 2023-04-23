@@ -32,7 +32,6 @@
    [Header]
    [:div {:hidden @(r/cursor app-state [:error :ok?])}
     [:span (str @(r/cursor app-state [:error :message]))]
-
     [:button {:style {:float "right"}
               :on-click #(reset! (r/cursor app-state [:error]) {:ok? true :message ""})}
     "Refresh"]]

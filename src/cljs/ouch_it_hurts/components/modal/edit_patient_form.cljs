@@ -1,7 +1,10 @@
 (ns ouch-it-hurts.components.modal.edit-patient-form
-  (:require [ouch-it-hurts.components.common.core :refer [SingleFieldSet DatePicker CloseButton FieldSet LabledField Select LabledSelectField]]
+  (:require [ouch-it-hurts.components.common.core :refer [ErrorSpan SingleFieldSet DatePicker CloseButton FieldSet LabledField Select LabledSelectField]]
             [ouch-it-hurts.utils.state :as s]
-            [ouch-it-hurts.utils.datetime-utils :as dtu]))
+            [ouch-it-hurts.utils.datetime-utils :as dtu]
+            [clojure.string :refer [join]]
+            [ouch-it-hurts.specs :as specs]
+            [clojure.data :refer [diff]]))
 
 (defn EditPatientForm [modal-state  {:keys [patient-info edit-callback]}]
   (let [[get-value reset-value] (s/use-state patient-info)]
@@ -9,10 +12,20 @@
       [:div {:style {:margin "20px"}}
        [:h1 "Edit Patient's Info"]
        [:form {:on-submit (fn [e]
-                            ;;(println (get-value))
-                            (edit-callback @(get-value))
-                            (reset! modal-state {:visible? false})
-                            (.preventDefault e))}
+                            (.preventDefault e)
+                            (println @(get-value))
+                            (let [[result details]
+                                  (->> (update-vals @(get-value) #(if (= "" %) nil %))
+                                       (merge patient-info)
+                                       (specs/confirm-if-valid :ouch-it-hurts.specs/edit-patient-form))]
+                              (println result details)
+                              (case result
+                                :ok (do
+                                      (edit-callback details)
+                                      (reset! modal-state {:visible? false}))
+                                :error (reset-value [:error] (join "\n" details))
+                                :do-nothing)
+                              ))}
         [FieldSet "Patient name"
          [LabledField {:key "first-name"
                        :class "filter-form-block-item"
@@ -37,24 +50,17 @@
                                :on-change #(reset-value [:second-name] %)}}]]
         [FieldSet "Sex"
          [Select {:key "sex"
-                  :options (let [default (keyword @(get-value [:sex]))
-                                 all [{:value :male :lable "Male"}
-                                      {:value :female :lable "Female"}
-                                      {:value :other :lable "Other"}]]
-                             (if default
-                               (map #(if (not= (:value %) default)
-                                       %
-                                       (assoc % :default true)) all)
-                               all))
+                  :options (let [default @(get-value [:sex])
+                                 all [{:value "male" :lable "Male"}
+                                      {:value "female" :lable "Female"}]]
+                            (map #(if (= (:value %) default) (assoc % :selected true) %) all))
                   :on-change #(reset-value [:sex] %)}]]
         [FieldSet "Birth date"
          [DatePicker {:key "birth-date"
                       :input {:default-value
                               (when-let [birth-date @(get-value [:birth-date])]
-                                (-> birth-date
-                                    (dtu/parse-date)
-                                    (dtu/to-date)))
-                              :on-change #(reset-value [:birth-date] (dtu/parse-date %))}}]]
+                                (-> birth-date (dtu/parse-date) (dtu/to-date)))
+                              :on-change #(reset-value [:birth-date] (-> (dtu/parse-date %) (dtu/to-date)))}}]]
         [SingleFieldSet
          {:key "address"
           :input {:type "text"
@@ -67,10 +73,8 @@
           :input {:type "text"
                   :style {:width "100%"}
                   :default-value @(get-value [:oms])
-                  :on-change #(reset-value [:oms] %)}
-       ;;:error @(filter-form-cursor [:oms :error])
-          }
+                  :on-change #(reset-value [:oms] %)}}
          "CMI number"]
+        [ErrorSpan @(get-value [:error])]
         [:button.filter-form-button {:type :submit} "Send"]]])))
-
 

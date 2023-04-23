@@ -3,13 +3,8 @@
             [clojure.string :as s]
             [goog.string :as gstr]))
 
-
-(defn just-log [r]
-  (println r))
-
-
 (defn fetch-patients-info [request-params]
-  (let [params (select-keys request-params [:filters :sorting :page-size :page-number])]
+  (let [params (select-keys request-params [:filters :sorting :paging])]
     (new js/Promise
          (fn [resolve reject]
            (GET "http://localhost:3000/patients"
@@ -36,7 +31,7 @@
 (defn add-patient-info [patient-info]
   (new js/Promise
        (fn [resolve reject]
-         (POST "http://localhost:3000/patients"
+         (POST "http://localhost:3000/patient"
                {:params patient-info
                 :format :json
                 :keywords? true

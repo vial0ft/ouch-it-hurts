@@ -7,7 +7,11 @@
             [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]
             [ouch-it-hurts.components.modal.view-patient-form :refer [ViewPatientForm]]
             [ouch-it-hurts.api :as api]
-            [ouch-it-hurts.utils.promises :as promises]))
+            [ouch-it-hurts.specs :as specs]
+            [ouch-it-hurts.utils.promises :as promises]
+            [clojure.spec.alpha :as s]
+            [clojure.string :refer [join]]
+            [spec-tools.core :as st]))
 
 
 
@@ -20,7 +24,9 @@
 
 
 (defn- error-handler [app-state]
-    #(reset! (r/cursor app-state [:error]) {:ok? false :message %}))
+    #(reset! (r/cursor app-state [:error]) {:ok? false
+                                            :message (-> (:parse-error %)
+                                                         (select-keys [:status-text :original-text]))}))
 
 (defn- go-to-page [state pn] (reset! (r/cursor state [:paging :page-number]) pn))
 
@@ -30,12 +36,18 @@
 (defn- fetch-patients-info [store app-state]
   (println "do fetch")
   (when @(r/cursor app-state [:error :ok?])
-    (let [filters-sorting (select-keys @app-state [:filters :sorting])
-          paging (:paging @app-state)]
-      (-> (promises/retry #(api/fetch-patients-info (merge filters-sorting paging)) 5)
-          (.then (handle-fetch-result store))
-          (.catch (error-handler app-state))))
-    ))
+    (let [[result details] (specs/confirm-if-valid
+                            :ouch-it-hurts.specs/query-request
+                            (select-keys @app-state [:filters :sorting :paging]))]
+      (case result
+        :ok (-> (promises/retry #(api/fetch-patients-info details) 5)
+                (.then (handle-fetch-result store))
+                (.catch (error-handler app-state)))
+        (reset! (r/cursor app-state [:error])  {:ok? false
+                                                :message (join "\n" details)})
+        )
+      ))
+    )
 
 
 (defn post-update-action [app-state store]
@@ -63,11 +75,10 @@
     (println "to delete" ids)
     (-> (map api/delete-patient-info ids)
         (js/Promise.all)
-        (.then #(go-to-page app-state 1))
+        (.then (fn[r] (println "deleted" r)
+                 r))
+        (.then (post-update-action app-state store))
         (.catch (error-handler app-state)))
-    ;; (-> (api/delete-patient-info (first ids))
-    ;;     (.then (post-update-action app-state store))
-    ;;     (.catch (error-handler app-state)))
     ))
 
 (defn- view-callback [app-state]
@@ -85,7 +96,7 @@
     (fn [app-state]
       (fetch-patients-info patients-info app-state)
       [:div
-       [FilterForm (r/cursor app-state [:filters])]
+       [FilterForm #(swap! app-state (fn [cur] (-> cur (assoc :filters %) (assoc-in [:paging :page-number] 1))))]
        [TableBlock
         patients-info
         (r/cursor app-state [:sorting])
