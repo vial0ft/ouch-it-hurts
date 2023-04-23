@@ -1,112 +1,75 @@
 (ns ouch-it-hurts.patients-info.repo
   (:require
-   [ouch-it-hurts.db.core :refer [ds]]
    [ouch-it-hurts.query-builder.core :as qb]
    [ouch-it-hurts.query-builder.ops :as ops]
+   [ouch-it-hurts.query-builder.utils :as qb-utils]
    [next.jdbc :as jdbc]
    [next.jdbc.result-set :as rs]
    [next.jdbc.sql :as sql]
-   [clojure.string :as str]
-   [next.jdbc.types :refer [as-other]]))
+   [next.jdbc.date-time]))
 
-
-(defn get-info-by-id [id]
-  (sql/get-by-id @ds
-                 :patients.info
-                 id
-                 jdbc/unqualified-snake-kebab-opts))
-
-
-(defn get-info-by-oms [oms]
-  (first (sql/find-by-keys @ds :patients.info {:oms oms} jdbc/unqualified-snake-kebab-opts)))
-
-(defn- as-snake-name [value]
-  (let [replacement-f #(str/replace % #"-" "_")]
-    (cond
-      (keyword? value) (if-let [ns (namespace value)]
-                         (keyword ns (replacement-f (name value)))
-                         (keyword (replacement-f (name value))))
-      (string? value) (replacement-f value)
-      :else value)
+(defn- patient-info-mapper [info]
+  (if (:birth-date info)
+    (update info :birth-date qb-utils/sql-date->local-date)
+    info
     ))
 
-(defn- qb-operator [k v]
-  (cond
-    (and (map? v) (not-empty (clojure.set/intersection (set (keys v)) #{:from :to}))) ops/between
-    (coll? v) ops/in
-    :else ops/eq))
+(defn get-info-by-id [ds id]
+  (let [result (sql/get-by-id @ds :patients.info id jdbc/unqualified-snake-kebab-opts)]
+    (when result (patient-info-mapper result))))
 
-(defn- map->where [filters column-names-converter]
-  (->> filters
-       (map (fn [[k v]] ((qb-operator k v) (column-names-converter k) v)))
-       (apply ops/_and)))
+(defn get-info-by-oms [ds oms]
+  (let [result (first (sql/find-by-keys @ds :patients.info {:oms oms} jdbc/unqualified-snake-kebab-opts))]
+    (when result (patient-info-mapper result))))
 
-(defn- map->order-by [orders column-names-converter]
-  (let [res   (->> orders
-                   (map (fn [[k v]] [(column-names-converter k) v]))
-                   (flatten))]
-    (if-not (empty? res) res nil)))
-
-(defn query-infos [{:keys [offset limit filters sorting]}]
-  (let [condition (map->where filters as-snake-name)
+(defn query-infos [ds {:keys [offset limit filters sorting]}]
+  (let [condition (qb-utils/map->where filters qb-utils/as-snake-name)
         query       (-> (qb/select :*)
                         (qb/from :patients.info)
                         (qb/where condition)
-                        (qb/order-by (map->order-by sorting as-snake-name))
+                        (qb/order-by (qb-utils/map->order-by sorting qb-utils/as-snake-name))
                         (qb/offset offset)
                         (qb/limit limit))
         total-query (-> (qb/select-count :*)
                         (qb/from :patients.info)
                         (qb/where condition))]
-    (println query)
+    (println "query" query)
     (jdbc/with-transaction [tx @ds]
       (let [result (sql/query tx [query] {:builder-fn rs/as-unqualified-kebab-maps})
             [{:keys [count]}] (sql/query tx [total-query])]
-        (println "total " count)
-        {:data result
+        {:data (when result (map patient-info-mapper result))
          :total count}))))
 
+(defn insert-info [ds new-patient-info]
+  (sql/insert! @ds :patients.info
+               (-> new-patient-info
+                   (select-keys
+                    [:first-name
+                     :second-name
+                     :middle-name
+                     :birth-date
+                     :sex
+                     :address
+                     :oms]))
+               jdbc/unqualified-snake-kebab-opts))
 
-(defn insert-info [new-patient-info]
-  (sql/insert!
-   @ds
-   :patients.info
-   (-> new-patient-info
-       (update :sex as-other)
-       (select-keys
-        [:first-name
-         :second-name
-         :middle-name
-         :birth-date
-         :sex
-         :address
-         :oms]))
-   jdbc/unqualified-snake-kebab-opts))
-
-(defn delete-info [id]
-  (-> (sql/update! @ds
-                   :patients.info
-                   {:deleted true}
-                   {:id id :deleted false}
-                   jdbc/unqualified-snake-kebab-opts)
+(defn delete-info [ds id]
+  (-> (sql/update! @ds :patients.info
+                   {:deleted true
+                    :updated-at (.toInstant (java.time.OffsetDateTime/now))}
+                   {:id id :deleted false} jdbc/unqualified-snake-kebab-opts)
       (:next.jdbc/update-count)))
 
-
-(defn update-info [patient-info-for-update]
-  (-> (sql/update! @ds
-                   :patients.info
-                   (-> patient-info-for-update
-                       (update :sex as-other)
-                       (select-keys
-                        [:first-name
-                         :second-name
-                         :middle-name
-                         :birth-date
-                         :sex
-                         :address
-                         :oms
-                         :updated-at]))
-                   {:id (:id patient-info-for-update) :deleted false}
-                   jdbc/unqualified-snake-kebab-opts)
-      (:next.jdbc/update-count)))
-
+(defn update-info [ds id patient-info-for-update]
+  (let [info-for-update (-> (select-keys patient-info-for-update
+                                         [:first-name
+                                          :second-name
+                                          :middle-name
+                                          :birth-date
+                                          :sex
+                                          :address
+                                          :updated-at
+                                          :oms])
+                            (assoc :updated-at (.toInstant (java.time.OffsetDateTime/now))))]
+    (-> (sql/update! @ds :patients.info info-for-update {:id id :deleted false} jdbc/unqualified-snake-kebab-opts)
+        (:next.jdbc/update-count))))
