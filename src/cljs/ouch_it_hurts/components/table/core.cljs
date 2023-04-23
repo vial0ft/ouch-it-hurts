@@ -78,9 +78,7 @@
 
 
 (defn TableBlock [patients-info sorting paging]
-  (println "table init")
     (fn [patients-info sorting paging]
-      (println "table up")
       (let [selected-ids-store (r/cursor patients-info [:selected-ids])
             {:keys [data total]} @(r/cursor patients-info [:table-info])
             all-ids (map :id data)]

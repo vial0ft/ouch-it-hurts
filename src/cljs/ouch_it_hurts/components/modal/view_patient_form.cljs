@@ -6,6 +6,7 @@
 
 
 (defn ViewPatientForm [modal-state {:keys [patient-info edit-callback]}]
+  (println patient-info (string? (:birth-date patient-info)))
   [:div {:style {:margin "20px"}}
    [:h1 "Patient's Info"]
    [FieldSet "Patient name"
@@ -44,9 +45,7 @@
              :disabled true
              :value
              (when-let [birth-date (:birth-date patient-info)]
-               (-> birth-date
-                   (dtu/parse-date)
-                   (dtu/to-date)))}}
+               (-> birth-date (dtu/parse-date) (dtu/to-date)))}}
     "Birth date"]
    [SingleFieldSet
     {:key "address"

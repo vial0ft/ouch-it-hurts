@@ -3,8 +3,6 @@
             [ouch-it-hurts.utils.datetime-utils :as dtu]))
 
 
-
-
 (defn- on-change-wrapper [on-change]
   (fn [e]
     "catch on-change"
@@ -13,16 +11,17 @@
 
 
 (defn Select [{:keys [key options on-change]}]
-  (let [opts   (if (some #(:default %) options) options
-                 (cons {:value "default" :disabled true :lable "Select"} options))]
-    [:select {:id key :default-value "default" :on-change (on-change-wrapper on-change)}
+  (let [opts   (if (some #(:selected %) options) options
+                 (cons {:value "default" :selected true :disabled true :lable "Select"} options))]
+    [:select {:id key :on-change (on-change-wrapper on-change)}
      (for [opt opts]
-       ^{:key (:value opt)} [:option (select-keys opt [:value :disabled]) (:lable opt)]
+       ^{:key (:value opt)} [:option (select-keys opt [:value :disabled :selected]) (:lable opt)]
        )]
     ))
 
-(defn ErrorSpan [{:keys [error? message]}]
-  [:span.error-message (if error? message "")])
+(defn ErrorSpan [err-msg]
+  (fn [err-msg]
+    [:div.error-message (when err-msg err-msg)]))
 
 
 (defn LabledField [{:keys [key class lable input error]}]
@@ -83,8 +82,7 @@
 
 (defn CloseButton [{:keys [on-click]}]
   [:input.close-button
-   {
-    :type "button"
+   {:type "button"
     :on-click on-click
     :value "×"}])
 

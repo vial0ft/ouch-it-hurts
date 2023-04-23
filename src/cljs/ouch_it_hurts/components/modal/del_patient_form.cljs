@@ -9,8 +9,8 @@
    [:div (gstr/format "Are you sure you want to delete %s record(s)?" (count ids))]
    [:div
     [:button.filter-form-button {:on-click #(do
-                           (reset! modal-state {:visible? false})
-                           (delete-callback ids))} "Yes"]
+                                              (reset! modal-state {:visible? false})
+                                              (delete-callback ids))} "Yes"]
     [:button.filter-form-button {:on-click #(reset! modal-state {:visible? false})} "No"]
     ]
    ])

@@ -7,7 +7,7 @@
             [ouch-it-hurts.api :as api]))
 
 (defn- selected-true [selected-ids]
-  (filter #(= (val %) true) selected-ids))
+  (filter #(val %) selected-ids))
 
 (defn ButtonsLine [modal selected-ids {:keys [add-callback delete-callback edit-callback view-callback]}]
   (fn [modal selected-ids {:keys [add-callback del-callback edit-callback view-callback]}]
