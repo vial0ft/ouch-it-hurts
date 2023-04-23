@@ -75,8 +75,6 @@
     (println "to delete" ids)
     (-> (map api/delete-patient-info ids)
         (js/Promise.all)
-        (.then (fn[r] (println "deleted" r)
-                 r))
         (.then (post-update-action app-state store))
         (.catch (error-handler app-state)))
     ))
