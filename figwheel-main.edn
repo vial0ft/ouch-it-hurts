@@ -1,3 +1,5 @@
-{:open-url false
- :watch-dirs ["src/cljs/ouch_it_hurts" "src/cljc/ouch_it_hurts"]
- :css-dirs ["resources/public"]}
+{
+ :open-url false
+ :log-file "log/figwheel/figwheel-main.log"
+ :css-dirs ["resources/public"]
+ }

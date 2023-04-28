@@ -17,3 +17,4 @@ profiles.clj
 /env/dev/resources/public/
 .idea
 ouch-it-hurts.iml
+/resources/public/app.js

@@ -1,13 +1,26 @@
 (ns ouch-it-hurts.api
   (:require [ajax.core :refer [GET POST PUT DELETE]]
             [clojure.string :as s]
-            [goog.string :as gstr]))
+            [goog.string :as gstr]
+            [cljs.core :refer [goog-define]]
+            ))
+
+
+(goog-define host "")
+
+(goog-define port "")
+
+(def uri (gstr/format "http://%s:%s" host port))
+
+(defn url [path] (gstr/format "%s%s" uri path))
+
+
 
 (defn fetch-patients-info [request-params]
   (let [params (select-keys request-params [:filters :sorting :paging])]
     (new js/Promise
          (fn [resolve reject]
-           (GET "http://localhost:3000/patients"
+           (GET (url "/patients")
                 {:params params
                  :format :json
                  :response-format :json
@@ -20,7 +33,7 @@
 (defn get-patient-info-by-id [id]
   (new js/Promise
        (fn [resolve reject]
-         (GET  (gstr/format "http://localhost:3000/patient/%d" id)
+         (GET  (url (gstr/format "/patient/%d" id))
                {:format :json
                 :response-format :json
                 :keywords? true
@@ -31,7 +44,7 @@
 (defn add-patient-info [patient-info]
   (new js/Promise
        (fn [resolve reject]
-         (POST "http://localhost:3000/patient"
+         (POST (url "/patient")
                {:params patient-info
                 :format :json
                 :keywords? true
@@ -42,7 +55,7 @@
 (defn update-patient-info [{:keys [id] :as patient-info}]
   (new js/Promise
        (fn [resolve reject]
-         (PUT (gstr/format "http://localhost:3000/patient/%d" id)
+         (PUT (url (gstr/format "/patient/%d" id))
               {:params patient-info
                :format :json
                :response-format :json
@@ -54,7 +67,7 @@
 (defn delete-patient-info [id]
   (new js/Promise
        (fn [resolve reject]
-         (DELETE (gstr/format "http://localhost:3000/patient/%d" id)
+         (DELETE (url (gstr/format "/patient/%d" id))
           {:format :json
            :response-format :json
            :keywords? true
