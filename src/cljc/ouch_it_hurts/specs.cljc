@@ -1,16 +1,13 @@
 (ns ouch-it-hurts.specs
   (:require #?(:clj [clojure.spec.alpha :as s] :cljs [cljs.spec.alpha :as s])
+            #?(:cljs [goog.string :as gstr])
+            #?(:cljs goog.string.format)
             [spec-tools.core :as st]
             [spec-tools.data-spec :as ds]
             [clojure.string :as string]))
 
 
-(def str-format #?(:clj format :cljs goog.string/format))
-
-(defmacro ^:private one-or-more-keys [ks]
-  (let [keyset (set (map (comp keyword name) ks))]
-    `(s/and (s/keys :opt-un ~ks)
-            #(some ~keyset (keys %)))))
+(def str-format #?(:clj format :cljs (or gstr/format goog.string.format)))
 
 (def oms-numbers-count 16)
 (def sex-enum #{"male" "female" "unknown"})
@@ -47,8 +44,7 @@
   (st/spec
    {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'First name' value limited by %s letters" 255)
-    :json-schema/type {:type "string", :format "string"}
-    :json-schema/example "John"})
+   })
   )
 
 
@@ -56,8 +52,7 @@
   (st/spec
    {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'Second name' value limited by %s letters" 255)
-    :json-schema/type {:type "string", :format "string"}
-    :json-schema/example "Dou"})
+   })
   )
 
 
