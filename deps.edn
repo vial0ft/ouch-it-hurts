@@ -20,6 +20,8 @@
         org.postgresql/postgresql {:mvn/version "42.5.4"}
         hikari-cp/hikari-cp {:mvn/version "3.0.1"}
 
+        com.novemberain/pantomime {:mvn/version "2.11.0"}
+
 
         ;;;; Client
 

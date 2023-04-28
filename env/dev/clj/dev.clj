@@ -4,6 +4,7 @@
    [middlewares.dev-middlewares :as dm]
    [ouch-it-hurts.web.middlewares.routes-resolver :as r]
    [ouch-it-hurts.web.routes.api :as api]
+   [ouch-it-hurts.web.routes.pages :as pages]
    [ouch-it-hurts.web.middlewares.assets-resolver :refer :all]
    [ouch-it-hurts.db.core :as d]
    [next.jdbc :as jdbc]
@@ -20,9 +21,9 @@
     (let [config  (c/load-config "config.edn")]
       (-> config
           (assoc
-           :handler (-> (r/routing (api/routes-data nil))
+           :handler (-> (r/routing (api/routes-data nil) (pages/pages))
                         (dm/wrap-handler-dev)
-                        (assets-resolver-wrapper (:application/asserts config))
+                        (assets-resolver-wrapper (:application/assets config))
                         )
            :port (get-port config)
            ))
