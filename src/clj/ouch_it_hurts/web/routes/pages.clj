@@ -6,8 +6,7 @@
 
 
 (defn- home [_]
-  (http-resp/page (slurp (io/resource "index.html")))
-  )
+  (http-resp/page (slurp (io/resource "public/index.html"))))
 
 
 (defn pages []
