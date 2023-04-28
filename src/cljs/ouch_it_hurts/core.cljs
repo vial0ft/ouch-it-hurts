@@ -13,8 +13,6 @@
 
 (enable-console-print!)
 
-
-
 (def app-state (r/atom {:filters {}
                         :sorting {:id :asc}
                         :paging {:page-number 1
