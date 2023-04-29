@@ -18,7 +18,7 @@
   (let [config  (c/load-config "system.edn")]
     (-> config
         (assoc
-         :handler (-> (r/routing (routes-data) (pages))
+         :handler (-> (r/routing (routes-data nil) (pages))
                       (mid/wrap-handler)
                       (mid/wrap-handler-with-logging)
                       (assets-resolver-wrapper (:application/asserts config))
