@@ -14,14 +14,14 @@
 (defn get-port [config]
   (get-in config [:server/http :port]))
 
-(defn prepare-config[]
+(defn prepare-config []
   (let [config  (c/load-config "system.edn")]
     (-> config
         (assoc
          :handler (-> (r/routing (routes-data nil) (pages))
                       (mid/wrap-handler)
+                      (assets-resolver-wrapper (:application/assets config))
                       (mid/wrap-handler-with-logging)
-                      (assets-resolver-wrapper (:application/asserts config))
                       )
          :port (get-port config)
          ))
@@ -34,8 +34,8 @@
 
 
 (defn run [& args]
-  (let [db-init-f (fn [config] (d/init-db-conn (:db/connection config))
-                    config)]
+  (let [db-init-f (fn [config] (d/init-db-conn (:db/connection config)) config)
+]
     (-> (prepare-config)
         (db-init-f)
         (serv/start-server)))
@@ -43,6 +43,7 @@
 
 
 (defn -main [& args]
+  (println "Run Application")
   (run args))
 
 (comment

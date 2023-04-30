@@ -33,7 +33,6 @@
         total-query (-> (qb/select-count :*)
                         (qb/from :patients.info)
                         (qb/where condition))]
-    (println "query" query)
     (jdbc/with-transaction [tx @ds]
       (let [result (sql/query tx [query] {:builder-fn rs/as-unqualified-kebab-maps})
             [{:keys [count]}] (sql/query tx [total-query])]
