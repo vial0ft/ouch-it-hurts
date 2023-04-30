@@ -1,8 +1,8 @@
 (ns ouch-it-hurts.web.middlewares.core
   (:require
-   [clojure.tools.logging :as log]
    [ouch-it-hurts.web.middlewares.exceptions :refer [exceptions-handler-wrapper]]
-   [ouch-it-hurts.web.middlewares.format :refer :all]))
+   [ouch-it-hurts.web.middlewares.format :refer :all]
+   [clojure.tools.logging :as log]))
 
 
 (defn log-request-response [handler]

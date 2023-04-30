@@ -7,7 +7,6 @@
    [ouch-it-hurts.web.routes.pages :as pages]
    [ouch-it-hurts.web.middlewares.assets-resolver :refer :all]
    [ouch-it-hurts.db.core :as d]
-   [next.jdbc :as jdbc]
    [ouch-it-hurts.server.core :as serv]
    [ouch-it-hurts.config-reader.core :as c]
    ))
@@ -33,7 +32,6 @@
   (d/init-db-conn (:db/connection config))
   config)
 
-
 (defn start []
     (-> (prepare-dev-server-config)
         (db-init-f)
@@ -50,14 +48,5 @@
 (comment
   (start)
   (stop)
-
-  (-> (prepare-dev-server-config)
-      (db-init-f))
-
-
-  (reduce into [] [(pages) (api/routes-data)])
-
-  (.toLocalDateTime (:t (first (jdbc/execute! @d/ds ["select now() as t"]))))
-    (into [] (jdbc/execute! ds ["select 'qwe' as qwe , a from (select 1 as a ) asq"]))
 
  )

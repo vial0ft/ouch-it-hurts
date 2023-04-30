@@ -189,16 +189,19 @@
           handler (assets-resolver-wrapper nil [asset-dir])
           {:keys [status body]} (handler request-like)]
       (is (= status (:status (http-resp/ok))))
-      (is (= body file-content))
+      (with-open [r (clojure.java.io/reader body)]
+        (is (= (slurp r) file-content)))
       ))
 
-(testing "Resolver should use `handler` if asset not found  by `:uri`"
-  (let [asset-dir "public"
-        resource-path "/not_existed_file.txt"
-        request-handler (fn [req] (http-resp/ok :response-but-not-asset))
-        request-like {:uri resource-path}
-        handler (assets-resolver-wrapper request-handler [asset-dir])
-        {:keys [status body]} (handler request-like)]
-    (is (= status (:status (http-resp/ok))))
-    (is (= body :response-but-not-asset))
-    )))
+  (testing "Resolver should use `handler` if asset not found  by `:uri`"
+    (let [asset-dir "public"
+          resource-path "/not_existed_file.txt"
+          request-handler (fn [req] (http-resp/ok :response-but-not-asset))
+          request-like {:uri resource-path}
+          handler (assets-resolver-wrapper request-handler [asset-dir])
+          {:keys [status body]} (handler request-like)]
+      (is (= status (:status (http-resp/ok))))
+      (is (= body :response-but-not-asset))
+      ))
+
+  )
