@@ -12,7 +12,7 @@ services:
       - '5432:5432'
     networks:
       - backend
-    volumes: 
+    volumes:
       - db:/var/lib/postgresql/data
 
   patients_app:
