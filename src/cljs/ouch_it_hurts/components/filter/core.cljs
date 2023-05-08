@@ -6,54 +6,42 @@
             [ouch-it-hurts.specs :as specs]
             [clojure.string :refer [join]]))
 
-
 ;; -------------------------
 ;; States
 
-
-(def ^private default-filter {
-                              :first-name {:value ""}
+(def ^private default-filter {:first-name {:value ""}
                               :second-name {:value ""}
                               :middle-name {:value ""}
                               :address {:value ""}
                               :birth-date-period {:value {}}
                               :sex-opts {:value #{}}
-                              :oms {:value "" }
-                              :show-records-opts {:value ""}
-                              })
+                              :oms {:value ""}
+                              :show-records-opts {:value ""}})
 
 (def ^private error-state (r/atom nil))
 
 (def all-sex-options #{"male" "female" "other" "none"})
 
 (def ^private filter-form (r/atom {:filters default-filter
-                                   :error nil
-                                   }))
+                                   :error nil}))
 
 (defn- filter-form-cursor
   ([] (r/cursor filter-form [:filters]))
   ([path] (r/cursor filter-form (into [:filters] path))))
-
 
 (defn- change-key [key-path]
   (fn [new-value] (reset! key-path new-value)))
 
 (defn- filter-clean-button [on-click]
   [:button.filter-form-button
-   {
-    :on-click on-click
+   {:on-click on-click
     :type :reset}
-   "Clear filters"
-   ]
-  )
+   "Clear filters"])
 
 (defn- filter-apply-button []
   [:button.filter-form-button
-   {
-    :type :submit
-    }
-   "Apply filters"
-   ])
+   {:type :submit}
+   "Apply filters"])
 
 (defn- patient-name-filter-block []
   [FieldSet "Patient name"
@@ -74,16 +62,12 @@
                  :lable {:class "filter-form-block-item-lable" :text "Second name: "}
                  :input {:class "filter-form-block-item-text-input"
                          :type "text"
-                         :on-change (change-key (filter-form-cursor [:second-name :value]))}}]
-   ])
-
+                         :on-change (change-key (filter-form-cursor [:second-name :value]))}}]])
 
 (defn- set-elems-value [id-value-pairs]
   (doseq [[id value]  id-value-pairs]
     (when-let [elem (js/document.getElementById id)]
-      (set! (.-checked elem) value)
-      )
-    ))
+      (set! (.-checked elem) value))))
 
 (defn- sex-filter-on-change [sex-keys]
   (fn [e]
@@ -97,23 +81,19 @@
           (do
             (set-elems-value {"all" false id true})
             (swap! (filter-form-cursor [:sex-opts :value]) conj id))
-          (swap! (filter-form-cursor [:sex-opts :value]) (fn [old] (disj old id)))
-                       ))
-      )))
+          (swap! (filter-form-cursor [:sex-opts :value]) (fn [old] (disj old id))))))))
 
 (defn- patient-sex-filter-selector []
   [FieldSet "Sex"
    [CheckboxButton {:key "all"
                     :opt {:defaultChecked true
-                          :on-change (sex-filter-on-change all-sex-options)}}  "All" ]
+                          :on-change (sex-filter-on-change all-sex-options)}}  "All"]
    [CheckboxButton {:key "male"
                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Male"]
    [CheckboxButton {:key "female"
                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Female"]
    [CheckboxButton {:key "unknown"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Not defined"]
-   ]
-  )
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Not defined"]])
 
 (defn patient-show-options []
   [FieldSet "Show record options"
@@ -123,18 +103,13 @@
                                 {:value :deleted-only :lable "Deleted only"}
                                 {:value :all :lable "All"}]]
                        (map #(if (= (:value %) default) (assoc % :selected true) %) all))
-            :on-change #(reset! (filter-form-cursor [:show-records-opts :value])  %)}]
-   ]
-  )
-
-
+            :on-change #(reset! (filter-form-cursor [:show-records-opts :value])  %)}]])
 
 (defn- patient-left-filter-block []
   [:div.filter-form-block
    [patient-name-filter-block]
    [patient-sex-filter-selector]
-   [patient-show-options]]
-   )
+   [patient-show-options]])
 
 (defn- patient-right-filter-block []
   [:div.filter-form-block
@@ -142,8 +117,7 @@
     {:key "address"
      :input {:type "text"
              :style {:width "100%"}
-             :on-change (change-key (filter-form-cursor [:address :value]))
-             }}
+             :on-change (change-key (filter-form-cursor [:address :value]))}}
     "Address"]
    [SingleFieldSet
     {:key "oms"
@@ -157,13 +131,10 @@
      :to {:on-change (change-key (filter-form-cursor [:birth-date-period :value :to]))}}
     "Birth date"]])
 
-
 (def xform
   (comp
-   (filter (fn[[k v]] (not (empty? (:value v)))))
-   (map (fn [[k v]] {k (:value v)}))
-   )
-  )
+   (filter (fn [[k v]] (not (empty? (:value v)))))
+   (map (fn [[k v]] {k (:value v)}))))
 
 (defn- local-2-global [local-filters]
   (transduce
@@ -175,9 +146,7 @@
   (fn [_]
     (do
       (reset! filter-form  {:filters default-filter :error nil})
-      (filter-state-update-callback {})
-      )))
-
+      (filter-state-update-callback {}))))
 
 (defn FilterForm [filter-state-update-callback]
   (fn [filter-state-update-callback]
@@ -191,14 +160,12 @@
                               :ok (do
                                     (reset! (r/cursor filter-form [:error]) nil)
                                     (filter-state-update-callback details))
-                              (reset! (r/cursor filter-form [:error]) (join "\n" details)))
-                          ))}
+                              (reset! (r/cursor filter-form [:error]) (join "\n" details)))))}
       [:div.filter-form {:name "filterForm"}
        [patient-left-filter-block]
        [patient-right-filter-block]]
       [ErrorSpan @(r/cursor filter-form [:error])]
       [:div.filter-form-buttons-block
        [filter-clean-button (on-click-clean-button filter-state-update-callback)]
-       [filter-apply-button]]
-      ]]))
+       [filter-apply-button]]]]))
 

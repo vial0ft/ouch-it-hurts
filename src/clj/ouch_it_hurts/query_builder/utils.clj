@@ -3,7 +3,6 @@
             [clojure.string :as str]
             [ouch-it-hurts.query-builder.ops :as ops]))
 
-
 (defn as-snake-name [value]
   (let [replacement-f #(str/replace % #"-" "_")]
     (cond
@@ -30,14 +29,12 @@
                    (flatten))]
     (if-not (empty? res) res nil)))
 
-
 (defn sql-date->local-date [date]
   (-> date
       (.getTime)
       (java.time.Instant/ofEpochMilli)
       (.atZone (java.time.ZoneId/systemDefault))
       (.toLocalDate)))
-
 
 (defn sql-date->local-date-time [date]
   (-> date

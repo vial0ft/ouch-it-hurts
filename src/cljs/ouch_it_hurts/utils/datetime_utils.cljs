@@ -1,14 +1,12 @@
 (ns ouch-it-hurts.utils.datetime-utils
   (:require [goog.string :as gstr]))
 
-
-
 (defn now [] (new js/Date))
 
 (defn add-days [date number-of-days]
   (let [new-date (new js/Date date)]
     (do
-     (.setDate new-date (-> new-date (.getDate) (+ number-of-days)))
+      (.setDate new-date (-> new-date (.getDate) (+ number-of-days)))
       new-date)))
 
 (defn start-of-date
@@ -21,7 +19,7 @@
 (defn offset-date
   ([] (offset-date (now)))
   ([date] (let [offset (.getTimezoneOffset date)]
-              (new js/Date (- (.getTime date) (* offset 60 1000))))))
+            (new js/Date (- (.getTime date) (* offset 60 1000))))))
 
 (defn to-date [date-time]
   (let [y (.getFullYear date-time)

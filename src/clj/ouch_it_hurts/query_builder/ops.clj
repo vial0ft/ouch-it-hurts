@@ -1,6 +1,5 @@
 (ns ouch-it-hurts.query-builder.ops)
 
-
 (def supported-ops #{:between :is :in :or :and := :> :< :>= :<= :<>})
 
 (defn is-null
@@ -11,7 +10,6 @@
   ([] nil)
   ([single] [single])
   ([first & seq] (reduce (fn [acc el] (conj acc :or el)) [first] seq)))
-
 
 (defn _and
   ([] nil)

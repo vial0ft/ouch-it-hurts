@@ -2,13 +2,12 @@
   (:require [clojure.string :as s]
             [ouch-it-hurts.query-builder.ops :as ops]))
 
-
 (defn- convert-value [value]
   (cond
     (and (string? value)
          (and (not (s/includes? value "'")) (not (s/includes? value "\"")))) (str "'" value "'")
     (keyword? value) (if-let [ns (namespace value)] (s/join "." [(namespace value) (name value)])
-                                     (name value))
+                             (name value))
     (coll? value) (str "(" (s/join "," (map convert-value value)) ")")
     :else (str value)))
 
@@ -19,20 +18,18 @@
 
 (defn- build-with-aliasing [[head & rest] join-f acc]
   (if-not head acc
-      (let [[new-part new-rest] (aliasing (convert-value head) rest)]
-        (recur new-rest join-f (join-f acc new-part)))))
-
+          (let [[new-part new-rest] (aliasing (convert-value head) rest)]
+            (recur new-rest join-f (join-f acc new-part)))))
 
 (defn select-count
   ([& columns] (->> (build-with-aliasing columns #(conj %1 %2) [])
-                   (s/join ", ")
-                   (format "select count(%s)"))))
+                    (s/join ", ")
+                    (format "select count(%s)"))))
 
 (defn select
   ([& columns] (->> (build-with-aliasing columns #(conj %1 %2) [])
-                         (s/join ", ")
-                         (str "select "))))
-
+                    (s/join ", ")
+                    (str "select "))))
 
 (defn from
   ([from-part]  (->> (build-with-aliasing from-part #(conj %1 %2) [])
@@ -40,20 +37,15 @@
                      (str "from ")))
   ([query & from-part] (str query " " (from from-part))))
 
-
 (defn- build-converted-expression [expr]
   (cond
     (and (coll? expr) (contains? ops/supported-ops (second expr))) (str "(" (s/join " " (map build-converted-expression expr)) ")")
-    :else (convert-value expr)
-    )
-  )
-
+    :else (convert-value expr)))
 
 (defn- build-condition-part [[condition linked-word & rest]  acc]
   (if-not condition acc
           (if-not linked-word (conj acc (build-converted-expression condition))
-                  (recur rest (conj acc (build-converted-expression condition) (convert-value linked-word)))
-          )))
+                  (recur rest (conj acc (build-converted-expression condition) (convert-value linked-word))))))
 
 (defn where
   ([] "")
@@ -62,15 +54,12 @@
 
 (defn- asc-desc [field rest]
   (if-not (contains? #{:asc :desc "asc" "desc"} (first rest)) [(convert-value field) rest]
-          [(str (convert-value field) " " (convert-value (first rest))) (next rest)]
-  ))
+          [(str (convert-value field) " " (convert-value (first rest))) (next rest)]))
 
 (defn- build-ordering-part [[head & rest] acc]
   (if-not head acc
           (let [[new-head new-rest] (asc-desc head rest)]
-            (recur new-rest (conj acc new-head))
-            )))
-
+            (recur new-rest (conj acc new-head)))))
 
 (defn order-by
   ([] "")

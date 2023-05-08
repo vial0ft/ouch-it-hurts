@@ -17,7 +17,6 @@
   ([config-filename] (read-string (slurp (io/resource config-filename))))
   ([config-filename keys] (select-keys (read-config config-filename) keys)))
 
-
 (defn load-config [config-file]
   (-> (read-config config-file)
       (resolve-props)))

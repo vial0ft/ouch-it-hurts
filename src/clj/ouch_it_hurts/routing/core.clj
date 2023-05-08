@@ -6,18 +6,14 @@
     (and (nil? curr-request-uri-part) (nil? curr-route-uri-part)) {:match? true :next? false}
     (= curr-route-uri-part "*") {:match? true :next? false}
     (or (nil? curr-request-uri-part) (nil? curr-route-uri-part)) {:match? false :next? false}
-    (s/starts-with? curr-route-uri-part ":") {
-                                              :match? true
+    (s/starts-with? curr-route-uri-part ":") {:match? true
                                               :next? true
-                                              :step-params {
-                                                            (-> curr-route-uri-part
+                                              :step-params {(-> curr-route-uri-part
                                                                 (subs 1)
                                                                 (keyword))
-                                                            curr-request-uri-part
-                                                            }}
+                                                            curr-request-uri-part}}
     (= curr-route-uri-part curr-request-uri-part) {:match? true :next? true}
-    :else {:match? false :next? false}
-    ))
+    :else {:match? false :next? false}))
 
 (defn match-uri [request-uri route-uri]
   (let [splitted-request-uri (s/split request-uri #"/")
@@ -30,9 +26,7 @@
             {:keys [match? next? step-params]} (step-match curr-request-uri-part curr-route-uri-part)]
         (if-not match? {:match? false}
                 (if-not next? {:match? true :params params}
-                        (recur (next sp-req-uri) (next sp-rt-uri) (merge params step-params)))))
-      )))
-
+                        (recur (next sp-req-uri) (next sp-rt-uri) (merge params step-params))))))))
 
 (defn get-path-params-and-handler [request routes]
   (loop [req request

@@ -9,12 +9,11 @@
     ([] (r/cursor selected-ids-store [:ids]))
     ([id] (r/cursor selected-ids-store [:ids id]))))
 
-(defn- select-all-handler[selected-ids-store all-ids]
+(defn- select-all-handler [selected-ids-store all-ids]
   (fn [e]
     (let [all-checked? (.-checked (.-target e))]
       (reset! selected-ids-store {:all-selected? all-checked?
-                                  :ids (reduce #(assoc %1 %2 all-checked?) {} all-ids)})
-      )))
+                                  :ids (reduce #(assoc %1 %2 all-checked?) {} all-ids)}))))
 
 (defn- select-row-handler [selected-ids-store all-ids-count]
   (let [all-selected? (r/cursor selected-ids-store [:all-selected?])
@@ -27,15 +26,13 @@
           [true false] (when-not (some #(= % false) (vals @(ids)))
                          (if (= all-ids-count (count @(ids)))
                            (reset! all-selected? true)))
-          :do-nothing)
-        ))))
+          :do-nothing)))))
 
 (defn- order-for-key [key ordering-atom]
   (fn [order]
     (if (nil? order)
       (swap! ordering-atom #(dissoc % key))
       (reset! (r/cursor ordering-atom [key]) order))))
-
 
 (defn- HeaderRow [selected-ids-store all-ids ordering-state]
   (list
@@ -53,38 +50,34 @@
    [OrderedHeaderCell {:value "Address" :on-click (order-for-key :address ordering-state)}]
    [OrderedHeaderCell {:value "CHI number" :on-click (order-for-key :oms ordering-state)}]))
 
-
 (defn- TableRow [selected-ids-store all-ids-count {:keys [id first-name middle-name second-name sex birth-date address oms deleted]}]
   (let [class (if-not deleted "patients-info-table-grid-item" "patients-info-table-grid-deleted-item")]
-  (list
-   [RowCell {:class class :value [:input {:id id
-             		             :type "checkbox"
-             		             :checked @(r/cursor selected-ids-store [:ids id])
-             	   	           :on-change (select-row-handler selected-ids-store all-ids-count)}]}]
-   [RowCell {:class class :value id }]
-   [RowCell {:class class :value first-name }]
-   [RowCell {:class class :value middle-name }]
-   [RowCell {:class class :value second-name }]
-   [RowCell {:class class :value sex }]
-   [RowCell {:class class :value birth-date }]
-   [RowCell {:class class :value address }]
-   [RowCell {:class class :value oms }]
-   )))
+    (list
+     [RowCell {:class class :value [:input {:id id
+                                            :type "checkbox"
+                                            :checked @(r/cursor selected-ids-store [:ids id])
+                                            :on-change (select-row-handler selected-ids-store all-ids-count)}]}]
+     [RowCell {:class class :value id}]
+     [RowCell {:class class :value first-name}]
+     [RowCell {:class class :value middle-name}]
+     [RowCell {:class class :value second-name}]
+     [RowCell {:class class :value sex}]
+     [RowCell {:class class :value birth-date}]
+     [RowCell {:class class :value address}]
+     [RowCell {:class class :value oms}])))
 
 (defn- transform-to-rows [selected-ids-store all-ids records]
-    (transduce
-     (map (fn [r] (TableRow selected-ids-store (count all-ids) r)))
-     into [] records))
-
+  (transduce
+   (map (fn [r] (TableRow selected-ids-store (count all-ids) r)))
+   into [] records))
 
 (defn TableBlock [patients-info sorting paging]
-    (fn [patients-info sorting paging]
-      (let [selected-ids-store (r/cursor patients-info [:selected-ids])
-            {:keys [data total]} @(r/cursor patients-info [:table-info])
-            all-ids (map :id data)]
-        [:div
-         (-> [:div.patient-info-table-grid-container]
-             (into (HeaderRow selected-ids-store all-ids sorting))
-             (into (transform-to-rows selected-ids-store all-ids data)))
-         [Paging total paging]]
-        )))
+  (fn [patients-info sorting paging]
+    (let [selected-ids-store (r/cursor patients-info [:selected-ids])
+          {:keys [data total]} @(r/cursor patients-info [:table-info])
+          all-ids (map :id data)]
+      [:div
+       (-> [:div.patient-info-table-grid-container]
+           (into (HeaderRow selected-ids-store all-ids sorting))
+           (into (transform-to-rows selected-ids-store all-ids data)))
+       [Paging total paging]])))

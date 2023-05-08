@@ -11,8 +11,7 @@
 (defn- patient-info-mapper [info]
   (if (:birth-date info)
     (update info :birth-date qb-utils/sql-date->local-date)
-    info
-    ))
+    info))
 
 (defn get-info-by-id [ds id]
   (let [result (sql/get-by-id @ds :patients.info id jdbc/unqualified-snake-kebab-opts)]

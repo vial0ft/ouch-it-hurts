@@ -3,14 +3,12 @@
    [cheshire.core :as json]
    [clojure.string :as s]))
 
-
 (def ^:private key-keyword-f (map (fn [[k v]] {(keyword k) v})))
 
 (def ^:private xf
   (comp
    (map #(s/split % #"="))
-   key-keyword-f
-   ))
+   key-keyword-f))
 
 (defn- make-key-path [k]
   (let [root-key  (->> (re-find #"([A-Za-z0-9-]+)\[" (name k)) (second))
@@ -19,14 +17,13 @@
 
 (defn- reducer-f [acc [pair-k pair-v]]
   (let [key-path (if-not (empty? (re-seq #"\[([A-Za-z0-9-]+)\]" (name pair-k)))
-                    (make-key-path pair-k)
-                    [pair-k])
+                   (make-key-path pair-k)
+                   [pair-k])
         nilable-value (if (= pair-v "null") nil pair-v)
         existed-value (get-in acc key-path)]
-      (if existed-value
-        (update-in acc key-path #(vec (flatten [%1 %2])) nilable-value)
-        (assoc-in acc key-path nilable-value))))
-
+    (if existed-value
+      (update-in acc key-path #(vec (flatten [%1 %2])) nilable-value)
+      (assoc-in acc key-path nilable-value))))
 
 (defn- group-query-params [query-str]
   (let [pairs  (-> (java.net.URLDecoder/decode query-str) (s/split #"&"))
@@ -36,7 +33,6 @@
 ;;
 ;; Request formatters
 ;;;;
-
 
 (defn format-query-string [handler]
   (fn [req]
@@ -55,15 +51,13 @@
                                                         (json/decode)))]
                                       (assoc-in req [:app/request :body] req-body))
                  req)
-               req))
-    ))
+               req))))
 
 (defn format-response-body [handler]
   (fn [req]
     (let [response (handler req)
           formated-resp (case (get-in response [:headers "content-type"])
-                 "application/json" (update response :body json/encode)
-                 response
-                 )]
+                          "application/json" (update response :body json/encode)
+                          response)]
       formated-resp)))
 

@@ -6,10 +6,7 @@
    [ouch-it-hurts.components.footer :refer [Footer]]
    [ouch-it-hurts.components.header :refer [Header]]
    [ouch-it-hurts.components.table.core :refer [TableBlock]]
-   [ouch-it-hurts.components.patients-table-container :refer [PatientsTableContainer]]
-   )
-  )
-
+   [ouch-it-hurts.components.patients-table-container :refer [PatientsTableContainer]]))
 
 (enable-console-print!)
 
@@ -18,12 +15,9 @@
                         :paging {:page-number 1
                                  :page-size 10}
                         :error {:ok? true
-                                :message ""}
-                        }))
+                                :message ""}}))
 ;; -------------------------
 ;; States
-
-
 
 (defn MainPage []
   [:div
@@ -32,10 +26,9 @@
     [:span (str @(r/cursor app-state [:error :message]))]
     [:button {:style {:float "right"}
               :on-click #(reset! (r/cursor app-state [:error]) {:ok? true :message ""})}
-    "Refresh"]]
+     "Refresh"]]
    [PatientsTableContainer app-state]
-   [Footer]
-   ])
+   [Footer]])
 
 (d/render [MainPage]
           (js/document.getElementById "main"))

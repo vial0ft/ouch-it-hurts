@@ -1,6 +1,5 @@
 (ns ouch-it-hurts.utils.promises)
 
-
 (defn retry
   ([f count] (cond
                (<= count 0) f

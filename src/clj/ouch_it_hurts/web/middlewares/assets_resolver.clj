@@ -9,10 +9,7 @@
   (comp
    (map #(str % uri))
    (map #(io/resource %))
-   (filter some?)
-  ))
-
-
+   (filter some?)))
 
 (defn- some-asset [uri asset-dirs]
   (when-not (= uri "/")
@@ -29,5 +26,5 @@
           (io/input-stream)
           (http-resp/ok)
           (http-resp/with-headers {"content-type" (:mime-type result)}))
-    (handler req))))
+      (handler req))))
 

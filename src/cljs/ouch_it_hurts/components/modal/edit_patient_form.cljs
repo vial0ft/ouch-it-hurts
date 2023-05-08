@@ -24,8 +24,7 @@
                                       (edit-callback details)
                                       (reset! modal-state {:visible? false}))
                                 :error (reset-value [:error] (join "\n" details))
-                                :do-nothing)
-                              ))}
+                                :do-nothing)))}
         [FieldSet "Patient name"
          [LabledField {:key "first-name"
                        :class "filter-form-block-item"
@@ -53,7 +52,7 @@
                   :options (let [default @(get-value [:sex])
                                  all [{:value "male" :lable "Male"}
                                       {:value "female" :lable "Female"}]]
-                            (map #(if (= (:value %) default) (assoc % :selected true) %) all))
+                             (map #(if (= (:value %) default) (assoc % :selected true) %) all))
                   :on-change #(reset-value [:sex] %)}]]
         [FieldSet "Birth date"
          [DatePicker {:key "birth-date"

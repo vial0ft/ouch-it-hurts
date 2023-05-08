@@ -1,20 +1,15 @@
 (ns ouch-it-hurts.components.table.items
   (:require [reagent.core :as r]))
 
-
-
-(def ^:private order-map {
-                          "↕" nil
+(def ^:private order-map {"↕" nil
                           "↑" :desc
-                          "↓" :asc
-                          })
+                          "↓" :asc})
 
 (defn- shift-order-value [curr]
   (case curr
     "↕" "↓"
     "↓" "↑"
-    "↕"
-    ))
+    "↕"))
 
 (defn OrderedHeaderCell [{:keys [value on-click]}]
   (let [order-value (r/atom "↕")]
@@ -22,11 +17,7 @@
       [:div.patients-info-table-header-grid-item {:on-click #(on-click (-> (swap! order-value shift-order-value)
                                                                            (order-map)))}
        [:span value]
-       [:span {:class "spaced"} @order-value]
-       ]
-      )))
-
-
+       [:span {:class "spaced"} @order-value]])))
 
 (defn RowCell [{:keys [class value]}]
   [:div {:class class} value])
