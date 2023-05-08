@@ -2,7 +2,6 @@
   (:require [reagent.core :as r]
             [goog.string :as gstr]))
 
-
 (defn DelPatientForm [modal-state {:keys [ids delete-callback]}]
   [:div {:style {:margin "20px"}}
    [:h1 "Delete patient's Info"]
@@ -11,6 +10,4 @@
     [:button.filter-form-button {:on-click #(do
                                               (reset! modal-state {:visible? false})
                                               (delete-callback ids))} "Yes"]
-    [:button.filter-form-button {:on-click #(reset! modal-state {:visible? false})} "No"]
-    ]
-   ])
+    [:button.filter-form-button {:on-click #(reset! modal-state {:visible? false})} "No"]]])

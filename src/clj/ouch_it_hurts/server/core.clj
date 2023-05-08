@@ -1,14 +1,11 @@
 (ns ouch-it-hurts.server.core
   (:require [org.httpkit.server :refer [run-server]]))
 
-
 (defonce server (atom nil))
-
 
 (defn start-server [{:keys [handler port] :as config}]
   (println (format "Server started with port %s" (Integer/parseInt port)))
   (reset! server (run-server handler {:port (Integer/parseInt port)})))
-
 
 (defn stop-server []
   (when-not (nil? @server)

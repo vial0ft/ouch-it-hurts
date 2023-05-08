@@ -4,7 +4,6 @@
    [ouch-it-hurts.web.middlewares.format :refer :all]
    [clojure.tools.logging :as log]))
 
-
 (defn log-request-response [handler]
   (fn [req]
     (let [resp (handler req)]
@@ -16,8 +15,7 @@
       (format-response-body)
       (format-query-string)
       (format-request-body)
-      (exceptions-handler-wrapper)
-      ))
+      (exceptions-handler-wrapper)))
 
 (defn wrap-handler-with-logging [handler]
   (log-request-response handler))

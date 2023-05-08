@@ -1,10 +1,6 @@
 (ns ouch-it-hurts.components.table.paging.items
   (:require [ouch-it-hurts.components.common.core :refer [Select]]))
 
-
-
-
-
 (defn PageNumber [{:keys [id key opt]} label]
   [:div {:id id}
    [:label {:for key}
@@ -13,9 +9,7 @@
                :name key
                :type "checkbox"}
               opt)]
-    [:span label]
-    ]])
-
+    [:span label]]])
 
 (defn SkippedNumber []
   [:div {:id "paging-skipped-number-button"}
@@ -31,6 +25,5 @@
                            #(if (not= (:value %) default)
                               %
                               (assoc % :default true)) all))
-               :on-change on-change}]
-      )))
+               :on-change on-change}])))
 

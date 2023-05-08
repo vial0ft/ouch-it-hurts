@@ -12,9 +12,5 @@
     :app      {:status  "up"
                :message ""}}))
 
-
-
 (defn routes []
-  [
-   ["/health" {:get {:handler healthcheck!}}]
-   ])
+  [["/health" {:get {:handler healthcheck!}}]])

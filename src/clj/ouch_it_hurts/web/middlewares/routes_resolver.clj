@@ -3,7 +3,6 @@
    [ouch-it-hurts.routing.core :as r]
    [ouch-it-hurts.web.http-responses.core :as http-responses]))
 
-
 (defn- resolve-routing [routes]
   (fn [req]
     (let [[result details] (r/get-path-params-and-handler req routes)]
@@ -17,7 +16,6 @@
               (handler (if-not (empty? path-params)
                          (assoc-in req [:app/request :path-params] path-params)
                          req))))))))
-
 
 (defn routing [& routes]
   (resolve-routing (reduce into [] routes)))

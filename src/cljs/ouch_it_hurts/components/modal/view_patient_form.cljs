@@ -3,34 +3,32 @@
             [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]
             [ouch-it-hurts.utils.datetime-utils :as dtu]))
 
-
-
 (defn ViewPatientForm [modal-state {:keys [patient-info edit-callback]}]
   (println patient-info (string? (:birth-date patient-info)))
   [:div {:style {:margin "20px"}}
    [:h1 "Patient's Info"]
    [FieldSet "Patient name"
-      [LabledField {:key "first-name"
-                    :class "view-modal-block-item"
-                    :lable {:class "view-modal-block-item-lable" :text "First name: "}
-                    :input {:class "view-modal-block-item-text-input"
-                            :type "text"
-                            :disabled true
-                            :value (:first-name patient-info)}}]
-      [LabledField {:key "middle-name"
-                    :class "view-modal-block-item"
-                    :lable {:class "view-modal-block-item-lable" :text "Middle name: "}
-                    :input {:class "view-modal-block-item-text-input"
-                            :type "text"
-                            :disabled true
-                            :value (:middle-name patient-info) }}]
-      [LabledField {:key "second-name"
-                    :class "view-modal-block-item"
-                    :lable {:class "view-modal-block-item-lable" :text "Second name: "}
-                    :input {:class "view-modal-block-item-text-input"
-                            :type "text"
-                            :disabled true
-                            :value (:second-name patient-info)}}]]
+    [LabledField {:key "first-name"
+                  :class "view-modal-block-item"
+                  :lable {:class "view-modal-block-item-lable" :text "First name: "}
+                  :input {:class "view-modal-block-item-text-input"
+                          :type "text"
+                          :disabled true
+                          :value (:first-name patient-info)}}]
+    [LabledField {:key "middle-name"
+                  :class "view-modal-block-item"
+                  :lable {:class "view-modal-block-item-lable" :text "Middle name: "}
+                  :input {:class "view-modal-block-item-text-input"
+                          :type "text"
+                          :disabled true
+                          :value (:middle-name patient-info)}}]
+    [LabledField {:key "second-name"
+                  :class "view-modal-block-item"
+                  :lable {:class "view-modal-block-item-lable" :text "Second name: "}
+                  :input {:class "view-modal-block-item-text-input"
+                          :type "text"
+                          :disabled true
+                          :value (:second-name patient-info)}}]]
    [SingleFieldSet
     {:key "sex"
      :input {:type "text"
@@ -62,10 +60,7 @@
              :value (:oms patient-info)}}
     "CMI number"]
    [:button.filter-form-button {:on-click #(reset! modal-state {:visible? true
-                                       :form EditPatientForm
-                                       :args {:patient-info patient-info
-                                              :edit-callback edit-callback}
-                                       })} "Edit"]
-   [:button.filter-form-button {:on-click #(reset! modal-state {:visible? false})} "Ok"]
-   ]
-  )
+                                                                :form EditPatientForm
+                                                                :args {:patient-info patient-info
+                                                                       :edit-callback edit-callback}})} "Edit"]
+   [:button.filter-form-button {:on-click #(reset! modal-state {:visible? false})} "Ok"]])

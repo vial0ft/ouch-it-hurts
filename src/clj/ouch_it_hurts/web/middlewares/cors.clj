@@ -1,8 +1,6 @@
 (ns ouch-it-hurts.web.middlewares.cors
   (:require [ouch-it-hurts.web.http-responses.core :as http-resp]))
 
-
-
 (def cors-headers
   "Generic CORS headers"
   {"Access-Control-Allow-Origin"  "*"
@@ -14,9 +12,7 @@
   [request]
   (= (request :request-method) :options))
 
-
 (defn cors [handler]
   (fn [request]
     (-> (if (preflight? request) (http-resp/json-ok) (handler request))
-                  (http-resp/with-headers cors-headers))
-    ))
+        (http-resp/with-headers cors-headers))))

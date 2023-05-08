@@ -26,21 +26,16 @@
                         (-> coll-sex-opts (disj "unknown") (conj nil))
                         coll-sex-opts)))
         (dissoc :sex-opts))
-    filters
-    ))
+    filters))
 
 (defn- birth-date-period [{:keys [birth-date-period] :as filters}]
   (if birth-date-period
     (-> filters
         (dissoc :birth-date-period)
         (assoc :birth-date birth-date-period))
-    filters
-    ))
+    filters))
 
 (defn- paging-2-offset [pn ps] (* (dec pn) ps))
-
-
-
 
 (defn get-all
   "Fetch all patient infos according `paging`, `filters`, `sorting`"
@@ -54,9 +49,7 @@
      {:offset (paging-2-offset page-number page-size)
       :limit page-size
       :filters prepered-filter
-      :sorting sorting})
-    ))
-
+      :sorting sorting})))
 
 (defn- error-when [cond msg details]
   (if cond (throw (ex-info msg details))))
@@ -77,7 +70,6 @@
       :oms oms}))
   (repo/insert-info ds patient-info))
 
-
 (defn delete-patient-info
   "Mark patient's info record with `id` as deleted. Throw error if record not found."
   [id]
@@ -86,9 +78,7 @@
      (zero? count-deleted)
      "Can't delete the patient's info: the patient isn't exist or already deleted"
      {:reason :not-exist-or-already-deleted :id id})
-    {:id id}
-    ))
-
+    {:id id}))
 
 (defn- update-vals-with [m f]
   (->> m
@@ -106,5 +96,4 @@
     (let [[extra upd _] (diff current-patient-info patient-info)
           update (update-vals-with (merge extra upd) #(get upd (first %)))
           _ (println "for update " update)]
-          (repo/update-info ds id update)
-      )))
+      (repo/update-info ds id update))))

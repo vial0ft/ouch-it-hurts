@@ -8,7 +8,6 @@
 (defn init-db-conn [db-config]
   (reset! ds (connection/->pool HikariDataSource db-config)))
 
-
 (defn close-db-conn []
   (when-not (nil? @ds)
     (close-datasource @ds)

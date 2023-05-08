@@ -1,7 +1,5 @@
 (ns ouch-it-hurts.web.http-responses.core)
 
-
-
 (defn with-headers [resp headers-map]
   (update-in resp [:headers] merge headers-map))
 
@@ -20,9 +18,9 @@
     :body body}))
 
 (defn not-modified []
-   {:status 304
-    :headers {}
-    :body ""})
+  {:status 304
+   :headers {}
+   :body ""})
 
 (defn not-found
   ([] (not-found nil))
@@ -31,14 +29,12 @@
     :headers {}
     :body body}))
 
-
 (defn method-not-allowed
   ([] (method-not-allowed nil))
   ([body]
    {:status 405
     :headers {}
     :body body}))
-
 
 (defn internal-server-error
   ([] (internal-server-error nil))
@@ -47,12 +43,9 @@
     :headers {}
     :body body}))
 
-
-
 (defn response-as-json
   [response]
   (with-headers response {"content-type" "application/json"}))
-
 
 (defn json-ok
   ([] (json-ok nil))

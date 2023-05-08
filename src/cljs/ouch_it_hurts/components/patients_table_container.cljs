@@ -13,26 +13,22 @@
             [clojure.string :refer [join]]
             [spec-tools.core :as st]))
 
-
-
 (def patients-info (r/atom {:selected-ids {:ids {}
-                                           :all-selected? false}
-                            }))
+                                           :all-selected? false}}))
 
 ;; -------------------------
 ;; States
 
-
 (defn- error-handler [app-state]
-    #(reset! (r/cursor app-state [:error]) {:ok? false
-                                            :message (str (if-some [err (:parse-error %)]
-                                                            (select-keys err [:status-text :original-text])
-                                                            %))}))
+  #(reset! (r/cursor app-state [:error]) {:ok? false
+                                          :message (str (if-some [err (:parse-error %)]
+                                                          (select-keys err [:status-text :original-text])
+                                                          %))}))
 
 (defn- go-to-page [state pn] (reset! (r/cursor state [:paging :page-number]) pn))
 
 (defn- handle-fetch-result [store]
-  #(reset! store {:ids {} :selected-all false :table-info % }))
+  #(reset! store {:ids {} :selected-all false :table-info %}))
 
 (defn- fetch-patients-info [store app-state]
   (when @(r/cursor app-state [:error :ok?])
@@ -44,10 +40,7 @@
                 (.then (handle-fetch-result store))
                 (.catch (error-handler app-state)))
         (reset! (r/cursor app-state [:error])  {:ok? false
-                                                :message (join "\n" details)}))
-      ))
-    )
-
+                                                :message (join "\n" details)})))))
 
 (defn post-update-action [app-state store]
   #(if-not (= @(r/cursor app-state [:paging :page-number]) 1)
@@ -58,16 +51,13 @@
   (fn [patient-info]
     (-> (api/add-patient-info patient-info)
         (.then (post-update-action app-state store))
-        (.catch (error-handler app-state)))
-    ))
-
+        (.catch (error-handler app-state)))))
 
 (defn- edit-callback [app-state store]
   (fn [patients-info]
     (-> (api/update-patient-info patients-info)
         (.then (post-update-action app-state store))
-        (.catch (error-handler app-state)))
-    ))
+        (.catch (error-handler app-state)))))
 
 (defn- delete-callback [app-state store]
   (fn [ids]
@@ -75,8 +65,7 @@
     (-> (map api/delete-patient-info ids)
         (js/Promise.all)
         (.then (post-update-action app-state store))
-        (.catch (error-handler app-state)))
-    ))
+        (.catch (error-handler app-state)))))
 
 (defn- view-callback [app-state]
   (fn [id modal-state edit-callback]
@@ -84,8 +73,7 @@
         (.then #(reset! modal-state {:visible? true
                                      :form ViewPatientForm
                                      :args {:patient-info % :edit-callback edit-callback}}))
-        (.catch (error-handler app-state)))
-    ))
+        (.catch (error-handler app-state)))))
 
 (defn PatientsTableContainer [app-state]
   (let [!modal (r/atom {:visible? false})]
@@ -105,7 +93,6 @@
          :add-callback (add-callback app-state patients-info)
          :edit-callback (edit-callback app-state patients-info)
          :view-callback (view-callback app-state)}]
-       [PatientModal !modal]]
-      )))
+       [PatientModal !modal]])))
 
 

@@ -23,26 +23,19 @@
                       (mid/wrap-handler)
                       (cors/cors)
                       (assets-resolver-wrapper (:application/assets config))
-                      (mid/wrap-handler-with-logging)
-                      )
-         :port (get-port config)
-         ))
-    ))
-
+                      (mid/wrap-handler-with-logging))
+         :port (get-port config)))))
 
 (defn stop-server []
   (d/close-db-conn)
   (serv/stop-server))
 
-
 (defn run [& args]
-  (let [db-init-f (fn [config] (d/init-db-conn (:db/connection config)) config)
-]
+  (let [db-init-f (fn [config] (d/init-db-conn (:db/connection config)) config)]
     (-> (prepare-config)
         (db-init-f)
         (serv/start-server)))
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server)))
-
 
 (defn -main [& args]
   (println "Run Application")
@@ -53,5 +46,4 @@
   (-> (prepare-config)
       (serv/start-server))
 
-  (stop-server)
-)
+  (stop-server))

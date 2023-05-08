@@ -1,8 +1,7 @@
 (ns ouch-it-hurts.utils.state
   (:require [reagent.core :as r]))
 
-
-(defn use-state[state]
+(defn use-state [state]
   (let [s (r/atom state)]
     [(fn
        ([] s)
