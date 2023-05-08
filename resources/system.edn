@@ -1,12 +1,15 @@
 {
- :server/http {
-               :port {:env "PORT" :default 3000}
-               :host {:env "HTTP_HOST" :default "0.0.0.0"}
-               }
+ :server/http {:port {:env "PORT"}}
 
  :application/assets ["public"]
 
- :routes/api {
-              :base-url "/api"
-              }
+ :routes/api {:base-url "/api"}
+
+ :db/connection {:dbtype "postgres"
+                 :username {:env "DB_USER"}
+                 :password {:env "DB_PASSWORD"}
+                 :jdbcUrl {:env "JDBC_URL"}
+                 :dataSourceProperties {:socketTimeout 30}
+                 :maximumPoolSize 30
+                 :connectionTestQuery "select 1"}
  }

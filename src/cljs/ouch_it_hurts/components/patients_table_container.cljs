@@ -25,8 +25,9 @@
 
 (defn- error-handler [app-state]
     #(reset! (r/cursor app-state [:error]) {:ok? false
-                                            :message (-> (:parse-error %)
-                                                         (select-keys [:status-text :original-text]))}))
+                                            :message (str (if-some [err (:parse-error %)]
+                                                            (select-keys err [:status-text :original-text])
+                                                            %))}))
 
 (defn- go-to-page [state pn] (reset! (r/cursor state [:paging :page-number]) pn))
 
@@ -34,7 +35,6 @@
   #(reset! store {:ids {} :selected-all false :table-info % }))
 
 (defn- fetch-patients-info [store app-state]
-  (println "do fetch")
   (when @(r/cursor app-state [:error :ok?])
     (let [[result details] (specs/confirm-if-valid
                             :ouch-it-hurts.specs/query-request
@@ -44,8 +44,7 @@
                 (.then (handle-fetch-result store))
                 (.catch (error-handler app-state)))
         (reset! (r/cursor app-state [:error])  {:ok? false
-                                                :message (join "\n" details)})
-        )
+                                                :message (join "\n" details)}))
       ))
     )
 

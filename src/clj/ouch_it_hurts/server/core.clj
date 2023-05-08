@@ -6,8 +6,8 @@
 
 
 (defn start-server [{:keys [handler port] :as config}]
-  (println (format "Server started with port %s" port))
-  (reset! server (run-server handler {:port port})))
+  (println (format "Server started with port %s" (Integer/parseInt port)))
+  (reset! server (run-server handler {:port (Integer/parseInt port)})))
 
 
 (defn stop-server []

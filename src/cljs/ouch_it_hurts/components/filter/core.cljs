@@ -182,7 +182,6 @@
 (defn FilterForm [filter-state-update-callback]
   (fn [filter-state-update-callback]
     [:div {:style {:padding "10px"}}
-     [:p {:hidden false} (str @filter-form)]
      [:form {:on-submit (fn [e]
                           (.preventDefault e)
                           (let [[result details]
