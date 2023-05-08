@@ -18,3 +18,4 @@ profiles.clj
 .idea
 ouch-it-hurts.iml
 /resources/public/app.js
+prod.cljs.edn

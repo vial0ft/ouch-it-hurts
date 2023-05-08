@@ -1,4 +1,4 @@
-{:paths  ["src/clj" "src/cljs" "src/cljc" "resources" "target"]
+{:paths  ["src/clj" "src/cljs" "src/cljc" "resources"]
  :deps {
         org.clojure/clojure {:mvn/version "1.11.1"}
         metosin/spec-tools {:mvn/version "0.10.5"}
@@ -43,7 +43,8 @@
            ;; Front
            :fig {:extra-deps {com.bhauman/figwheel-main  {:mvn/version "0.2.18"}
                               org.slf4j/slf4j-nop        {:mvn/version "1.7.30"}
-                              com.bhauman/rebel-readline {:mvn/version "0.1.4"}}}
+                              com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
+                 :extra-paths ["target"]}
 
            :build-front {:extra-paths ["env/dev/resources"]
                          :extra-deps {cider/piggieback {:mvn/version "0.5.3"}}
@@ -67,8 +68,11 @@
                   :exec-fn cognitect.test-runner.api/test
                   }
 
+           :build {:deps {io.github.clojure/tools.build {:mvn/version "0.9.4"}}
+                   :ns-default build}
            ;; Format
-           :cljfmt {:extra-deps {cljfmt/cljfmt {:mvn/version "0.9.2"}}
-                    :main-opts ["-m" "cljfmt.main"]}
+           :fmt {:extra-deps {cljfmt/cljfmt {:mvn/version "0.9.2"}}}
+           :check {:main-opts ["-m" "cljfmt.main" "check"]}
+           :fix {:main-opts ["-m" "cljfmt.main" "fix"]}
            }
  }
