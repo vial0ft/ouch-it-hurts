@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [ouch-it-hurts.config-reader.core :as c]
    [ouch-it-hurts.web.middlewares.core :as mid]
+   [ouch-it-hurts.web.middlewares.cors :as cors]
    [ouch-it-hurts.web.middlewares.routes-resolver :as r]
    [ouch-it-hurts.web.middlewares.assets-resolver :refer :all]
    [ouch-it-hurts.web.routes.api :refer [routes-data]]
@@ -20,6 +21,7 @@
         (assoc
          :handler (-> (r/routing (routes-data nil) (pages))
                       (mid/wrap-handler)
+                      (cors/cors)
                       (assets-resolver-wrapper (:application/assets config))
                       (mid/wrap-handler-with-logging)
                       )

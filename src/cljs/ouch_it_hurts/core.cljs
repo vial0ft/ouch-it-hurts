@@ -33,7 +33,6 @@
     [:button {:style {:float "right"}
               :on-click #(reset! (r/cursor app-state [:error]) {:ok? true :message ""})}
     "Refresh"]]
-   [:p {:hidden false} @app-state]
    [PatientsTableContainer app-state]
    [Footer]
    ])

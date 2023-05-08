@@ -37,11 +37,13 @@
         (if (empty? seq-numbers) [:span]
             (for [number seq-numbers]
               (if (= number :skip) [SkippedNumber]
-                  (let [attrs {:key number}
-                        additional-attrs (if (= number page-number)
-                                           (merge attrs {:id "paging-current-number-button"})
-                                           (merge attrs {:id "paging-number-button"
-                                                         :opt {:on-click (page-number-on-click (r/cursor paging [:page-number]))}}))]
+                  (let [attrs
+                        {:key number}
+                        additional-attrs
+                        (if (= number page-number)
+                          (merge attrs {:id "paging-current-number-button"})
+                          (merge attrs {:id "paging-number-button"
+                                        :opt {:on-click (page-number-on-click (r/cursor paging [:page-number]))}}))]
                     [PageNumber additional-attrs (str number)]
                     ))))]
        [PageSizeSelector

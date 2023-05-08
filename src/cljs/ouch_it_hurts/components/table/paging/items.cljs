@@ -21,7 +21,6 @@
   [:div {:id "paging-skipped-number-button"}
    [:label [:span "..."]]])
 
-
 (defn PageSizeSelector [page-size-state {:keys [options on-change]}]
   (fn [page-size-state {:keys [on-change]}]
     (let [current-page-size @page-size-state]
