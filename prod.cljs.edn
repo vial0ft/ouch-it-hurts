@@ -1,6 +1,0 @@
-{:main ouch-it-hurts.core
- :pretty-print true
- :output-to "resources/public/app.js"
- :closure-defines {ouch-it-hurts.api/host "localhost"
-                   ouch-it-hurts.api/port "3000"}
- }

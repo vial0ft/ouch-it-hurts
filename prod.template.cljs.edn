@@ -1,0 +1,4 @@
+{:main ouch-it-hurts.core
+ :pretty-print true
+ :output-to "resources/public/app.js"
+ }
