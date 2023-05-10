@@ -5,8 +5,6 @@ ARG SERVER_HOST=""
 
 ENV CLOJURE_VERSION=1.11.1.1182
 
-RUN curl https://babushka.me/up
-
 RUN curl -sLO https://raw.githubusercontent.com/babashka/babashka/master/install \
     && chmod +x install \
     && ./install \
@@ -19,7 +17,7 @@ COPY . /build
 
 RUN echo "Server info: port $SERVER_PORT host $SERVER_HOST"
 
-RUN bb -f make_prod_config.clj -t prod.template.cljs.edn -o prod.cljs.edn -p $SERVER_PORT -H $SEVER_HOST
+RUN bb -f make_prod_config.clj -t prod.template.cljs.edn -o prod.cljs.edn -p $SERVER_PORT -H $SERVER_HOST
 
 RUN cat prod.cljs.edn | echo
 
