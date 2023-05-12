@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  labels:
+    app: postgres
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        tier: database
+    spec:
+      containers:
+      - name: postgresdb
+        image: postgres:15rc1-alpine3.16
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+          - name: postgres-claim0
+            mountPath: /var/lib/postgresql/data
+
+          - mountPath: /docker-entrypoint-initdb.d
+            name: postgres-initdb
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-db
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-password
+      volumes:
+        - name: postgres-claim0
+          persistentVolumeClaim:
+            claimName: postgres-claim0
+
+        - name: postgres-initdb
+          configMap:
+            name: postgres-initdb-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  labels:
+    app: postgres
+    tier: database
+spec:
+  selector:
+    app: postgres
+    tier: database
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

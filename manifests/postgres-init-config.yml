@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-initdb-config
+data:
+  init.sql: |
+    CREATE TABLE patients.info (
+    id serial4 NOT NULL,
+    sex text NULL,
+    birth_date date NULL,
+    address text NULL,
+    oms text NULL,
+    created_at timestamptz NULL DEFAULT now(),
+    first_name varchar(255) NULL,
+    second_name varchar(255) NULL,
+    middle_name varchar(255) NULL,
+    deleted bool NOT NULL DEFAULT false,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT info_oms_key UNIQUE (oms),
+    CONSTRAINT info_pkey PRIMARY KEY (id)
+    );
+
+
+    INSERT INTO patients.info (sex,birth_date,address,oms,created_at,first_name,second_name,middle_name,deleted,updated_at) VALUES
+    (NULL,NULL,'aaa',NULL,'2023-05-07 16:11:45.539','test1',NULL,NULL,false,'2023-05-07 16:11:45.539');
