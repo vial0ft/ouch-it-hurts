@@ -1,3 +1,24 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+data:
+  postgres-db: cG9zdGdyZXM=
+  postgres-user: cG9zdGdyZXM=
+  postgres-password: MTIzNDU2Nzg=
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  postgres-url: jdbc:postgresql://postgres-service:5432/postgres
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,12 +42,6 @@ spec:
         image: postgres:15rc1-alpine3.16
         ports:
         - containerPort: 5432
-        volumeMounts:
-          - name: postgres-claim0
-            mountPath: /var/lib/postgresql/data
-
-          - mountPath: /docker-entrypoint-initdb.d
-            name: postgres-initdb
         env:
         - name: POSTGRES_DB
           valueFrom:
@@ -43,15 +58,7 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: postgres-password
-      volumes:
-        - name: postgres-claim0
-          persistentVolumeClaim:
-            claimName: postgres-claim0
-
-        - name: postgres-initdb
-          configMap:
-            name: postgres-initdb-config
-
+              
 ---
 apiVersion: v1
 kind: Service
