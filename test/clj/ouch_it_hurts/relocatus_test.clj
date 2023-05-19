@@ -25,7 +25,7 @@
        (mapv :columns/column_name)))
 
 (defn- clean-directory [directory-path]
-  (let [directory-contents (file-seq (clojure.java.io/file directory-path))
+  (let [directory-contents (file-seq directory-path)
         files-to-delete (filter #(.isFile %) directory-contents)]
     (doseq [file files-to-delete]
       (io/delete-file (.getPath file)))))
@@ -56,7 +56,6 @@
   (-> (:migration-dir *cfg*)
       (io/resource)
       (io/as-file)
-      (.getAbsolutePath)
       (clean-directory)))
 
 (use-fixtures :once once)
