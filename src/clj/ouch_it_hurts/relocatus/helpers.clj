@@ -8,16 +8,17 @@
 (defn hash-of-pair [p s] (hash-ordered-coll [p s]))
 
 (defn create-files [dir file-names]
-  (let [dir (io/as-file (io/resource dir))
-        _ (when-not (.exists dir) (.mkdirs dir))
-        dir-path (.getPath dir)]
+  (let [dir-path (-> (io/resource dir) (io/as-file) (.getPath))]
     (doseq [file-name  file-names]
       (-> (java.nio.file.Paths/get dir-path (into-array [file-name]))
           (.toFile)
           (.createNewFile)))))
 
 (defn migration-scripts-names [dir]
-  (->> (io/resource dir) (io/as-file) (.listFiles) (vec)))
+  (->> (io/resource dir)
+       (io/as-file)
+       (.listFiles)
+       (filterv #(s/ends-with? % ".sql"))))
 
 (defn up-down-map [up-and-down]
   {:up (some #(if (s/ends-with? % "up.sql") %) up-and-down)

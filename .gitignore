@@ -15,8 +15,8 @@ pom.xml.asc
 profiles.clj
 /log
 /env/dev/resources/public/
-/end/dev/resources/migrations/
-/end/test/resources/test-migrations/*
+/end/dev/resources/migrations/*.sql
+/end/test/resources/test-migrations/*.sql
 .idea
 ouch-it-hurts.iml
 /resources/public/app.js

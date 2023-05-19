@@ -25,10 +25,7 @@
        (mapv :columns/column_name)))
 
 (defn- clean-directory [directory-path]
-  (println "Clear %s" directory-path)
-  (let [directory-contents (file-seq directory-path)
-        files-to-delete (filter #(.isFile %) directory-contents)]
-    (println "Files %s" files-to-delete)
+  (let [files-to-delete (filter #(s/ends-with? % ".sql") (file-seq directory-path))]
     (doseq [file files-to-delete]
       (io/delete-file (.getPath file)))))
 
