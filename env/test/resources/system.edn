@@ -1,6 +1,0 @@
-{
- :server/http {
-               :port {:env "PORT" :default 3000}
-               :host {:env "HTTP_HOST" :default "0.0.0.0"}
-               }
- }

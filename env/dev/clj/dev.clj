@@ -9,6 +9,7 @@
    [ouch-it-hurts.db.core :as d]
    [ouch-it-hurts.server.core :as serv]
    [ouch-it-hurts.config-reader.core :as c]
+   [ouch-it-hurts.relocatus.core :as relocat]
    ))
 
 
@@ -28,6 +29,12 @@
            ))
       ))
 
+(defn- relocatus-migrations [config]
+  (let [relocat-config (:relocatus/migrations config)]
+    (relocat/init-migration-table relocat-config)
+    (relocat/migrate relocat-config)
+    config))
+
 (defn- db-init-f [config]
   (d/init-db-conn (:db/connection config))
   config)
@@ -35,6 +42,7 @@
 (defn start []
     (-> (prepare-dev-server-config)
         (db-init-f)
+        (relocatus-migrations)
         (serv/start-server)
         ))
 

@@ -9,7 +9,8 @@
    [ouch-it-hurts.web.routes.api :refer [routes-data]]
    [ouch-it-hurts.web.routes.pages :refer [pages]]
    [ouch-it-hurts.db.core :as d]
-   [ouch-it-hurts.server.core :as serv])
+   [ouch-it-hurts.server.core :as serv]
+   [ouch-it-hurts.relocatus.core :as relocat])
   (:gen-class))
 
 (defn get-port [config]
@@ -26,16 +27,27 @@
                       (mid/wrap-handler-with-logging))
          :port (get-port config)))))
 
+
+(defn- relocatus-migrations [config]
+  (let [relocat-config (:relocatus/migrations config)]
+    (relocat/init-migration-table relocat-config)
+    (relocat/migrate relocat-config)
+    config))
+
+(defn- db-init-f [config]
+  (d/init-db-conn (:db/connection config))
+  config)
+
 (defn stop-server []
   (d/close-db-conn)
   (serv/stop-server))
 
 (defn run [& args]
-  (let [db-init-f (fn [config] (d/init-db-conn (:db/connection config)) config)]
     (-> (prepare-config)
         (db-init-f)
+        (relocatus-migrations)
         (serv/start-server)))
-  (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server)))
+  (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server))
 
 (defn -main [& args]
   (println "Run Application")
