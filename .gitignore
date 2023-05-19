@@ -16,7 +16,7 @@ profiles.clj
 /log
 /env/dev/resources/public/
 /end/dev/resources/migrations/
-/end/test/resources/test-migrations
+/end/test/resources/test-migrations/*
 .idea
 ouch-it-hurts.iml
 /resources/public/app.js
