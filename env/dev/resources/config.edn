@@ -1,9 +1,9 @@
 {
  :server/http {
-               :port 3000
+               :port "3000"
                :host "0.0.0.0"
                }
- 
+
  :application/assets ["public"]
 
  :db/connection {
@@ -15,5 +15,19 @@
                  :maximumPoolSize 30
                  :connectionTestQuery "select 1"
                  }
+
+ :relocatus/migrations {
+                        :migration-dir  "migrations"
+                        :migration-db {:schema "relocatus" :table "relocatus"}
+                        :db {
+                             :dbtype "postgresql"
+                             :dbname "postgres"
+                             :classname "org.postgresql.Driver"
+                             :host "localhost"
+                             :port "5432"
+                             :user "postgres"
+                             :password "12345678"
+                             }
+                        }
  }
 

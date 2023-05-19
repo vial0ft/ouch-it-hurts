@@ -12,4 +12,19 @@
                  :dataSourceProperties {:socketTimeout 30}
                  :maximumPoolSize 30
                  :connectionTestQuery "select 1"}
+
+ :relocatus/migrations {
+                        :migration-dir  "migrations"
+                        :migration-db {:schema "relocatus" :table "relocatus"}
+                        :db {
+                             :dbtype "postgresql"
+                             :dbname "postgres"
+                             :classname "org.postgresql.Driver"
+                             :host {:env "DB_HOST"}
+                             :port {:env "DB_PORT"}
+                             :user {:env "DB_USER"}
+                             :password {:env "DB_PASSWORD"}
+                             }
+                        }
  }
+
