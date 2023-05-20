@@ -14,10 +14,14 @@
           (.toFile)
           (.createNewFile)))))
 
+(defn- look-up-dir [dir]
+  (-> (io/resource dir)
+    	(.getFile)
+      (java.io.File.)
+      (file-seq)))
+
 (defn migration-scripts-names [dir]
-  (->> (io/resource dir)
-       (io/as-file)
-       (.listFiles)
+  (->> (look-up-dir dir)
        (filterv #(s/ends-with? % ".sql"))))
 
 (defn up-down-map [up-and-down]
@@ -40,8 +44,6 @@
 
 (defn up-down-migration-scripts [migrations-dir migration-name]
   (let [pattern (re-pattern (format "^.*[0-9]_%s\\.(?:up|down)\\.sql" migration-name))]
-    (->> (io/resource migrations-dir)
-         (io/as-file)
-         (file-seq)
+    (->> (look-up-dir migrations-dir)
          (filter #(re-find pattern (.getName %)))
          (up-down-map))))

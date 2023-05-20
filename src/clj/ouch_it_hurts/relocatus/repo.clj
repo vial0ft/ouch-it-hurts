@@ -16,11 +16,16 @@
            UNIQUE(migration_name)
     );" schema (str schema "." tablename)))
 
-(defn- insert-migration-sql [tablename]
-  (format "insert into %s (migration_name, hash) values(?,?)" tablename))
+(defn- insert-migration-sql [tablename] (format "insert into %s (migration_name, hash) values(?,?)" tablename))
 
-(defn- delete-migration-sql [tablename]
-  (format "delete from %s where migration_name = ?" tablename))
+(defn- delete-migration-sql [tablename] (format "delete from %s where migration_name = ?" tablename))
+
+(defn- insert-migration-record [ds table {:keys [migration-name hash]}]
+  (jdbc/execute! ds [(insert-migration-sql table) migration-name hash]))
+
+(defn- apply-migration [ds script] (jdbc/execute! ds [script]))
+
+(defn- delete-migration [ds table name] (jdbc/execute! ds [(delete-migration-sql table) name]))
 
 (defn get-migrations [ds table]
   (jdbc/execute! ds [(format "select id, migration_name, hash from %s" table)]
@@ -29,14 +34,6 @@
 (defn create-migration-table [ds {:keys [schema table]}]
   (jdbc/execute! ds [(create-migration-table-sql schema table)]))
 
-(defn- insert-migration-record [ds table {:keys [migration-name hash]}]
-  (jdbc/execute! ds [(insert-migration-sql table) migration-name hash]))
-
-(defn- apply-migration [ds script] (jdbc/execute! ds [script]))
-
-(defn- delete-migration [ds table name]
-  (jdbc/execute! ds [(delete-migration-sql table) name]))
-
 (defn do-migration [ds table {:keys [migration-name hash] :as migration-info} up-script]
   (jdbc/with-transaction [tx ds]
     (try
@@ -44,10 +41,9 @@
       (insert-migration-record tx table migration-info)
       (catch Exception e
         (do (.rollback tx)
-            (throw
-             (ex-info "Error during applying migration"
-                      {:scenario up-script :migration migration-name}
-                      e)))))))
+            (throw (ex-info "Error during applying migration"
+                            {:scenario up-script :migration migration-name}
+                            e)))))))
 
 (defn do-rollback [ds table migration-name down-script]
   (jdbc/with-transaction [tx ds]
@@ -56,9 +52,8 @@
       (delete-migration tx table migration-name)
       (catch Exception e
         (do (.rollback tx)
-            (throw
-             (ex-info "Error during rollback of migration"
-                      {:migration migration-name :scenario down-script}
-                      e)))))))
+            (throw (ex-info "Error during rollback of migration"
+                            {:migration migration-name :scenario down-script}
+                            e)))))))
 
 
