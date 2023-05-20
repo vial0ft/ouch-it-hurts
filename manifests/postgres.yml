@@ -15,7 +15,8 @@ kind: ConfigMap
 metadata:
   name: postgres-config
 data:
-  postgres-url: jdbc:postgresql://postgres-service:5432/postgres
+  postgres-host: postgres-service
+  postgres-port: 5432
 
 ---
 

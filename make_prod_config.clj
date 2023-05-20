@@ -14,11 +14,7 @@
     :parse-fn str
     :validate [#(ends-with? % ".edn") "Must be `edn`-file"]
     ]
-   ["-p" "--port PORT" "Port of the patients service"
-    :parse-fn #(Integer/parseInt %)
-    :default 80
-    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
-   ["-H" "--host HOST" "Hostname of patients service"
+   ["-s" "--server SERVER_PATH" "Hostname of patients service"
     :parse-fn str]]
   )
 
@@ -31,16 +27,15 @@
   (spit file-name edn-config))
 
 
-(defn update-config [edn-config host port]
-  (assoc edn-config :closure-defines {'ouch-it-hurts.api.host host
-                                      'ouch-it-hurts.api.port port}))
+(defn update-config [edn-config server-path]
+  (assoc edn-config :closure-defines {'ouch-it-hurts.api.server-path server-path}))
 
 
-(let [{:keys[template out port host]} (:options (parse-opts *command-line-args* patients-service-opts))]
-  (printf "template= %s out= %s host= %s port= %s" template out host port)
-  (if (not-every? some? [template out port host]) "something missed"
+(let [{:keys[template out server]} (:options (parse-opts *command-line-args* patients-service-opts))]
+  (printf "template= %s out= %s server= %s" template out server)
+  (if (not-every? some? [template out server]) "something missed"
       (-> (read-file template)
           (edn/read-string)
-          (update-config host port)
+          (update-config server)
           (write out))
       ))

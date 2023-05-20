@@ -4,6 +4,5 @@
  :source-map true
  :output-to "resources/public/app.js"
  :watch-dirs ["test/cljs" "src/cljs" "src/cljc"]
- :closure-defines {ouch-it-hurts.api/host "localhost"
-                   ouch-it-hurts.api/port "3000"}
+ :closure-defines {ouch-it-hurts.api/server-path "http://localhost:3000"}
  }

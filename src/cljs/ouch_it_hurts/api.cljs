@@ -4,13 +4,9 @@
             [goog.string :as gstr]
             [cljs.core :refer [goog-define]]))
 
-(goog-define host "")
+(goog-define server-path "")
 
-(goog-define port "")
-
-(def uri (gstr/format "http://%s:%s" host port))
-
-(defn url [path] (gstr/format "%s%s" uri path))
+(defn url [request-path] (gstr/format "%s%s" server-path request-path))
 
 (defn fetch-patients-info [request-params]
   (let [params (select-keys request-params [:filters :sorting :paging])]
