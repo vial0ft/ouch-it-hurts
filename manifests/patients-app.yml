@@ -30,11 +30,16 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: postgres-password
-        - name: JDBC_URL
+        - name: DB_HOST
           valueFrom:
             configMapKeyRef:
               name: postgres-config
-              key: postgres-url
+              key: postgres-host
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: postgres-port
         - name: PORT
           value: "3500"
 ---

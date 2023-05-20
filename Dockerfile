@@ -1,7 +1,6 @@
 FROM clojure:temurin-20-tools-deps-jammy AS build
 
-ARG SERVER_PORT=""
-ARG SERVER_HOST=""
+ARG SERVER=""
 
 ENV CLOJURE_VERSION=1.11.1.1182
 
@@ -15,11 +14,11 @@ WORKDIR /build
 
 COPY . /build
 
-RUN echo "Server info: port $SERVER_PORT host $SERVER_HOST"
+RUN echo "Server info: $SERVER"
 
-RUN bb -f make_prod_config.clj -t prod.template.cljs.edn -o prod.cljs.edn -p $SERVER_PORT -H $SERVER_HOST
+RUN bb -f make_prod_config.clj -t prod.template.cljs.edn -o prod.cljs.edn -s $SERVER
 
-RUN cat prod.cljs.edn | echo
+RUN cat prod.cljs.edn
 
 RUN clojure -M:fig:min
 

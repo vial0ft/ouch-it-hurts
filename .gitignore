@@ -21,3 +21,4 @@ profiles.clj
 ouch-it-hurts.iml
 /resources/public/app.js
 prod.cljs.edn
+build_image.sh
