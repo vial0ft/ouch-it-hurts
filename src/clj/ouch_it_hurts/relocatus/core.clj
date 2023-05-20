@@ -37,6 +37,7 @@
                             (assoc acc :hash valid-hash)))))))
 
 (defn init-migration-table [{:keys [db migration-db]}]
+  (println "Init migration table if it needs")
   (-> (jdbc/get-datasource db) (repo/create-migration-table migration-db)))
 
 (defn create-migration [{:keys [migration-dir]} name]
@@ -47,6 +48,7 @@
 
 (defn migrate [{:keys [migration-dir db migration-db] :as cfg}]
   (init-migration-table cfg)
+  (println "Applying migrations")
   (let [ds (jdbc/get-datasource db)
         migration-table-name (h/schema-table migration-db)
         scripts-map (->> (h/migration-scripts-map migration-dir)

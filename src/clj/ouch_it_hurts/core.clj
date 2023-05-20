@@ -30,6 +30,7 @@
 
 (defn- relocatus-migrations [config]
   (let [relocat-config (:relocatus/migrations config)]
+    (printf "Relocatus config:\n %s \n" relocat-config)
     (relocat/init-migration-table relocat-config)
     (relocat/migrate relocat-config)
     config))
