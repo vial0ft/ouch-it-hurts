@@ -16,7 +16,7 @@ metadata:
   name: postgres-config
 data:
   postgres-host: postgres-service
-  postgres-port: 5432
+  postgres-port: '5432'
 
 ---
 
