@@ -10,13 +10,15 @@
               :base-path "/api"
               }
 
- :db/connection {:dbtype "postgres"
+ :db/connection {:dbtype "postgresql"
+                 :dbname "postgres"
                  :username "postgres"
                  :password "12345678"
-                 :jdbcUrl "jdbc:postgresql://localhost:5432/postgres"
+                 :host "localhost"
+                 :port "5432"
+                 :dbname "postgres"
                  :dataSourceProperties {:socketTimeout 30}
-                 :maximumPoolSize 30
-                 :connectionTestQuery "select 1"}
+                 :maximumPoolSize 30}
 
  :relocatus/migrations {
                         :migration-dir  "test_migrations"

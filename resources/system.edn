@@ -5,13 +5,14 @@
 
  :routes/api {:base-url "/api"}
 
- :db/connection {:dbtype "postgres"
+ :db/connection {:dbtype "postgresql"
                  :username {:env "DB_USER"}
                  :password {:env "DB_PASSWORD"}
-                 :jdbcUrl {:env "JDBC_URL"}
+                 :host {:env "DB_HOST"}
+                 :port {:env "DB_PORT"}
+                 :dbname "postgres"
                  :dataSourceProperties {:socketTimeout 30}
-                 :maximumPoolSize 30
-                 :connectionTestQuery "select 1"}
+                 :maximumPoolSize 30}
 
  :relocatus/migrations {
                         :migration-dir  "migrations"
