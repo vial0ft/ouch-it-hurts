@@ -3,7 +3,6 @@
             [clojure.string :as s]
             [ouch-it-hurts.relocatus.repo :as repo]
             [ouch-it-hurts.relocatus.helpers :as h]
-            [clojure.tools.logging :as log]
             [next.jdbc :as jdbc]))
 
 (defn- check-exists-migration-hash [existed-migration-hash migration-files-hash]
@@ -18,7 +17,6 @@
             (let [script-hash (h/hash-of-pair (:hash acc) hash)
                   result (repo/do-migration ds migration-table {:migration-name (h/migration-name-without-time name)
                                                                 :hash script-hash} (slurp up))]
-              (log/infof "Applying migration: %s result: %s" name result)
               (if (contains? result :error) result
                   (recur rest (assoc acc :hash script-hash)))))))
 

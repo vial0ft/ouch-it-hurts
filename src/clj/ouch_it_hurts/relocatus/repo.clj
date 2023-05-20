@@ -39,7 +39,6 @@
     (try
       (apply-migration tx up-script)
       (insert-migration-record tx table migration-info)
-      {:ok migration-name}
       (catch Exception e
         (do (.rollback tx)
             (throw (ex-info "Error during applying migration"

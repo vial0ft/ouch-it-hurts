@@ -3,11 +3,11 @@ prod.cljs.edn
 .idea
 
 #Ignore logs directory
-logs
+logs/
 
 #Ignore the git and cache folders
-.github
-.cpcache
+.git
+.cache
 
 #Ingore all markdown and class files
 *.md
