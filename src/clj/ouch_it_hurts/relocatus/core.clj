@@ -18,7 +18,7 @@
             (let [script-hash (h/hash-of-pair (:hash acc) hash)
                   result (repo/do-migration ds migration-table {:migration-name (h/migration-name-without-time name)
                                                                 :hash script-hash} (slurp up))]
-              (log/infof "Applying migration: %s result: %s" name result)
+              (printf "Applying migration: %s result: %s\n" name result)
               (if (contains? result :error) result
                   (recur rest (assoc acc :hash script-hash)))))))
 
@@ -56,7 +56,8 @@
         filtered-result (filter-existed-migrations scripts-map current-migrations)
         _ (when (contains? filtered-result :error) (throw (ex-info "Error of existing migrations" filtered-result)))
         result (apply-migrations ds migration-table-name filtered-result)]
-    (when result [:ok {:migrations (keys filtered-result)}])))
+    (when (contains? result :error) (throw (ex-info "Error during applying migrations" result)))
+    [:ok {:migrations (keys filtered-result)}]))
 
 (defn rollback [{:keys [db migration-db migration-dir]}]
   (let [ds (jdbc/get-datasource db)
