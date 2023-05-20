@@ -57,7 +57,8 @@
         _ (when (contains? filtered-result :error) (throw (ex-info "Error of existing migrations" filtered-result)))
         result (apply-migrations ds migration-table-name filtered-result)]
     (when (contains? result :error) (throw ex-info "Error during applying migration" result))
-    [:ok {:migrations (keys filtered-result)}]))
+    [:ok {:migrations (keys filtered-result)}]
+    ))
 
 (defn rollback [{:keys [db migration-db migration-dir]}]
   (let [ds (jdbc/get-datasource db)
