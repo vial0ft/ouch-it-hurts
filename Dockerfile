@@ -28,7 +28,7 @@ RUN clojure -T:build uber
 FROM eclipse-temurin:20-jre-alpine
 
 RUN addgroup -S vial0ft && adduser -S vial0ft -G vial0ft
-RUN mkdir -p /service && chown -R vial0ft. /service
+RUN mkdir -p /service && chown -R vial0ft /service
 USER vial0ft
 
 WORKDIR /service

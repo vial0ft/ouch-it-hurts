@@ -7,13 +7,14 @@
  :application/assets ["public"]
 
  :db/connection {
-                 :dbtype "postgres"
+                 :dbtype "postgresql"
                  :username "postgres"
                  :password "12345678"
-                 :jdbcUrl "jdbc:postgresql://localhost:5432/postgres"
+                 :host "localhost"
+                 :port "5432"
+                 :dbname "postgres"
                  :dataSourceProperties {:socketTimeout 30}
                  :maximumPoolSize 30
-                 :connectionTestQuery "select 1"
                  }
 
  :relocatus/migrations {
