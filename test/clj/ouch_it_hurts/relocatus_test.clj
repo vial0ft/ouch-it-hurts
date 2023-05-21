@@ -14,7 +14,7 @@
 (def ^:dynamic *ds*)
 
 (defn- write-to-file [file text]
-  (with-open [w (io/writer file)]
+  (with-open [w (io/writer (io/as-file (io/resource file)))]
     (.write w text)))
 
 (defn- columns [ds schema table]
@@ -68,8 +68,8 @@
           {:keys [up down]} (h/up-down-migration-scripts migration-dir migration-name)]
       (is (not (nil? up)))
       (is (not (nil? down)))
-      (is (s/ends-with? (.getName up) ".up.sql"))
-      (is (s/ends-with? (.getName down) ".down.sql")))))
+      (is (s/ends-with? up ".up.sql"))
+      (is (s/ends-with? down ".down.sql")))))
 
 (deftest init-migration-table-test
   (testing "Init relocatus table"
@@ -105,7 +105,8 @@
 
 (deftest applying-few-migrations-test
     (testing "Applying & rollback few migrations"
-      (let [{:keys [migration-dir]} *cfg*
+      (let [_ (relocat/init-migration-table *cfg*)
+            {:keys [migration-dir]} *cfg*
             migrations [{:name "create-test-table"
                          :up "create table if not exists public.test_table (
                                   ID INT PRIMARY KEY      NOT NULL,
