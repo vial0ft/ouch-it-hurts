@@ -4,10 +4,10 @@ on:
   pull_request:
     branches:
       - main
-tags: [${{ github.event.number }}]
 
 jobs:
   tests-and-publish-docker:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Run tests
