@@ -1,0 +1,22 @@
+name: Test and publish docker image
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    tags: [${{ github.event.number }}]
+
+jobs:
+  tests-and-publish-docker:
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run tests
+      id: test
+      uses: ./.github/actions/test
+    - name: Build and deploy Docker image
+      id: deploy
+      uses: ./.github/actions/docker
+      with:
+        backend-server-address: ${{secrets.SERVER}}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+

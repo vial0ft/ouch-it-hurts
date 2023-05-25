@@ -1,20 +1,10 @@
-name: CI
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+name: Testing
 
-jobs:
 
-  clojure:
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    runs-on: ${{ matrix.os }}
-
+runs:
+  using: "composite"
+  name: "Tests application"
+  runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
