@@ -28,7 +28,7 @@
     (let [{:keys [page-number page-size]} @paging
           count-of-pages  (count-pages total page-size)
           seq-numbers (seq-page-numbers page-number count-of-pages 2)]
-      [:div {:style {:display "flex"}}
+      [:div.paging-line
        [:div {:style {:display "flex" :flex "nowrap" :justify-content "center" :width "90%"}}
         (if (empty? seq-numbers) [:span]
             (for [number seq-numbers]

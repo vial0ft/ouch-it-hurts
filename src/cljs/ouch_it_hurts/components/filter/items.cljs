@@ -25,7 +25,7 @@
        [ErrorSpan error]])))
 
 (defn CheckboxButton [{:keys [key opt]} label]
-  [:div {:id "ck-button"}
+  [:div
    [:label {:for key}
     [:input  (merge
               {:id key
