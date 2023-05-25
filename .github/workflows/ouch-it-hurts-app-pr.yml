@@ -2,8 +2,9 @@ name: Test and publish docker image
 
 on:
   pull_request:
-    branches: [ "main" ]
-    tags: [${{ github.event.number }}]
+    branches:
+      - main
+tags: [${{ github.event.number }}]
 
 jobs:
   tests-and-publish-docker:
