@@ -20,7 +20,7 @@
 ;; States
 
 (defn MainPage []
-  [:div
+  [:div.root
    [Header]
    [:div {:hidden @(r/cursor app-state [:error :ok?])}
     [:span (str @(r/cursor app-state [:error :message]))]

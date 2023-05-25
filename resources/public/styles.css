@@ -1,3 +1,32 @@
+.root{
+    font-family: "Monospace";
+}
+.footer {
+    margin-top: 20px;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #F0FFFF;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer > div {
+    width: 150px;
+    margin-left: 15px;
+    margin-top: 10px;
+}
+
+.header > h1 {
+    font-family: "Monospace";
+    text-align: "center";
+}
+
+.patient-table-container {
+    margin: 20px;
+}
+
 .patient-info-table-grid-container {
     display: grid;
     grid-template-columns: auto auto auto auto auto auto auto auto auto;
@@ -91,40 +120,18 @@ span.spaced:before {
     content: "\00a0 ";
 }
 
-#ck-button {
-    margin: 4px;
-    background-color: #EFEFEF;
-    border-radius: 4px;
-    border: 1px solid #D0D0D0;
-    overflow: auto;
-    float: left;
+.sex-filed-set {
+    display: flex;
 }
 
-#ck-button:hover {
-    background: darkgray;
+.sex-filed-set > div {
+    margin-right: 4px;
 }
 
-#ck-button label {
-    float: left;
-    width: 4.0em;
+.paging-line {
+    display: flex;
+    margin-top: 5px;
 }
-
-#ck-button label span {
-    text-align: center;
-    padding: 3px 0px;
-    display: block;
-}
-
-#ck-button label input {
-    position: absolute;
-    top: -20px;
-}
-
-#ck-button input:checked + span {
-    background-color: #911;
-    color: #fff;
-}
-
 
 #paging-number-button {
     margin: 4px;
@@ -185,10 +192,10 @@ span.spaced:before {
     display: block;
 }
 
-#ck-button input:checked + span {
-    background-color: #911;
-    color: #fff;
+.buttons-line {
+    margin-top: 10px;
 }
+
 
 .modal-wrapper {
     display: flex;

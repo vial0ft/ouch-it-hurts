@@ -80,7 +80,7 @@
     (fetch-patients-info patients-info app-state)
     (fn [app-state]
       (fetch-patients-info patients-info app-state)
-      [:div
+      [:div.patient-table-container
        [FilterForm #(swap! app-state (fn [cur] (-> cur (assoc :filters %) (assoc-in [:paging :page-number] 1))))]
        [TableBlock
         patients-info

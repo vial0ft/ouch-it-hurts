@@ -16,7 +16,7 @@
                                        0 [true true]
                                        1 [false false]
                                        [true false])]
-      [:div
+      [:div.buttons-line
        [:button.filter-form-button
         {:disabled disable-show
          :on-click #(view-callback (first (keys selected)) modal edit-callback)}

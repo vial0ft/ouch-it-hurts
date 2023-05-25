@@ -20,7 +20,7 @@
 
 (def ^private error-state (r/atom nil))
 
-(def all-sex-options #{"male" "female" "other" "none"})
+(def all-sex-options #{"male" "female" "unknown"})
 
 (def ^private filter-form (r/atom {:filters default-filter
                                    :error nil}))
@@ -73,6 +73,7 @@
   (fn [e]
     (let [checked? (.-checked (.-target e))
           id (.-id (.-target e))]
+      (println id checked?)
       (case [id checked?]
         ["all" true] (do
                        (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
@@ -81,10 +82,14 @@
           (do
             (set-elems-value {"all" false id true})
             (swap! (filter-form-cursor [:sex-opts :value]) conj id))
-          (swap! (filter-form-cursor [:sex-opts :value]) (fn [old] (disj old id))))))))
+          (do
+            (swap! (filter-form-cursor [:sex-opts :value]) (fn [old] (disj old id)))
+            (when (empty? @(filter-form-cursor [:sex-opts :value])) (set-elems-value {"all" true}))
+                 ))))))
 
 (defn- patient-sex-filter-selector []
   [FieldSet "Sex"
+   [:div.sex-filed-set
    [CheckboxButton {:key "all"
                     :opt {:defaultChecked true
                           :on-change (sex-filter-on-change all-sex-options)}}  "All"]
@@ -93,7 +98,7 @@
    [CheckboxButton {:key "female"
                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Female"]
    [CheckboxButton {:key "unknown"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Not defined"]])
+                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Undefined"]]])
 
 (defn patient-show-options []
   [FieldSet "Show record options"
@@ -151,6 +156,7 @@
 (defn FilterForm [filter-state-update-callback]
   (fn [filter-state-update-callback]
     [:div {:style {:padding "10px"}}
+     [:span (str @(r/cursor filter-form [:filters]))]
      [:form {:on-submit (fn [e]
                           (.preventDefault e)
                           (let [[result details]
