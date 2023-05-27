@@ -1,6 +1,6 @@
 (ns ouch-it-hurts.query-builder.ops)
 
-(def supported-ops #{:between :is :in :or :and := :> :< :>= :<= :<>})
+(def supported-ops #{:between :is :in :or :and := :> :< :>= :<= :<> :like})
 
 (defn is-null
   ([] nil)
@@ -53,3 +53,6 @@
      [true false] (lte field to)
      [false true] (gte field from)
      [field :between from :and to])))
+
+
+(defn like [field {:keys [pattern]}] [field :like pattern])

@@ -2,6 +2,7 @@
   (:require
    [ouch-it-hurts.query-builder.core :refer :all]
    [ouch-it-hurts.query-builder.ops :refer :all]
+   [ouch-it-hurts.query-builder.utils :as u]
    [clojure.test :refer :all]))
 
 (deftest select-test
@@ -53,6 +54,21 @@
    "where `between` for map where only `to` exist"
     (is (= "where k <= 'a'" (where (between :k {:to "a"}))))))
 
+
+
+(deftest like-test
+  (testing "where `like` and pattern `start-with`"
+    (is (= "where k like 'a%'" (where (like :k {:pattern "a%"})))))
+
+  (testing "where `like` and pattern `end-with`"
+    (is (= "where k like '%a'" (where (like :k {:pattern "%a"})))))
+
+
+  (testing "where `like` and pattern `between`"
+    (is (= "where k like '%a%'" (where (like :k {:pattern "%a%"}))))))
+
+
+
 (deftest ordering-test
   (testing
    "order by fragment"
@@ -76,6 +92,7 @@
                                  "from tablename as t, table2 as t2"
                                  "where ((id = 1) or (date between '2023-01-01' and '2023-01-02'))"
                                  "and ((name is null) or (name in ('John','Smith','Alex')))"
+                                 "and (name like 'foo%')"
                                  "order by id desc"
                                  "offset 100 limit 100"])
            (-> (select :id :as "\"qwe\"")
@@ -84,7 +101,27 @@
                                              :date
                                              (str (java.time.LocalDate/of 2023 01 01))
                                              (str (java.time.LocalDate/of 2023 01 02))))
-                            (in :name ["John" "Smith" "Alex" nil])))
+                            (in :name ["John" "Smith" "Alex" nil])
+                            (like :name {:pattern "foo%"})))
                (order-by [:id :desc])
                (offset 100)
                (limit 100))))))
+
+
+(deftest complex-query-use-utils
+  (testing
+      "Use `utils/map->where` and `utils/map->order` for building query"
+    (is (= (clojure.string/join " "
+                                ["select id as \"qwe\""
+                                 "from tablename as t, table2 as t2"
+                                 "where (id = 1) and (date between '2023-01-01' and '2023-01-02')"
+                                 "and (name like 'foo%')"
+                                 "order by id desc"])
+           (-> (select :id :as "\"qwe\"")
+               (from :tablename :as :t :table2 :as :t2)
+               (where (u/map->where {:id 1
+                                     :date {:from (str (java.time.LocalDate/of 2023 01 01))
+                                            :to (str (java.time.LocalDate/of 2023 01 02))}
+                                     :name {:pattern "foo%"}
+                                     } u/as-snake-name))
+               (order-by (u/map->order-by {:id :desc} u/as-snake-name)))))))

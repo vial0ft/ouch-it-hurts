@@ -15,11 +15,12 @@
 (defn- qb-operator [k v]
   (cond
     (and (map? v) (not-empty (intersection (set (keys v)) #{:from :to}))) ops/between
+    (and (map? v) (contains? v :pattern)) ops/like
     (coll? v) ops/in
     :else ops/eq))
 
-(defn map->where [filters column-names-converter]
-  (->> filters
+(defn map->where [m column-names-converter]
+  (->> m
        (map (fn [[k v]] ((qb-operator k v) (column-names-converter k) v)))
        (apply ops/_and)))
 
