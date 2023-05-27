@@ -11,29 +11,34 @@
 (def ^:private default-sorting {:id :asc})
 
 (defn- show-records-filter [{:keys [show-records-opts] :as filters}]
-  (println show-records-opts)
   (-> (case show-records-opts
         :all (dissoc filters :deleted)
         :deleted-only (assoc filters :deleted true)
         (assoc filters :deleted false))
       (dissoc :show-records-opts)))
 
+(defn- names-address-oms-start-with-filter [filters]
+  (let [updf (fn[cur] {:pattern (str cur "%")})]
+    (loop [keys [:first-name :middle-name :last-name :address :oms]
+           r filters]
+      (if (empty? keys) r
+          (let [[k & rest] keys]
+            (recur rest (if-not (contains? r k) r (update r k updf))))))))
+
 (defn- sex-opts [{:keys [sex-opts] :as filters}]
-  (if sex-opts
-    (-> filters
-        (assoc :sex (let [coll-sex-opts (if (coll? sex-opts) (set sex-opts) #{sex-opts})]
-                      (if (contains? coll-sex-opts "unknown")
-                        (-> coll-sex-opts (disj "unknown") (conj nil))
-                        coll-sex-opts)))
-        (dissoc :sex-opts))
-    filters))
+  (if-not sex-opts filters
+          (-> filters
+              (assoc :sex (let [coll-sex-opts (if (coll? sex-opts) (set sex-opts) #{sex-opts})]
+                            (if (contains? coll-sex-opts "unknown")
+                              (-> coll-sex-opts (disj "unknown") (conj nil))
+                              coll-sex-opts)))
+              (dissoc :sex-opts))))
 
 (defn- birth-date-period [{:keys [birth-date-period] :as filters}]
-  (if birth-date-period
-    (-> filters
-        (dissoc :birth-date-period)
-        (assoc :birth-date birth-date-period))
-    filters))
+  (if-not birth-date-period filters
+          (-> filters
+              (dissoc :birth-date-period)
+              (assoc :birth-date birth-date-period))))
 
 (defn- paging-2-offset [pn ps] (* (dec pn) ps))
 
@@ -43,7 +48,11 @@
   (log/infof "%s" (str get-all-req))
   (let [{:keys [paging filters sorting] :or {paging default-paging sorting default-sorting}} get-all-req
         {:keys [page-number page-size]} paging
-        prepered-filter (-> filters (show-records-filter) (sex-opts) (birth-date-period))]
+        prepered-filter (-> filters
+                            (names-address-oms-start-with-filter)
+                            (show-records-filter)
+                            (sex-opts)
+                            (birth-date-period))]
     (repo/query-infos
      ds
      {:offset (paging-2-offset page-number page-size)
