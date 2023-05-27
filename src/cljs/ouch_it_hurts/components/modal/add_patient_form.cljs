@@ -34,12 +34,12 @@
                        :input {:class "filter-form-block-item-text-input"
                                :type "text"
                                :on-change #(reset-value [:middle-name] %)}}]
-         [LabledField {:key "second-name"
+         [LabledField {:key "last-name"
                        :class "filter-form-block-item"
-                       :lable {:class "filter-form-block-item-lable" :text "Second name: "}
+                       :lable {:class "filter-form-block-item-lable" :text "Last name: "}
                        :input {:class "filter-form-block-item-text-input"
                                :type "text"
-                               :on-change #(reset-value [:second-name] %)}}]]
+                               :on-change #(reset-value [:last-name] %)}}]]
         [FieldSet "Sex"
          [Select {:key "sex"
                   :options [{:value "male" :lable "Male"}

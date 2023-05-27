@@ -10,7 +10,7 @@
 ;; States
 
 (def ^private default-filter {:first-name {:value ""}
-                              :second-name {:value ""}
+                              :last-name {:value ""}
                               :middle-name {:value ""}
                               :address {:value ""}
                               :birth-date-period {:value {}}
@@ -57,12 +57,12 @@
                  :input {:class "filter-form-block-item-text-input"
                          :type "text"
                          :on-change (change-key (filter-form-cursor [:middle-name :value]))}}]
-   [LabledField {:key "second-name"
+   [LabledField {:key "last-name"
                  :class "filter-form-block-item"
-                 :lable {:class "filter-form-block-item-lable" :text "Second name: "}
+                 :lable {:class "filter-form-block-item-lable" :text "Last name: "}
                  :input {:class "filter-form-block-item-text-input"
                          :type "text"
-                         :on-change (change-key (filter-form-cursor [:second-name :value]))}}]])
+                         :on-change (change-key (filter-form-cursor [:last-name :value]))}}]])
 
 (defn- set-elems-value [id-value-pairs]
   (doseq [[id value]  id-value-pairs]

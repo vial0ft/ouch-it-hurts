@@ -22,13 +22,13 @@
                           :type "text"
                           :disabled true
                           :value (:middle-name patient-info)}}]
-    [LabledField {:key "second-name"
+    [LabledField {:key "last-name"
                   :class "view-modal-block-item"
-                  :lable {:class "view-modal-block-item-lable" :text "Second name: "}
+                  :lable {:class "view-modal-block-item-lable" :text "Last name: "}
                   :input {:class "view-modal-block-item-text-input"
                           :type "text"
                           :disabled true
-                          :value (:second-name patient-info)}}]]
+                          :value (:last-name patient-info)}}]]
    [SingleFieldSet
     {:key "sex"
      :input {:type "text"
