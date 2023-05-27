@@ -41,15 +41,16 @@
    {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'First name' value limited by %s letters" 255)}))
 
-(s/def ::second-name
-  (st/spec
-   {:spec (s/nilable (s/and string? #(< (count %) 255)))
-    :description (str-format "'Second name' value limited by %s letters" 255)}))
-
 (s/def ::middle-name
   (st/spec
    {:spec (s/nilable (s/and string? #(< (count %) 255)))
     :description (str-format "'Middle name' value limited by %s letters" 255)}))
+
+(s/def ::last-name
+  (st/spec
+   {:spec (s/nilable (s/and string? #(< (count %) 255)))
+    :description (str-format "'Last name' value limited by %s letters" 255)}))
+
 
 (s/def ::address
   (st/spec
@@ -76,7 +77,7 @@
 (s/def ::new-patient-info
   (st/spec
    {:spec (s/and map? #(not-empty %) (s/keys :opt-un  [::first-name
-                                                       ::second-name
+                                                       ::last-name
                                                        ::middle-name
                                                        ::sex
                                                        ::address
@@ -84,7 +85,7 @@
                                                        ::oms]))
     :description
     (str-format (string/join " " ["'Patient info' must contain at least one of fields:"
-                                  "'First name'" "'Second name'" "'Middle name'" "'Address'" "'Sex'" "'Birth date'" "'CMI'"]))}))
+                                  "'First name'" "'Last name'" "'Middle name'" "'Address'" "'Sex'" "'Birth date'" "'CMI'"]))}))
 
 (s/def ::patient-info
   (st/spec
@@ -113,7 +114,7 @@
 
 (s/def ::filters
   (s/keys :opt-un [::first-name
-                   ::second-name
+                   ::last-name
                    ::middle-name
                    ::address
                    ::oms
@@ -145,14 +146,14 @@
   (st/spec
    {:spec (s/map-of #{:id
                       :first-name
-                      :second-name
+                      :last-name
                       :middle-name
                       :sex
                       :address
                       :birth-date
                       :oms} ::order)
     :description (string/join " " ["'Sorting' map must contain at least one of keys:"
-                                   "'id'" "'First name'" "'Second name'" "'Middle name'" "'Address'" "'Sex'" "'Birth date'" "'CMI'"
+                                   "'id'" "'First name'" "'Last name'" "'Middle name'" "'Address'" "'Sex'" "'Birth date'" "'CMI'"
                                    "- with 'order' value"])}))
 
 (s/def ::query-request
