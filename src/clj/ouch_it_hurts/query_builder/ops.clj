@@ -53,3 +53,7 @@
      [true false] (lte field to)
      [false true] (gte field from)
      [field :between from :and to])))
+
+
+(defn like [field pattern]
+  [field :like pattern])

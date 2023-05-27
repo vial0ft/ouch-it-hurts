@@ -53,6 +53,21 @@
    "where `between` for map where only `to` exist"
     (is (= "where k <= 'a'" (where (between :k {:to "a"}))))))
 
+
+
+(deftest like-test
+  (testing "where `like` and pattern `start-with`"
+    (is (= "where k like 'a%'" (where (like :k "a%")))))
+
+  (testing "where `like` and pattern `end-with`"
+    (is (= "where k like '%a'" (where (like :k "%a")))))
+
+
+  (testing "where `like` and pattern `between`"
+    (is (= "where k like '%a%'" (where (like :k "%a%"))))))
+
+
+
 (deftest ordering-test
   (testing
    "order by fragment"
