@@ -4,7 +4,7 @@
    [ouch-it-hurts.relocatus.repo :as relr]
    [ouch-it-hurts.relocatus.helpers :as h]
    [ouch-it-hurts.config-reader.core :as cr]
-   [clj-test-containers.core :as tc]
+   [ouch-it-hurts.helpers.core :as th]
    [clojure.java.io :as io]
    [clojure.string :as s]
    [clojure.test :refer :all]
@@ -29,18 +29,12 @@
     (doseq [file files-to-delete]
       (io/delete-file (.getPath file)))))
 
-(defn- create-container [{:keys [dbname user password]}]
-  (tc/create {:image-name    "postgres:15rc1-alpine3.16"
-                              :exposed-ports [5432]
-                              :env-vars      {"POSTGRES_DB" dbname
-                                              "POSTGRES_USER" user
-                                              "POSTGRES_PASSWORD" password}}))
-
 (defn- once [work]
-  (let [config (-> (cr/read-config "config.edn" [:relocatus/migrations :db/connection])
-                   (cr/resolve-props))
-        reloc-cfg (:relocatus/migrations config)
-        container (-> (create-container (select-keys (:db reloc-cfg) [:dbname :user :password])) (tc/start!))
+  (let [reloc-cfg (-> (cr/read-config "config.edn" [:relocatus/migrations])
+                   (cr/resolve-props)
+                   (get :relocatus/migrations))
+        container (-> (th/create-container (select-keys (:db reloc-cfg) [:dbname :user :password]))
+                      (th/start-container))
         cfg       (-> reloc-cfg
                       (assoc-in [:db :host] (:host container))
                       (assoc-in [:db :port] (get (:mapped-ports container) 5432)))
@@ -48,7 +42,7 @@
     (binding [*cfg* cfg
               *ds*  datasource]
       (work))
-    (tc/stop! container)))
+    (th/stop-container container)))
 
 (defn- each [work]
   (work)

@@ -88,12 +88,11 @@
 (defn update-patient-info
   "Merge current patient's info with new patient's info."
   [id patient-info]
-  (println "update id = " id "info =" patient-info)
+  (printf "update id = %s info = %s \n" id patient-info)
   (error-when  (nil? id) "Can't update patient info without id" {:reason :not-exists :id id})
   (let [current-patient-info (repo/get-info-by-id ds id)]
     (error-when (nil? current-patient-info) "Can't update patient's info: the patient isn't exist"
                 {:reason :not-exist :id id})
     (let [[extra upd _] (diff current-patient-info patient-info)
-          update (update-vals-with (merge extra upd) #(get upd (first %)))
-          _ (println "for update " update)]
+          update (update-vals-with (merge extra upd) #(get upd (first %)))]
       (repo/update-info ds id update))))
