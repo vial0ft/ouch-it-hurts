@@ -15,7 +15,7 @@
 (defn- qb-operator [k v]
   (cond
     (and (map? v) (not-empty (intersection (set (keys v)) #{:from :to}))) ops/between
-    (and (map? v) (contains? v :like)) ops/like
+    (and (map? v) (contains? v :pattern)) ops/like
     (coll? v) ops/in
     :else ops/eq))
 
