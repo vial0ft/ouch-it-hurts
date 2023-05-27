@@ -6,7 +6,7 @@ create table if not exists patients.info (
 	oms text NULL,
 	created_at timestamptz NULL DEFAULT now(),
 	first_name varchar(255) NULL,
-	second_name varchar(255) NULL,
+	last_name varchar(255) NULL,
 	middle_name varchar(255) NULL,
 	deleted bool NOT NULL DEFAULT false,
 	updated_at timestamptz NOT NULL DEFAULT now(),

@@ -43,7 +43,7 @@
                (-> new-patient-info
                    (select-keys
                     [:first-name
-                     :second-name
+                     :last-name
                      :middle-name
                      :birth-date
                      :sex
@@ -61,7 +61,7 @@
 (defn update-info [ds id patient-info-for-update]
   (let [info-for-update (-> (select-keys patient-info-for-update
                                          [:first-name
-                                          :second-name
+                                          :last-name
                                           :middle-name
                                           :birth-date
                                           :sex

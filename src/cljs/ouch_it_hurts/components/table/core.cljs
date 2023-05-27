@@ -44,13 +44,13 @@
    [OrderedHeaderCell {:value "Id"  :on-click (order-for-key :id ordering-state)}]
    [OrderedHeaderCell {:value "First name" :on-click (order-for-key :first-name ordering-state)}]
    [OrderedHeaderCell {:value "Middle name" :on-click (order-for-key :middle-name ordering-state)}]
-   [OrderedHeaderCell {:value "Second name" :on-click (order-for-key :second-name ordering-state)}]
+   [OrderedHeaderCell {:value "Last name" :on-click (order-for-key :last-name ordering-state)}]
    [OrderedHeaderCell {:value "Sex" :on-click (order-for-key :sex ordering-state)}]
    [OrderedHeaderCell {:value "Birth Date" :on-click (order-for-key :birth-date ordering-state)}]
    [OrderedHeaderCell {:value "Address" :on-click (order-for-key :address ordering-state)}]
    [OrderedHeaderCell {:value "CHI number" :on-click (order-for-key :oms ordering-state)}]))
 
-(defn- TableRow [selected-ids-store all-ids-count {:keys [id first-name middle-name second-name sex birth-date address oms deleted]}]
+(defn- TableRow [selected-ids-store all-ids-count {:keys [id first-name middle-name last-name sex birth-date address oms deleted]}]
   (let [class (if-not deleted "patients-info-table-grid-item" "patients-info-table-grid-deleted-item")]
     (list
      [RowCell {:class class :value [:input {:id id
@@ -60,7 +60,7 @@
      [RowCell {:class class :value id}]
      [RowCell {:class class :value first-name}]
      [RowCell {:class class :value middle-name}]
-     [RowCell {:class class :value second-name}]
+     [RowCell {:class class :value last-name}]
      [RowCell {:class class :value sex}]
      [RowCell {:class class :value birth-date}]
      [RowCell {:class class :value address}]
