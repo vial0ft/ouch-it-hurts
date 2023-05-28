@@ -45,7 +45,6 @@
 (defn get-all
   "Fetch all patient infos according `paging`, `filters`, `sorting`"
   [get-all-req]
-  (log/infof "%s" (str get-all-req))
   (let [{:keys [paging filters sorting] :or {paging default-paging sorting default-sorting}} get-all-req
         {:keys [page-number page-size]} paging
         prepered-filter (-> filters

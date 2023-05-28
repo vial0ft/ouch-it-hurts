@@ -16,7 +16,7 @@
 
 
 (defn- oms-gen []
-  (s/join (gen/generate (gen/vector gen/pos-int sp/oms-numbers-count) 9)))
+  (s/join (gen/generate (gen/vector gen/nat sp/oms-numbers-count) 9)))
 
 (defn- clear-patients-info-table [ds]
   (jdbc/execute! ds ["delete from patients.info"]))
@@ -168,3 +168,167 @@
       (is (thrown? Exception (service/delete-patient-info not-existed-id))))
     ))
 
+
+(defn- gen-string [cnt prefix]
+  (->> (gen/vector gen/string-alphanumeric cnt)
+       (gen/generate)
+       (map #(str prefix %))))
+
+(deftest fetch-patients-info-first-name-by-filters
+  (testing "First name filter test"
+    (let [ {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          name-prefix "John"
+          count-of-items 2
+          names (gen-string count-of-items name-prefix)
+          _ (doseq [n names] (service/add-patient-info {:first-name n}))
+          get-all-filter (service/get-all {:filters {:first-name name-prefix}})]
+      (is (= (->> get-all-filter (map :data) (count))
+             count-of-items)))))
+
+(deftest fetch-patients-info-middle-name-by-filters
+  (testing "Middle name filter test"
+    (let [ {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          name-prefix "Alex"
+          count-of-items 2
+          names (gen-string count-of-items name-prefix)
+          _ (doseq [n names] (service/add-patient-info {:middle-name n}))
+          get-all-filter (service/get-all {:filters {:middle-name name-prefix}})]
+      (is (= (->> get-all-filter (map :data) (count))
+             count-of-items)))))
+
+(deftest fetch-patients-info-last-name-by-filters
+  (testing "Last name filter test"
+    (let [ {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          name-prefix "Smith"
+          count-of-items 2
+          names (gen-string count-of-items name-prefix)
+          _ (doseq [n names] (service/add-patient-info {:last-name n}))
+          get-all-filter (service/get-all {:filters {:last-name name-prefix}})]
+      (is (= (->> get-all-filter (map :data) (count))
+             count-of-items)))))
+
+(defn- count-of [value coll]
+  (->> coll
+       (filter #(= % value))
+       (count)))
+
+(defn- same-count-of? [value coll1 coll2]
+  (= (count-of value coll1)
+     (count-of value coll2)))
+
+(defn- gen-from-set [cnt set]
+  (->> (gen/sample (spec/gen set) 10)
+       (take cnt)))
+
+
+(deftest fetch-patients-info-sex-by-filters
+  (testing "Sex filter test"
+    (let [{:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          count-of-items 5
+          variants (gen-from-set count-of-items (into #{} (filter #(not= "unknown" %) sp/sex-enum)))
+          records (cons {:first-name "patient with unknown sex"} (map #(assoc {} :sex %) variants))
+          _ (doseq [r records] (service/add-patient-info r))
+          get-all-filter (service/get-all {:filters {:sex-opts sp/sex-enum}})]
+      (is (= (-> (:data get-all-filter) (count)) (inc count-of-items)))
+      (is (same-count-of? "female" (map :sex records) (map :sex (:data get-all-filter))))
+      (is (same-count-of? "male" (map :sex records) (map :sex (:data get-all-filter))))
+      (is (= (same-count-of? nil (map :sex records) (map :sex (:data get-all-filter))))))))
+
+
+
+(defn- inst->localdate [i]
+  (-> (.toInstant i)
+      (.atZone (java.time.ZoneId/systemDefault))
+      (.toLocalDate)))
+
+(defn- gen-date [cnt from to]
+  (->> (gen/sample (spec/gen (spec/inst-in from to)) 100)
+       (drop (- 100 cnt))
+       (map inst->localdate)))
+
+
+(deftest fetch-patients-birthdate-by-filters
+  (testing "Birthdate filter test"
+    (let [{:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          count-of-items 5
+          from #inst "2010"
+          to #inst "2020"
+          from-local-str (.toString (inst->localdate from))
+          to-local-str (.toString (inst->localdate to))
+          dates (gen-date count-of-items from to)
+          _ (doseq [d dates] (service/add-patient-info {:birth-date d}))]
+      (is (= (-> (:data (service/get-all {:filters {:birth-date {:from from-local-str :to to-local-str}}})) (count))
+             (count dates)))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date {:from from-local-str}}})) (count))
+             (count dates)))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date {:to to-local-str}}})) (count))
+             (count dates))))))
+
+(deftest fetch-patients-info-address-by-filters
+  (testing "Address filter test"
+    (let [ {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          prefix "Utopia"
+          count-of-items 5
+          address-like (gen-string count-of-items prefix)
+          _ (doseq [a address-like] (service/add-patient-info {:address a}))]
+      (is (= (->> (:data (service/get-all {:filters {:address prefix}})) (count))
+             count-of-items)))))
+
+
+
+(deftest fetch-patients-info-oms-by-filters
+  (testing "OMS filter test"
+    (let [ {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          prefix "00000"
+          count-of-items 5
+          oms-seq   (->> (range count-of-items)
+                     (map (fn [_] (oms-gen)))
+                     (map #(s/replace % #"^.{5}" prefix)))
+          _ (doseq [o oms-seq] (service/add-patient-info {:oms o}))]
+      (is (= (->> (:data (service/get-all {:filters {:oms prefix}})) (count))
+             count-of-items)))))
+
+(deftest fetch-patient-info-with-page-size-and-page-number
+  (testing "Paging test"
+    (let [ {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          count-of-items 200
+          records (for [first-name (gen-string 5 "John")
+                        middle-name (gen-string 5 "Alex")
+                        last-name (gen-string 5 "Smith")
+                        address (gen-string 5 "Utopia")
+                        sex (gen-from-set 5 (into #{} (filter #(not= "unknown" %) sp/sex-enum)))]
+                    {:first-name first-name
+                     :middle-name middle-name
+                     :last-name last-name
+                     :address address
+                     :sex sex
+                     :oms (oms-gen)})
+          _ (doseq [r (take count-of-items records)] (service/add-patient-info r))]
+      (is (= (:total (service/get-all {:filters {}})) count-of-items))
+      (is (= (-> (:data (service/get-all {:filters {} :paging {:page-size 50 :page-number 1}})) (count)) 50))
+      (loop [page 1 ids #{}]
+        (let [fetched-ids
+              (into #{} (mapv :id
+                              (:data (service/get-all {:filters {} :paging {:page-size 33 :page-number page}}))))]
+          (when-not (empty? fetched-ids)
+            (is (empty? (clojure.set/intersection ids fetched-ids)))
+            (recur (inc page) (clojure.set/join ids fetched-ids))))))))
+
+(deftest fetch-patient-info-with-ordering
+  (testing "Ordering test"
+    (let [ {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          oms-values (->> (range 10) (map (fn [_] (oms-gen))))
+          _ (doseq [o oms-values] (service/add-patient-info {:oms o}))
+          id-desc (mapv :id (:data (service/get-all {:filters {} :sorting {:id :desc}})))
+          id-asc (mapv :id (:data (service/get-all {:filters {} :sorting {:id :asc}})))]
+      (is (< (first id-asc) (first (reverse id-asc))))
+      (is (> (first id-desc) (first (reverse id-desc)))))))
