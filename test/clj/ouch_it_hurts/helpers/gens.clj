@@ -7,7 +7,7 @@
 
 
 (defn oms-gen []
-  (s/join (gen/generate (gen/vector gen/nat sp/oms-numbers-count) 9)))
+  (s/join (gen/generate (gen/vector gen/nat sp/oms-length) 9)))
 
 
 
