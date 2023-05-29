@@ -43,7 +43,7 @@
 (deftest query-request-spec-test
   (testing "`page-size` from `paging` should be over `page-size-limit`"
     (is (s/valid? :ouch-it-hurts.specs/page-size sp/page-size-limit))
-    (is (s/valid? :ouch-it-hurts.specs/page-size (inc sp/page-size-limit))))
+    (is (not (s/valid? :ouch-it-hurts.specs/page-size (inc sp/page-size-limit)))))
 
 
   (testing "`paging` field is require `filters` and `sorting` are optional"
