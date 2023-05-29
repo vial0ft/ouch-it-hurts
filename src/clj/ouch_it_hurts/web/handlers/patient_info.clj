@@ -15,7 +15,6 @@
 
 (defn- get-all
   [{{:keys [query-params]} :app/request}]
-  (println (str query-params))
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/query-request query-params)
    (fn [ok-query-params]

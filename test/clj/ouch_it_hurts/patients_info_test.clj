@@ -4,6 +4,7 @@
             [ouch-it-hurts.patients-info.service :as service]
             [ouch-it-hurts.db.core :as db]
             [ouch-it-hurts.helpers.core :as th]
+            [ouch-it-hurts.helpers.gens :as tg]
             [ouch-it-hurts.specs :as sp]
             [clojure.spec.alpha :as spec]
             [clojure.test.check.generators :as gen]
@@ -13,10 +14,6 @@
             [next.jdbc :as jdbc]))
 
 (def ^:dynamic *ds*)
-
-
-(defn- oms-gen []
-  (s/join (gen/generate (gen/vector gen/nat sp/oms-numbers-count) 9)))
 
 (defn- clear-patients-info-table [ds]
   (jdbc/execute! ds ["delete from patients.info"]))
@@ -87,7 +84,7 @@
 
 (deftest fail-add-patient-if-patient-exists-with-same-oms
   (testing "fail add patient"
-    (let [patient-oms (oms-gen)
+    (let [patient-oms (tg/oms-gen)
           {:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           add-result (service/add-patient-info {:oms patient-oms})
@@ -100,7 +97,7 @@
 
 (deftest successful-update-patient-info
   (testing "successful update"
-    (let [patient-oms (oms-gen)
+    (let [patient-oms (tg/oms-gen)
           patient-firstname (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
           {:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
@@ -118,7 +115,7 @@
 
 (deftest update-notexisted-patient-info
   (testing "fail update"
-    (let [patient-oms (oms-gen)
+    (let [patient-oms (tg/oms-gen)
           patient-firstname (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
           not-existed-id 42
           {:keys [data total]} (service/get-all {:filters {}})
@@ -130,9 +127,9 @@
 
 (deftest update-patient-info-by-existing-oms-should-fail
   (testing "fail update"
-    (let [patient-oms1 (oms-gen)
+    (let [patient-oms1 (tg/oms-gen)
           patient-firstname1 (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
-          patient-oms2 (oms-gen)
+          patient-oms2 (tg/oms-gen)
           patient-firstname2 (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
           {:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
@@ -146,7 +143,7 @@
 
 (deftest successful-delete-patient-info
   (testing "Successful delete"
-    (let [patient-oms (oms-gen)
+    (let [patient-oms (tg/oms-gen)
           patient-firstname (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
           {:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
@@ -232,7 +229,7 @@
           variants (gen-from-set count-of-items (into #{} (filter #(not= "unknown" %) sp/sex-enum)))
           records (cons {:first-name "patient with unknown sex"} (map #(assoc {} :sex %) variants))
           _ (doseq [r records] (service/add-patient-info r))
-          get-all-filter (service/get-all {:filters {:sex-opts sp/sex-enum}})]
+          get-all-filter (service/get-all {:filters {:sex-opts sp/sex-filter-opts}})]
       (is (= (-> (:data get-all-filter) (count)) (inc count-of-items)))
       (is (same-count-of? "female" (map :sex records) (map :sex (:data get-all-filter))))
       (is (same-count-of? "male" (map :sex records) (map :sex (:data get-all-filter))))
@@ -289,7 +286,7 @@
           prefix "00000"
           count-of-items 5
           oms-seq   (->> (range count-of-items)
-                     (map (fn [_] (oms-gen)))
+                     (map (fn [_] (tg/oms-gen)))
                      (map #(s/replace % #"^.{5}" prefix)))
           _ (doseq [o oms-seq] (service/add-patient-info {:oms o}))]
       (is (= (->> (:data (service/get-all {:filters {:oms prefix}})) (count))
@@ -310,7 +307,7 @@
                      :last-name last-name
                      :address address
                      :sex sex
-                     :oms (oms-gen)})
+                     :oms (tg/oms-gen)})
           _ (doseq [r (take count-of-items records)] (service/add-patient-info r))]
       (is (= (:total (service/get-all {:filters {}})) count-of-items))
       (is (= (-> (:data (service/get-all {:filters {} :paging {:page-size 50 :page-number 1}})) (count)) 50))
@@ -326,7 +323,7 @@
   (testing "Ordering test"
     (let [ {:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
-          oms-values (->> (range 10) (map (fn [_] (oms-gen))))
+          oms-values (->> (range 10) (map (fn [_] (tg/oms-gen))))
           _ (doseq [o oms-values] (service/add-patient-info {:oms o}))
           id-desc (mapv :id (:data (service/get-all {:filters {} :sorting {:id :desc}})))
           id-asc (mapv :id (:data (service/get-all {:filters {} :sorting {:id :asc}})))]

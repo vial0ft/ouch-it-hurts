@@ -9,7 +9,8 @@
 (def str-format #?(:clj format :cljs (or gstr/format goog.string.format)))
 
 (def oms-numbers-count 16)
-(def sex-enum #{"male" "female" "unknown"})
+(def sex-enum #{"male" "female"})
+(def sex-filter-opts (conj sex-enum "unknown"))
 (def order-enum #{:asc :desc})
 
 (def show-records-opts #{:not-deleted-only :deleted-only :all})
@@ -38,33 +39,33 @@
 
 (s/def ::first-name
   (st/spec
-   {:spec (s/nilable (s/and string? #(< (count %) 255)))
+   {:spec (s/nilable (s/and string? not-empty #(and (< (count %) 255))))
     :description (str-format "'First name' value limited by %s letters" 255)}))
 
 (s/def ::middle-name
   (st/spec
-   {:spec (s/nilable (s/and string? #(< (count %) 255)))
+   {:spec (s/nilable (s/and string? not-empty #(< (count %) 255)))
     :description (str-format "'Middle name' value limited by %s letters" 255)}))
 
 (s/def ::last-name
   (st/spec
-   {:spec (s/nilable (s/and string? #(< (count %) 255)))
+   {:spec (s/nilable (s/and string? not-empty #(< (count %) 255)))
     :description (str-format "'Last name' value limited by %s letters" 255)}))
 
 
 (s/def ::address
   (st/spec
-   {:spec (s/nilable (s/and string? #(< (count %) 255)))
+   {:spec (s/nilable (s/and string? not-empty #(< (count %) 255)))
     :description (str-format "'Address' value limited by %s letters" 255)}))
 
 (s/def ::oms
   (st/spec
-   {:spec (s/nilable (s/and string? valid-oms?))
+   {:spec (s/nilable (s/and string? not-empty  valid-oms?))
     :description (str-format "'CMI' value must fit the format '%s'" (string/join (repeat oms-numbers-count "0")))}))
 
 (s/def ::maybe-date-YYYY-MM-DD
   (st/spec
-   {:spec (s/nilable (s/and string? valid-date-format?))
+   {:spec (s/nilable (s/and string? not-empty valid-date-format?))
     :description (str-format "Date value must be valid date and fit format %s" "YYYY-MM-DD")}))
 
 (s/def ::birth-date
@@ -76,7 +77,7 @@
 
 (s/def ::new-patient-info
   (st/spec
-   {:spec (s/and map? #(not-empty %) (s/keys :opt-un  [::first-name
+   {:spec (s/and map? not-empty (s/keys :opt-un  [::first-name
                                                        ::last-name
                                                        ::middle-name
                                                        ::sex
@@ -89,8 +90,8 @@
 
 (s/def ::patient-info
   (st/spec
-   {:spec (s/and ::new-patient-info (s/keys :req-un [::id ::deleted]))
-    :desciption "'Patient info' of an existed patient must contain 'id' and 'deleted'"}))
+   {:spec (s/and ::new-patient-info (s/keys :req-un [::id] :opt-keys [::deleted]))
+    :desciption "'Patient info' of an existed patient must contain 'id' and might contain 'deleted' flag"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -105,8 +106,8 @@
 
 (s/def ::sex-opts
   (st/spec
-   {:spec (s/or :many (s/and coll? not-empty (s/coll-of ::sex :into #{})) :one ::sex)
-    :description (str-format "'Sex' options must contain at least one of: %s" (str sex-enum))}))
+   {:spec (s/or :many (s/and coll? not-empty (s/coll-of sex-filter-opts)) :one ::sex)
+    :description (str-format "'Sex' options must contain at least one of: %s" (str sex-filter-opts))}))
 
 (s/def ::show-records-opts
   (st/spec
@@ -124,12 +125,12 @@
 
 (s/def ::page-number
   (st/spec
-   {:spec (s/and pos-int?)
+   {:spec pos-int?
     :description "'Page number' must be positive integer"}))
 
 (s/def ::page-size
   (st/spec
-   {:spec (s/and pos-int?)
+   {:spec (s/and pos-int? #(<= % page-size-limit))
     :description (str-format "'Page size' must be positive integer and limited by %s" page-size-limit)}))
 
 (s/def ::paging
@@ -139,7 +140,7 @@
 
 (s/def ::order
   (st/spec
-   {:spec (s/and keyword? order-enum)
+   {:spec (s/and keyword?  order-enum)
     :description "'Order' value must be one of 'asc' or 'desc'"}))
 
 (s/def ::sorting
