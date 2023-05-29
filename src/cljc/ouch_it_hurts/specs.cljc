@@ -8,7 +8,7 @@
 
 (def str-format #?(:clj format :cljs (or gstr/format goog.string.format)))
 
-(def oms-numbers-count 16)
+(def oms-length 16)
 (def sex-enum #{"male" "female"})
 (def sex-filter-opts (conj sex-enum "unknown"))
 (def order-enum #{:asc :desc})
@@ -17,7 +17,7 @@
 
 (def page-size-limit 100)
 
-(def oms-pattern (re-pattern (str-format "^\\d{%d}$" oms-numbers-count)))
+(def oms-pattern (re-pattern (str-format "^\\d{%d}$" oms-length)))
 
 (defn valid-oms? [str] (some? (re-matches oms-pattern str)))
 
@@ -61,7 +61,7 @@
 (s/def ::oms
   (st/spec
    {:spec (s/nilable (s/and string? not-empty  valid-oms?))
-    :description (str-format "'CMI' value must fit the format '%s'" (string/join (repeat oms-numbers-count "0")))}))
+    :description (str-format "'CMI' value must fit the format '%s'" (string/join (repeat oms-length "0")))}))
 
 (s/def ::maybe-date-YYYY-MM-DD
   (st/spec
@@ -99,29 +99,39 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-(s/def ::birth-date-period
+(s/def :search/first-name ::first-name)
+(s/def :search/middle-name ::middle-name)
+(s/def :search/last-name ::last-name)
+(s/def :search/address ::address)
+
+(s/def :search/birth-date-period
   (st/spec
    {:spec (s/and map? #(not-empty %) (s/map-of #{:from :to} ::maybe-date-YYYY-MM-DD))
     :description "Birth date period must contain 'from' or 'to' or both values formatted by 'YYYY-MM-DD'"}))
 
-(s/def ::sex-opts
+(s/def :search/sex-opts
   (st/spec
    {:spec (s/or :many (s/and coll? not-empty (s/coll-of sex-filter-opts)) :one ::sex)
     :description (str-format "'Sex' options must contain at least one of: %s" (str sex-filter-opts))}))
 
-(s/def ::show-records-opts
+(s/def :search/show-records-opts
   (st/spec
    {:spec (s/and keyword? #(contains? show-records-opts %))}))
 
+(s/def :search/oms
+  (st/spec
+   {:spec (s/nilable (s/and string? not-empty #(and (< (count %) oms-length))))
+    :description (str-format "'CMI' value limited by %s symbols" oms-length)}))
+
 (s/def ::filters
-  (s/keys :opt-un [::first-name
-                   ::last-name
-                   ::middle-name
-                   ::address
-                   ::oms
-                   ::birth-date-period
-                   ::sex-opts
-                   ::show-records-opts]))
+  (s/keys :opt-un [:search/first-name
+                   :search/last-name
+                   :search/middle-name
+                   :search/address
+                   :search/oms-opt
+                   :search/birth-date-period
+                   :search/sex-opts
+                   :search/show-records-opts]))
 
 (s/def ::page-number
   (st/spec

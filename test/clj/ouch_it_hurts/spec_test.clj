@@ -97,6 +97,7 @@
   (testing
       "`filters` could contain one or several fields from `patient-info` as key of map:
        `first-name`, `second-name`, `address`, `oms`.
+       `filters` could contain start part of string values for search.
        Instead `sex`, `filters` should contain `sex-opts`.
        Instead `birth-date`,`filters` should contain `birth-date-period`.
        `filters` could contain `show-records-opts`."
@@ -109,13 +110,21 @@
            {:filters {:first-name (gen/generate (s/gen :ouch-it-hurts.specs/first-name))
                       :middle-name (gen/generate (s/gen :ouch-it-hurts.specs/middle-name))}
             :paging valid-paging}))
-      (is (s/valid? :ouch-it-hurts.specs/query-request {:filters {:sex-opts sp/sex-filter-opts} :paging valid-paging}))
-      (is (s/valid? :ouch-it-hurts.specs/query-request {:filters {:birth-date-period {:from "2010-01-01"
-                                                                                      :to "2012-01-01"}}
-                                                        :paging valid-paging}))
-      (is (s/valid? :ouch-it-hurts.specs/query-request {:filters {:show-records-opts (first sp/show-records-opts)}
-                                                        :paging valid-paging}))
-      (is (s/valid? :ouch-it-hurts.specs/query-request {:filters {:oms (tg/oms-gen)} :paging valid-paging}))
+      (is (s/valid?
+           :ouch-it-hurts.specs/query-request
+           {:filters {:sex-opts sp/sex-filter-opts} :paging valid-paging}))
+      (is (s/valid?
+           :ouch-it-hurts.specs/query-request
+           {:filters {:birth-date-period {:from "2010-01-01"
+                                          :to "2012-01-01"}}
+            :paging valid-paging}))
+      (is (s/valid?
+           :ouch-it-hurts.specs/query-request
+           {:filters {:show-records-opts (first sp/show-records-opts)}
+            :paging valid-paging}))
+      (is (s/valid?
+           :ouch-it-hurts.specs/query-request
+           {:filters {:oms (clojure.string/join (take 5 (tg/oms-gen)))} :paging valid-paging}))
       )))
 
 

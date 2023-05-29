@@ -88,7 +88,7 @@
                  ))))))
 
 (defn- patient-sex-filter-selector []
-  [FieldSet "Sex"
+  [FieldSet "Sex options"
    [:div.sex-filed-set
    [CheckboxButton {:key "all"
                     :opt {:defaultChecked true
@@ -134,7 +134,7 @@
     {:key "birth-date"
      :from {:on-change (change-key (filter-form-cursor [:birth-date-period :value :from]))}
      :to {:on-change (change-key (filter-form-cursor [:birth-date-period :value :to]))}}
-    "Birth date"]])
+    "Birth date range"]])
 
 (def xform
   (comp
@@ -156,6 +156,7 @@
 (defn FilterForm [filter-state-update-callback]
   (fn [filter-state-update-callback]
     [:div {:style {:padding "10px"}}
+     [:h2 "Filters"]
      [:form {:on-submit (fn [e]
                           (.preventDefault e)
                           (let [[result details]
