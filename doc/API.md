@@ -243,3 +243,27 @@ body:
  "updated-at": "2023-05-30T12:35:05Z",
  "created-at": "2023-05-30T12:35:05Z"}
  ```
+
+## `POST /patient/:id/restore` undo `DELETE` for information about patient
+
+`:id` - ID of patient
+
+### Request example
+
+`POST /patient/42/restore`
+
+### Response example
+
+```json
+{"id" : 42,
+ "first-name" : "First",
+ "middle-name" : "Middle",
+ "last-name" : "Last",
+ "address" : "City, street, house",
+ "sex" : "male",
+ "birth-date": "2019-12-31T21:00:00Z",
+ "oms" : "0000000000000000",
+ "deleted" : false,
+ "updated-at": "2023-05-30T12:35:05Z",
+ "created-at": "2023-05-30T12:35:05Z"}
+ ```

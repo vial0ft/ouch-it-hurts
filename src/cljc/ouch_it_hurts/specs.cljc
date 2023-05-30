@@ -196,6 +196,9 @@
 (s/def ::delete-patient-request ::id)
 (s/def ::delete-patient-response ::patient-info)
 
+(s/def ::restore-patient-request ::id)
+(s/def ::restore-patient-response ::patient-info)
+
 (def xform
   (comp
    (filter (fn [[k v]] (= (keyword (name k)) :problems)))

@@ -61,18 +61,26 @@
 
 (defn- delete-callback [app-state store]
   (fn [ids]
-    (println "to delete" ids)
     (-> (map api/delete-patient-info ids)
         (js/Promise.all)
         (.then (post-update-action app-state store))
         (.catch (error-handler app-state)))))
 
+(defn- restore-callback [app-state store]
+  (fn [id]
+    (println "restore " id)
+    (-> (api/restore-patient-info id)
+        (.then (post-update-action app-state store))
+        (.catch (error-handler app-state)))))
+
 (defn- view-callback [app-state]
-  (fn [id modal-state edit-callback]
+  (fn [id modal-state edit-callback restore-callback]
     (-> (api/get-patient-info-by-id id)
         (.then #(reset! modal-state {:visible? true
                                      :form ViewPatientForm
-                                     :args {:patient-info % :edit-callback edit-callback}}))
+                                     :args {:patient-info %
+                                            :edit-callback edit-callback
+                                            :restore-callback restore-callback}}))
         (.catch (error-handler app-state)))))
 
 (defn PatientsTableContainer [app-state]
@@ -92,7 +100,8 @@
         {:delete-callback (delete-callback app-state patients-info)
          :add-callback (add-callback app-state patients-info)
          :edit-callback (edit-callback app-state patients-info)
-         :view-callback (view-callback app-state)}]
+         :view-callback (view-callback app-state)
+         :restore-callback (restore-callback app-state patients-info)}]
        [PatientModal !modal]])))
 
 

@@ -3,7 +3,7 @@
             [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]
             [ouch-it-hurts.utils.datetime-utils :as dtu]))
 
-(defn ViewPatientForm [modal-state {:keys [patient-info edit-callback]}]
+(defn ViewPatientForm [modal-state {:keys [patient-info edit-callback restore-callback]}]
   (println patient-info (string? (:birth-date patient-info)))
   [:div {:style {:margin "20px"}}
    [:h1 "Patient's Info"]
@@ -59,7 +59,14 @@
              :disabled true
              :value (:oms patient-info)}}
     "CMI number"]
-   [:button.filter-form-button {:on-click #(reset! modal-state {:visible? true
+   (when (:deleted patient-info)
+     [:div
+      [:span {:style {:color "red"}}"Record deleted editing unavailable"]
+      [:button.filter-form-button {:on-click #(do
+                                                (reset! modal-state {:visible? false})
+                                                (restore-callback (:id patient-info)))} "Restore"]])
+   [:button.filter-form-button {:disabled (:deleted patient-info)
+                                :on-click #(reset! modal-state {:visible? true
                                                                 :form EditPatientForm
                                                                 :args {:patient-info patient-info
                                                                        :edit-callback edit-callback}})} "Edit"]

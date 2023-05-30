@@ -51,11 +51,11 @@
                      :oms]))
                jdbc/unqualified-snake-kebab-opts))
 
-(defn delete-info [ds id]
+(defn set-deleted [ds id deleted?]
   (-> (sql/update! @ds :patients.info
-                   {:deleted true
+                   {:deleted deleted?
                     :updated-at (.toInstant (java.time.OffsetDateTime/now))}
-                   {:id id :deleted false} jdbc/unqualified-snake-kebab-opts)
+                   {:id id :deleted (not deleted?)} jdbc/unqualified-snake-kebab-opts)
       (:next.jdbc/update-count)))
 
 (defn update-info [ds id patient-info-for-update]

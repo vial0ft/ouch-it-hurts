@@ -194,6 +194,42 @@
       (is (thrown? Exception (service/delete-patient-info id))))))
 
 
+(deftest successful-restore-deleted-patient-info
+  (testing "Restore test"
+    (let [patient-oms (tg/oms-gen)
+          patient-firstname (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
+          {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          {:keys [id]} (service/add-patient-info {:oms patient-oms})
+          _ (is id)
+          get-by-id (service/get-by-id id)
+          _ (is (some? get-by-id))
+          _ (service/delete-patient-info id)]
+      (is (:deleted (service/get-by-id id)))
+      (service/restore-patient-info id)
+      (is (not (:deleted (service/get-by-id id)))))))
+
+(deftest restore-notexisted-patient-info
+  (testing "Fail restore"
+    (let [not-existed-id 100500
+          {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))]
+      (is (thrown? Exception (service/restore-patient-info not-existed-id))))))
+
+
+(deftest restore-notdeleted-patient-info
+  (testing "Fail restore"
+    (let [patient-oms (tg/oms-gen)
+          {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          {:keys [id]} (service/add-patient-info {:oms patient-oms})
+          _ (is id)
+          get-by-id (service/get-by-id id)]
+      (is (some? get-by-id))
+      (is (not (:deleted get-by-id)))
+      (is (thrown? Exception (service/restore-patient-info id))))))
+
+
 (defn- gen-string [cnt prefix]
   (->> (gen/vector gen/string-alphanumeric cnt)
        (gen/generate)
