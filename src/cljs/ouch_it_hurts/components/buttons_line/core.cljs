@@ -9,8 +9,8 @@
 (defn- selected-true [selected-ids]
   (filter #(val %) selected-ids))
 
-(defn ButtonsLine [modal selected-ids {:keys [add-callback delete-callback edit-callback view-callback]}]
-  (fn [modal selected-ids {:keys [add-callback del-callback edit-callback view-callback]}]
+(defn ButtonsLine [modal selected-ids {:keys [add-callback delete-callback edit-callback view-callback restore-callback]}]
+  (fn [modal selected-ids {:keys [add-callback del-callback edit-callback view-callback restore-callback]}]
     (let [selected (selected-true @selected-ids)
           [disable-show disable-del] (case (count selected)
                                        0 [true true]
@@ -19,7 +19,7 @@
       [:div.buttons-line
        [:button.filter-form-button
         {:disabled disable-show
-         :on-click #(view-callback (first (keys selected)) modal edit-callback)}
+         :on-click #(view-callback (first (keys selected)) modal edit-callback restore-callback)}
         "Show patient's info"]
        [:button.filter-form-button
         {:on-click #(reset! modal {:visible? true

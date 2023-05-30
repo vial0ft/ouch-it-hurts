@@ -48,9 +48,17 @@
    #(-> (s/delete-patient-info %) (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
+
+(defn- restore-by-id [{{{:keys [id]} :path-params} :app/request}]
+  (result
+   #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
+   #(-> (s/restore-patient-info %) (http-resp/json-ok))
+   #(http-resp/json-bad-request {:error %})))
+
 (defn routes []
   [["/patients" {:get {:handler get-all}}]
    ["/patient" {:post {:handler add-new}}]
    ["/patient/:id" {:get {:handler get-by-id}
                     :put {:handler update-info}
-                    :delete {:handler delete}}]])
+                    :delete {:handler delete}}]
+   ["/patient/:id/restore" {:post {:handler restore-by-id}}]])

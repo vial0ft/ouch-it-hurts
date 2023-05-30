@@ -80,12 +80,11 @@
 (defn delete-patient-info
   "Mark patient's info record with `id` as deleted. Throw error if record not found."
   [id]
-  (let [count-deleted (repo/delete-info ds id)]
     (error-when
-     (zero? count-deleted)
+     (zero? (repo/set-deleted ds id true))
      "Can't delete the patient's info: the patient isn't exist or already deleted"
      {:reason :not-exist-or-already-deleted :id id})
-    (repo/get-info-by-id ds id)))
+    (repo/get-info-by-id ds id))
 
 (defn- update-vals-with [m f]
   (->> m
@@ -109,3 +108,12 @@
                   "Can't update patient's info"
                   {:reason :unknown :id id})
         (repo/get-info-by-id ds id))))
+
+(defn restore-patient-info
+  "Undelete patient's info with `id` which was deleted before"
+  [id]
+    (error-when
+     (zero? (repo/set-deleted ds id false))
+     "Can't restore the patient's info: the patient isn't exist or not mark as deleted"
+     {:reason :not-exist-or-not-mark-deleted :id id})
+    (repo/get-info-by-id ds id))
