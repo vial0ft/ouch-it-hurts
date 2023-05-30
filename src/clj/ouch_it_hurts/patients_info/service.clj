@@ -74,8 +74,7 @@
     (error-when
      (not (nil? (repo/get-info-by-oms ds oms)))
      "Can't add the patient's info: the patient with oms that already exists"
-     {:reason :already-exist
-      :oms oms}))
+     {:reason :already-exist :oms oms}))
   (repo/insert-info ds patient-info))
 
 (defn delete-patient-info
@@ -86,7 +85,7 @@
      (zero? count-deleted)
      "Can't delete the patient's info: the patient isn't exist or already deleted"
      {:reason :not-exist-or-already-deleted :id id})
-    {:id id}))
+    (repo/get-info-by-id ds id)))
 
 (defn- update-vals-with [m f]
   (->> m
@@ -96,11 +95,17 @@
 (defn update-patient-info
   "Merge current patient's info with new patient's info."
   [id patient-info]
-  (printf "update id = %s info = %s \n" id patient-info)
   (error-when  (nil? id) "Can't update patient info without id" {:reason :not-exists :id id})
   (let [current-patient-info (repo/get-info-by-id ds id)]
-    (error-when (nil? current-patient-info) "Can't update patient's info: the patient isn't exist"
+    (error-when (nil? current-patient-info)
+                "Can't update patient's info: the patient isn't exist"
                 {:reason :not-exist :id id})
+    (error-when (true? (:deleted current-patient-info))
+                "Can't update deleted patient's info"
+                {:reason :deleted :id id})
     (let [[extra upd _] (diff current-patient-info patient-info)
           update (update-vals-with (merge extra upd) #(get upd (first %)))]
-      (repo/update-info ds id update))))
+      (error-when (zero? (repo/update-info ds id update))
+                  "Can't update patient's info"
+                  {:reason :unknown :id id})
+        (repo/get-info-by-id ds id))))
