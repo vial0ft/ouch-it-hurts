@@ -87,16 +87,16 @@ Enumeration
 
 ``` json
 {"data" : [
-			{"first-name" : "name"},
-			{"first-name" : "name of ",
-			 "middle-name" : "patient",
-			 "address" : "City, street, house"},
-			{"first-name" : "name like",
-			 "sex" : "male"},
-			{"first-name" : "names",
-			 "birth-date" : "2020-01-01"},
-			{"first-name" : "name"}
-			]
+            {"first-name" : "name"},
+            {"first-name" : "name of ",
+             "middle-name" : "patient",
+             "address" : "City, street, house"},
+            {"first-name" : "name like",
+             "sex" : "male"},
+            {"first-name" : "names",
+             "birth-date" : "2020-01-01"},
+            {"first-name" : "name"}
+            ]
  "total" : 20}
 ```
 
