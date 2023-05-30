@@ -128,7 +128,7 @@
                    :search/last-name
                    :search/middle-name
                    :search/address
-                   :search/oms-opt
+                   :search/oms
                    :search/birth-date-period
                    :search/sex-opts
                    :search/show-records-opts]))
@@ -194,7 +194,7 @@
 (s/def ::edit-patient-response ::patient-info)
 
 (s/def ::delete-patient-request ::id)
-(s/def ::delete-patient-response ::id)
+(s/def ::delete-patient-response ::patient-info)
 
 (def xform
   (comp

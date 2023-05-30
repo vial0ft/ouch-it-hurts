@@ -141,6 +141,22 @@
       (is (thrown? Exception (service/update-patient-info (:id p1) (assoc p1 :oms (:oms p2))))))
     ))
 
+(deftest update-deleted-patient-info
+  (testing "Can't update deleted patient's info"
+    (let [patient-oms (tg/oms-gen)
+          patient-firstname (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
+          {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          {:keys [id]} (service/add-patient-info {:oms patient-oms})
+          _ (is id)
+          get-by-id (service/get-by-id id)
+          _ (is (some? get-by-id))
+          _ (service/delete-patient-info (:id get-by-id))]
+      (is (thrown? Exception (service/update-patient-info
+                              (:id get-by-id)
+                              (assoc get-by-id :first-name patient-firstname)))))))
+
+
 (deftest successful-delete-patient-info
   (testing "Successful delete"
     (let [patient-oms (tg/oms-gen)
@@ -164,6 +180,18 @@
       (is (nil? get-by-id))
       (is (thrown? Exception (service/delete-patient-info not-existed-id))))
     ))
+
+
+(deftest delete-already-deleted-patient-info
+  (testing "fail delete"
+    (let [patient-oms (tg/oms-gen)
+          {:keys [data total]} (service/get-all {:filters {}})
+          _ (is (and (empty? data) (zero? total)))
+          {:keys [id]} (service/add-patient-info {:oms patient-oms})
+          _ (is id)
+          deleted-patient-info (service/delete-patient-info id)]
+      (is (:deleted deleted-patient-info))
+      (is (thrown? Exception (service/delete-patient-info id))))))
 
 
 (defn- gen-string [cnt prefix]
