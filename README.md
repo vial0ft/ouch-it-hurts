@@ -1,44 +1,69 @@
 # ouch-it-hurts
 
-FIXME: description
+Web application of patients registry. It's able to search, add, update and delete patients information.
 
-## Installation
+## Build and run
 
-Download from http://example.com/FIXME.
+Application contains web ui part and server part. Each of them is able to build and run separately.
+Emacs `cider` supported.
 
-## Usage
+## run backend for development
 
-FIXME: explanation
+`clojure -A:dev`
 
-    $ java -jar ouch-it-hurts-0.1.0-standalone.jar [args]
+For starting server:
 
-## Options
+`(load "dev")` - it loads code from `env/dev/clj/core.clj`
 
-FIXME: listing of options this app accepts.
+## run frontend for development
 
-## Examples
+`clojure -M -m figwheel.main -b dev -r`
+or
+`clojure -T:fig:build-front`
 
-...
+REPL and reload are available
+See `dev.cljs.edn` config file
 
-### Bugs
+## build frontend to `app.js`
 
-...
+`clojure -M -m figweel.main -O advanced -bo prod`
+or
+`clojure -M:fig:min`
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+That build `app.js` and put it to target directory.
+See `prod.cljs.edn` config file
 
-## License
 
-Copyright © 2023 FIXME
+## build backend to uber-jar
 
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
+Sure that frontend was built
 
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+`clojure -T:build uber`
+
+
+## run application as uber-jar
+
+Application requires environment variables
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `PORT`
+
+```
+env DB_HOST='localhost' DB_PORT='5432' DB_USER='postgres' DB_PASSWORD='12345678' PORT='8500' java -jar target/app-0.0.1-standalone.jar
+```
+or just run `run_server.sh`
+
+
+## build and run docker
+
+Frontend might require path to the server. If docker container run local use `localhost:<container-port>`
+
+`docker build -t ouch-it-hurts-app --build-arg SERVER=<path-to-the-server> .`
+
+set `DB_HOST` `DB_PORT` `DB_USER` `PORT` environment variables through `-e`, `--env` or `--env-file`
+when `docker run`
+
+## API
+
+See [API.md](https://github.com/vial0ft/ouch-it-hurts/blob/main/doc/API.md)
