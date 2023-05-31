@@ -54,8 +54,6 @@
    "where `between` for map where only `to` exist"
     (is (= "where k <= 'a'" (where (between :k {:to "a"}))))))
 
-
-
 (deftest like-test
   (testing "where `like` and pattern `start-with`"
     (is (= "where k like 'a%'" (where (like :k {:pattern "a%"})))))
@@ -63,11 +61,8 @@
   (testing "where `like` and pattern `end-with`"
     (is (= "where k like '%a'" (where (like :k {:pattern "%a"})))))
 
-
   (testing "where `like` and pattern `between`"
     (is (= "where k like '%a%'" (where (like :k {:pattern "%a%"}))))))
-
-
 
 (deftest ordering-test
   (testing
@@ -107,10 +102,9 @@
                (offset 100)
                (limit 100))))))
 
-
 (deftest complex-query-use-utils
   (testing
-      "Use `utils/map->where` and `utils/map->order` for building query"
+   "Use `utils/map->where` and `utils/map->order` for building query"
     (is (= (clojure.string/join " "
                                 ["select id as \"qwe\""
                                  "from tablename as t, table2 as t2"
@@ -122,6 +116,5 @@
                (where (u/map->where {:id 1
                                      :date {:from (str (java.time.LocalDate/of 2023 01 01))
                                             :to (str (java.time.LocalDate/of 2023 01 02))}
-                                     :name {:pattern "foo%"}
-                                     } u/as-snake-name))
+                                     :name {:pattern "foo%"}} u/as-snake-name))
                (order-by (u/map->order-by {:id :desc} u/as-snake-name)))))))

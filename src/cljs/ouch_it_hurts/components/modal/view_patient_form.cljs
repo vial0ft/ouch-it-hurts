@@ -61,7 +61,7 @@
     "CMI number"]
    (when (:deleted patient-info)
      [:div
-      [:span {:style {:color "red"}}"Record deleted editing unavailable"]
+      [:span {:style {:color "red"}} "Record deleted editing unavailable"]
       [:button.filter-form-button {:on-click #(do
                                                 (reset! modal-state {:visible? false})
                                                 (restore-callback (:id patient-info)))} "Restore"]])

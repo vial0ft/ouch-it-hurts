@@ -52,7 +52,6 @@
    {:spec (s/nilable (s/and string? not-empty #(< (count %) 255)))
     :description (str-format "'Last name' value limited by %s letters" 255)}))
 
-
 (s/def ::address
   (st/spec
    {:spec (s/nilable (s/and string? not-empty #(< (count %) 255)))
@@ -78,12 +77,12 @@
 (s/def ::new-patient-info
   (st/spec
    {:spec (s/and map? not-empty (s/keys :opt-un  [::first-name
-                                                       ::last-name
-                                                       ::middle-name
-                                                       ::sex
-                                                       ::address
-                                                       ::birth-date
-                                                       ::oms]))
+                                                  ::last-name
+                                                  ::middle-name
+                                                  ::sex
+                                                  ::address
+                                                  ::birth-date
+                                                  ::oms]))
     :description
     (str-format (string/join " " ["'Patient info' must contain at least one of fields:"
                                   "'First name'" "'Last name'" "'Middle name'" "'Address'" "'Sex'" "'Birth date'" "'CMI'"]))}))

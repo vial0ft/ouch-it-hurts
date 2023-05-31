@@ -31,8 +31,8 @@
 
 (defn- once [work]
   (let [reloc-cfg (-> (cr/read-config "config.edn" [:relocatus/migrations])
-                   (cr/resolve-props)
-                   (get :relocatus/migrations))
+                      (cr/resolve-props)
+                      (get :relocatus/migrations))
         container (-> (th/create-container (select-keys (:db reloc-cfg) [:dbname :user :password]))
                       (th/start-container))
         cfg       (-> reloc-cfg
@@ -76,53 +76,53 @@
       (jdbc/execute! *ds* [(format "DROP SCHEMA IF EXISTS %s CASCADE;" (get-in *cfg* [:migration-db :schema]))]))))
 
 (deftest applying-one-migration-test
-    (testing "Applying & rollback one migration"
-      (let [_ (relocat/init-migration-table *cfg*)
-            migration-name "test-migration"
-            {:keys [migration-dir]} *cfg*
-            _ (relocat/create-migration *cfg* migration-name)
-            {:keys [up down]} (h/up-down-migration-scripts migration-dir migration-name)
-            _ (write-to-file up "create table if not exists public.test_table (
+  (testing "Applying & rollback one migration"
+    (let [_ (relocat/init-migration-table *cfg*)
+          migration-name "test-migration"
+          {:keys [migration-dir]} *cfg*
+          _ (relocat/create-migration *cfg* migration-name)
+          {:keys [up down]} (h/up-down-migration-scripts migration-dir migration-name)
+          _ (write-to-file up "create table if not exists public.test_table (
                                   ID INT PRIMARY KEY      NOT NULL,
                                   DEPT           CHAR(50) NOT NULL,
                                   EMP_ID         INT      NOT NULL);")
-            _ (write-to-file down "drop table if exists test_table;")
-            _ (relocat/migrate *cfg*)
-            migrations (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))
-            test-table-columns (columns *ds* "public" "test_table")]
-        (is (= migration-name (some #(when-let [name (:migration-name %)] name) migrations)))
-        (is (= (into #{} (map s/upper-case test-table-columns)) #{"ID" "DEPT" "EMP_ID"}))
-        (relocat/rollback *cfg*)
-        (is (empty? (columns *ds* "public" "test_table")))
-        (is (empty? (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))))
-        (jdbc/execute! *ds* [(format "DROP SCHEMA IF EXISTS %s CASCADE;" (get-in *cfg* [:migration-db :schema]))]))))
+          _ (write-to-file down "drop table if exists test_table;")
+          _ (relocat/migrate *cfg*)
+          migrations (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))
+          test-table-columns (columns *ds* "public" "test_table")]
+      (is (= migration-name (some #(when-let [name (:migration-name %)] name) migrations)))
+      (is (= (into #{} (map s/upper-case test-table-columns)) #{"ID" "DEPT" "EMP_ID"}))
+      (relocat/rollback *cfg*)
+      (is (empty? (columns *ds* "public" "test_table")))
+      (is (empty? (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))))
+      (jdbc/execute! *ds* [(format "DROP SCHEMA IF EXISTS %s CASCADE;" (get-in *cfg* [:migration-db :schema]))]))))
 
 (deftest applying-few-migrations-test
-    (testing "Applying & rollback few migrations"
-      (let [_ (relocat/init-migration-table *cfg*)
-            {:keys [migration-dir]} *cfg*
-            migrations [{:name "create-test-table"
-                         :up "create table if not exists public.test_table (
+  (testing "Applying & rollback few migrations"
+    (let [_ (relocat/init-migration-table *cfg*)
+          {:keys [migration-dir]} *cfg*
+          migrations [{:name "create-test-table"
+                       :up "create table if not exists public.test_table (
                                   ID INT PRIMARY KEY      NOT NULL,
                                   DEPT           CHAR(50) NOT NULL,
                                   EMP_ID         INT      NOT NULL);"
-                         :down "drop table if exists test_table;"}
-                        {:name "add-field-test-table"
-                         :up "ALTER TABLE public.test_table ADD COLUMN IF NOT EXISTS age INTEGER;"
-                         :down "ALTER TABLE public.test_table DROP COLUMN IF EXISTS age;"}]
-            _ (doseq [migration migrations]
-                (let [_ (relocat/create-migration *cfg* (:name migration))
-                      {:keys [up down]} (h/up-down-migration-scripts migration-dir (:name migration))]
-                  (write-to-file up (:up migration))
-                  (write-to-file down (:down migration))))
-            _ (relocat/migrate *cfg*)
-            applied-migrations (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))
-            test-table-columns (columns *ds* "public" "test_table")]
-        (is (= (into #{} (map :migration-name applied-migrations))
-               (into #{} (map :name migrations))))
-        (is (= (into #{} (map s/upper-case test-table-columns)) #{"ID" "DEPT" "EMP_ID" "AGE"}))
-        (relocat/rollback *cfg*)
-        (relocat/rollback *cfg*)
-        (is (empty? (columns *ds* "public" "test_table")))
-        (is (empty? (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))))
-        (jdbc/execute! *ds* [(format "DROP SCHEMA IF EXISTS %s CASCADE;" (get-in *cfg* [:migration-db :schema]))]))))
+                       :down "drop table if exists test_table;"}
+                      {:name "add-field-test-table"
+                       :up "ALTER TABLE public.test_table ADD COLUMN IF NOT EXISTS age INTEGER;"
+                       :down "ALTER TABLE public.test_table DROP COLUMN IF EXISTS age;"}]
+          _ (doseq [migration migrations]
+              (let [_ (relocat/create-migration *cfg* (:name migration))
+                    {:keys [up down]} (h/up-down-migration-scripts migration-dir (:name migration))]
+                (write-to-file up (:up migration))
+                (write-to-file down (:down migration))))
+          _ (relocat/migrate *cfg*)
+          applied-migrations (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))
+          test-table-columns (columns *ds* "public" "test_table")]
+      (is (= (into #{} (map :migration-name applied-migrations))
+             (into #{} (map :name migrations))))
+      (is (= (into #{} (map s/upper-case test-table-columns)) #{"ID" "DEPT" "EMP_ID" "AGE"}))
+      (relocat/rollback *cfg*)
+      (relocat/rollback *cfg*)
+      (is (empty? (columns *ds* "public" "test_table")))
+      (is (empty? (relr/get-migrations *ds* (h/schema-table (:migration-db *cfg*)))))
+      (jdbc/execute! *ds* [(format "DROP SCHEMA IF EXISTS %s CASCADE;" (get-in *cfg* [:migration-db :schema]))]))))

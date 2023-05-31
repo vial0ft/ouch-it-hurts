@@ -3,7 +3,6 @@
             [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as sql]))
 
-
 (defn- create-migration-table-sql [schema tablename]
   (format
    "create schema if not exists %s;

@@ -8,7 +8,7 @@
 (defn init-db-conn [{:keys [host port dbtype dbname] :as db-config}]
   (let [cfg (-> db-config
                 (assoc :jdbcUrl (format "jdbc:%s://%s:%s/%s" dbtype host port dbname)))]
-  (reset! ds (connection/->pool HikariDataSource cfg))))
+    (reset! ds (connection/->pool HikariDataSource cfg))))
 
 (defn close-db-conn []
   (when-not (nil? @ds)

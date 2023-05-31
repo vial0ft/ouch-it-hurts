@@ -4,7 +4,6 @@
   (:import (java.nio.file FileSystems FileSystem)
            java.util.zip.ZipInputStream))
 
-
 (defrecord BLACK_CAT [])
 
 (defn- jar? [path] (s/includes? (.toString path) ".jar!"))
@@ -25,16 +24,15 @@
     (loop [dirs []]
       (if-let [entry (.getNextEntry zip-stream)]
         (recur (conj dirs (.getName entry)))
-        dirs)))
-  )
+        dirs))))
 
 (defn- find-files-jar [dir]
   (->> BLACK_CAT
-      (.getProtectionDomain)
-      (.getCodeSource)
-      (.getLocation)
-      (zip-located-files)
-      (filter #(s/starts-with? % dir))))
+       (.getProtectionDomain)
+       (.getCodeSource)
+       (.getLocation)
+       (zip-located-files)
+       (filter #(s/starts-with? % dir))))
 
 (defn- find-files [dir]
   (->> (io/resource dir)
@@ -45,8 +43,7 @@
          (filter #(.isFile %))
          (map #(java.nio.file.Paths/get dir (into-array String [(.getName %)])))
          (map #(.toString %)))
-        conj
-        )))
+        conj)))
 
 (defn- look-up-dir [dir]
   (let [mig-dir (io/resource dir)]
@@ -54,7 +51,7 @@
 
 (defn migration-scripts-names [dir]
   (->> (look-up-dir dir)
-    (filterv #(s/ends-with? % ".sql"))))
+       (filterv #(s/ends-with? % ".sql"))))
 
 (defn up-down-map [up-and-down]
   {:up (some #(if (s/ends-with? % "up.sql") %) up-and-down)

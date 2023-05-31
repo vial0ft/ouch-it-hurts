@@ -50,9 +50,6 @@
                          :extra-deps {cider/piggieback {:mvn/version "0.5.3"}}
                          :main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}
 
-           :test-front {:extra-paths ["env/test/resources" "test/cljs"]
-                        :main-opts ["-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "practicalli.test-runner"]}
-
            :min {:extra-paths  ["env/prod/resources"]
                  :main-opts ["-m" "figwheel.main" "-O" "advanced" "-bo" "prod"]}
 

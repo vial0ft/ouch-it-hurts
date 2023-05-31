@@ -54,5 +54,4 @@
      [false true] (gte field from)
      [field :between from :and to])))
 
-
 (defn like [field {:keys [pattern]}] [field :like pattern])

@@ -27,7 +27,6 @@
                       (mid/wrap-handler-with-logging))
          :port (get-port config)))))
 
-
 (defn- relocatus-migrations [config]
   (let [relocat-config (:relocatus/migrations config)]
     (relocat/init-migration-table relocat-config)
@@ -43,11 +42,11 @@
   (serv/stop-server))
 
 (defn run [& args]
-    (-> (prepare-config)
-        (db-init-f)
-        (relocatus-migrations)
-        (serv/start-server)))
-  (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server))
+  (-> (prepare-config)
+      (db-init-f)
+      (relocatus-migrations)
+      (serv/start-server)))
+(.addShutdownHook (Runtime/getRuntime) (Thread. stop-server))
 
 (defn -main [& args]
   (println "Run Application")
