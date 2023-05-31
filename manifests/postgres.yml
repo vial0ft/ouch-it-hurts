@@ -38,6 +38,10 @@ spec:
         app: postgres
         tier: database
     spec:
+      volumes:
+      - name: postgres-pv
+        persistentVolumeClaim:
+          claimName: postgres-pv-claim
       containers:
       - name: postgresdb
         image: postgres:15rc1-alpine3.16
@@ -59,7 +63,11 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: postgres-password
-              
+     - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-pv-storage
 ---
 apiVersion: v1
 kind: Service
