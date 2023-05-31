@@ -103,7 +103,7 @@
 (defn patient-show-options []
   [FieldSet "Show record options"
    [Select {:key "show-record-options"
-            :options (let [default :all
+            :options (let [default :not-deleted-only
                            all [{:value :not-deleted-only :lable "Not deleted only"}
                                 {:value :deleted-only :lable "Deleted only"}
                                 {:value :all :lable "All"}]]
