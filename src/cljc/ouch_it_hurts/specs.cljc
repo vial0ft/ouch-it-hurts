@@ -192,6 +192,10 @@
 (s/def ::edit-patient-form ::patient-info)
 (s/def ::edit-patient-response ::patient-info)
 
+
+(s/def ::get-patient-by-id-request ::id)
+(s/def ::get-patient-by-id-response ::patient-info)
+
 (s/def ::delete-patient-request ::id)
 (s/def ::delete-patient-response ::patient-info)
 
