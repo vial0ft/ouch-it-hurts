@@ -48,7 +48,6 @@
    #(-> (s/delete-patient-info %) (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
-
 (defn- restore-by-id [{{{:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)

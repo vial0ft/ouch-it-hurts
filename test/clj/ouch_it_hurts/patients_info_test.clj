@@ -18,7 +18,6 @@
 (defn- clear-patients-info-table [ds]
   (jdbc/execute! ds ["delete from patients.info"]))
 
-
 (defn- get-migration-dir [config]
   (-> (cr/read-config config [:relocatus/migrations])
       (get-in [:relocatus/migrations :migration-dir])
@@ -28,7 +27,6 @@
 (defn- apply-migrations [cfg]
   (relocat/init-migration-table cfg)
   (relocat/migrate cfg))
-
 
 (defn- clean-directory [directory-path]
   (let [files-to-delete (filter #(s/ends-with? % ".sql") (file-seq directory-path))]
@@ -68,8 +66,6 @@
 (use-fixtures :once once)
 (use-fixtures :each each)
 
-
-
 (deftest successful-add-patient
   (testing "Successful add patient"
     (let [patient-firstname (gen/generate (spec/gen :ouch-it-hurts.specs/first-name))
@@ -79,8 +75,7 @@
           _ (is id)
           get-by-id (service/get-by-id id)]
       (is (some? get-by-id))
-      (is (= id (:id get-by-id)))
-      )))
+      (is (= id (:id get-by-id))))))
 
 (deftest fail-add-patient-if-patient-exists-with-same-oms
   (testing "fail add patient"
@@ -91,9 +86,7 @@
           _ (is (contains? add-result :id))
           get-by-id (service/get-by-id (:id add-result))
           _ (is (some? get-by-id))]
-      (is (thrown? Exception (service/add-patient-info {:oms patient-oms})))
-      )))
-
+      (is (thrown? Exception (service/add-patient-info {:oms patient-oms}))))))
 
 (deftest successful-update-patient-info
   (testing "successful update"
@@ -103,15 +96,13 @@
           _ (is (and (empty? data) (zero? total)))
           {:keys [id]} (service/add-patient-info {:oms patient-oms})
           _ (is id)
-           get-by-id (service/get-by-id id)
+          get-by-id (service/get-by-id id)
           _ (is (some? get-by-id))
           _ (service/update-patient-info (:id get-by-id) (assoc get-by-id :first-name patient-firstname))
           {:keys [first-name oms] :as get-after-update} (service/get-by-id (:id get-by-id))]
       (is (= (:id get-after-update) id))
       (is (= first-name patient-firstname))
-      (is (= oms patient-oms))
-      )))
-
+      (is (= oms patient-oms)))))
 
 (deftest update-notexisted-patient-info
   (testing "fail update"
@@ -122,8 +113,7 @@
           _ (is (and (empty? data) (zero? total)))
           get-by-id (service/get-by-id not-existed-id)]
       (is (nil? get-by-id))
-      (is (thrown? Exception (service/update-patient-info not-existed-id {:first-name patient-firstname}))))
-      ))
+      (is (thrown? Exception (service/update-patient-info not-existed-id {:first-name patient-firstname}))))))
 
 (deftest update-patient-info-by-existing-oms-should-fail
   (testing "fail update"
@@ -138,8 +128,7 @@
           have-to-be-2-patients (service/get-all {:filters {}})
           _ (is (and (= (count (:data have-to-be-2-patients)) 2)
                      (= (:total have-to-be-2-patients) 2)))]
-      (is (thrown? Exception (service/update-patient-info (:id p1) (assoc p1 :oms (:oms p2))))))
-    ))
+      (is (thrown? Exception (service/update-patient-info (:id p1) (assoc p1 :oms (:oms p2))))))))
 
 (deftest update-deleted-patient-info
   (testing "Can't update deleted patient's info"
@@ -156,7 +145,6 @@
                               (:id get-by-id)
                               (assoc get-by-id :first-name patient-firstname)))))))
 
-
 (deftest successful-delete-patient-info
   (testing "Successful delete"
     (let [patient-oms (tg/oms-gen)
@@ -168,8 +156,7 @@
           get-by-id (service/get-by-id id)
           _ (is (some? get-by-id))
           _ (service/delete-patient-info id)]
-      (is (:deleted (service/get-by-id id))))
-    ))
+      (is (:deleted (service/get-by-id id))))))
 
 (deftest delete-notexisted-patient-info
   (testing "fail delete"
@@ -178,9 +165,7 @@
           _ (is (and (empty? data) (zero? total)))
           get-by-id (service/get-by-id not-existed-id)]
       (is (nil? get-by-id))
-      (is (thrown? Exception (service/delete-patient-info not-existed-id))))
-    ))
-
+      (is (thrown? Exception (service/delete-patient-info not-existed-id))))))
 
 (deftest delete-already-deleted-patient-info
   (testing "fail delete"
@@ -192,7 +177,6 @@
           deleted-patient-info (service/delete-patient-info id)]
       (is (:deleted deleted-patient-info))
       (is (thrown? Exception (service/delete-patient-info id))))))
-
 
 (deftest successful-restore-deleted-patient-info
   (testing "Restore test"
@@ -216,7 +200,6 @@
           _ (is (and (empty? data) (zero? total)))]
       (is (thrown? Exception (service/restore-patient-info not-existed-id))))))
 
-
 (deftest restore-notdeleted-patient-info
   (testing "Fail restore"
     (let [patient-oms (tg/oms-gen)
@@ -229,7 +212,6 @@
       (is (not (:deleted get-by-id)))
       (is (thrown? Exception (service/restore-patient-info id))))))
 
-
 (defn- gen-string [cnt prefix]
   (->> (gen/vector gen/string-alphanumeric cnt)
        (gen/generate)
@@ -237,7 +219,7 @@
 
 (deftest fetch-patients-info-first-name-by-filters
   (testing "First name filter test"
-    (let [ {:keys [data total]} (service/get-all {:filters {}})
+    (let [{:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           name-prefix "John"
           count-of-items 2
@@ -249,7 +231,7 @@
 
 (deftest fetch-patients-info-middle-name-by-filters
   (testing "Middle name filter test"
-    (let [ {:keys [data total]} (service/get-all {:filters {}})
+    (let [{:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           name-prefix "Alex"
           count-of-items 2
@@ -261,7 +243,7 @@
 
 (deftest fetch-patients-info-last-name-by-filters
   (testing "Last name filter test"
-    (let [ {:keys [data total]} (service/get-all {:filters {}})
+    (let [{:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           name-prefix "Smith"
           count-of-items 2
@@ -284,7 +266,6 @@
   (->> (gen/sample (spec/gen set) 10)
        (take cnt)))
 
-
 (deftest fetch-patients-info-sex-by-filters
   (testing "Sex filter test"
     (let [{:keys [data total]} (service/get-all {:filters {}})
@@ -299,8 +280,6 @@
       (is (same-count-of? "male" (map :sex records) (map :sex (:data get-all-filter))))
       (is (= (same-count-of? nil (map :sex records) (map :sex (:data get-all-filter))))))))
 
-
-
 (defn- inst->localdate [i]
   (-> (.toInstant i)
       (.atZone (java.time.ZoneId/systemDefault))
@@ -310,7 +289,6 @@
   (->> (gen/sample (spec/gen (spec/inst-in from to)) 100)
        (drop (- 100 cnt))
        (map inst->localdate)))
-
 
 (deftest fetch-patients-birthdate-by-filters
   (testing "Birthdate filter test"
@@ -332,7 +310,7 @@
 
 (deftest fetch-patients-info-address-by-filters
   (testing "Address filter test"
-    (let [ {:keys [data total]} (service/get-all {:filters {}})
+    (let [{:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           prefix "Utopia"
           count-of-items 5
@@ -341,24 +319,22 @@
       (is (= (->> (:data (service/get-all {:filters {:address prefix}})) (count))
              count-of-items)))))
 
-
-
 (deftest fetch-patients-info-oms-by-filters
   (testing "OMS filter test"
-    (let [ {:keys [data total]} (service/get-all {:filters {}})
+    (let [{:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           prefix "00000"
           count-of-items 5
           oms-seq   (->> (range count-of-items)
-                     (map (fn [_] (tg/oms-gen)))
-                     (map #(s/replace % #"^.{5}" prefix)))
+                         (map (fn [_] (tg/oms-gen)))
+                         (map #(s/replace % #"^.{5}" prefix)))
           _ (doseq [o oms-seq] (service/add-patient-info {:oms o}))]
       (is (= (->> (:data (service/get-all {:filters {:oms prefix}})) (count))
              count-of-items)))))
 
 (deftest fetch-patient-info-with-page-size-and-page-number
   (testing "Paging test"
-    (let [ {:keys [data total]} (service/get-all {:filters {}})
+    (let [{:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           count-of-items 200
           records (for [first-name (gen-string 5 "John")
@@ -385,7 +361,7 @@
 
 (deftest fetch-patient-info-with-ordering
   (testing "Ordering test"
-    (let [ {:keys [data total]} (service/get-all {:filters {}})
+    (let [{:keys [data total]} (service/get-all {:filters {}})
           _ (is (and (empty? data) (zero? total)))
           oms-values (->> (range 10) (map (fn [_] (tg/oms-gen))))
           _ (doseq [o oms-values] (service/add-patient-info {:oms o}))

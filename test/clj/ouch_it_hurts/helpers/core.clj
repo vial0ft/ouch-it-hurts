@@ -2,8 +2,6 @@
   (:require [clj-test-containers.core :as tc]
             [clojure.java.io :as io]))
 
-
-
 (defn create-container [{:keys [dbname user password]}]
   (tc/create {:image-name    "postgres:15rc1-alpine3.16"
               :exposed-ports [5432]
@@ -14,11 +12,8 @@
 (defn start-container [c]
   (tc/start! c))
 
-
 (defn stop-container [c]
   (tc/stop! c))
-
-
 
 (defn copy-dir
   "Copy a directory from `from` to `to`. If `to` already exists, copy the directory

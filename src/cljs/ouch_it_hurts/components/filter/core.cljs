@@ -84,21 +84,20 @@
             (swap! (filter-form-cursor [:sex-opts :value]) conj id))
           (do
             (swap! (filter-form-cursor [:sex-opts :value]) (fn [old] (disj old id)))
-            (when (empty? @(filter-form-cursor [:sex-opts :value])) (set-elems-value {"all" true}))
-                 ))))))
+            (when (empty? @(filter-form-cursor [:sex-opts :value])) (set-elems-value {"all" true}))))))))
 
 (defn- patient-sex-filter-selector []
   [FieldSet "Sex options"
    [:div.sex-filed-set
-   [CheckboxButton {:key "all"
-                    :opt {:defaultChecked true
-                          :on-change (sex-filter-on-change all-sex-options)}}  "All"]
-   [CheckboxButton {:key "male"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Male"]
-   [CheckboxButton {:key "female"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Female"]
-   [CheckboxButton {:key "unknown"
-                    :opt {:on-change (sex-filter-on-change all-sex-options)}} "Undefined"]]])
+    [CheckboxButton {:key "all"
+                     :opt {:defaultChecked true
+                           :on-change (sex-filter-on-change all-sex-options)}}  "All"]
+    [CheckboxButton {:key "male"
+                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Male"]
+    [CheckboxButton {:key "female"
+                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Female"]
+    [CheckboxButton {:key "unknown"
+                     :opt {:on-change (sex-filter-on-change all-sex-options)}} "Undefined"]]])
 
 (defn patient-show-options []
   [FieldSet "Show record options"

@@ -65,8 +65,8 @@
   (new js/Promise
        (fn [resolve reject]
          (POST (url (gstr/format "/patient/%d/restore" id))
-               {:format :json
-                :response-format :json
-                :keywords? true
-                :handler resolve
-                :error-handler reject}))))
+           {:format :json
+            :response-format :json
+            :keywords? true
+            :handler resolve
+            :error-handler reject}))))

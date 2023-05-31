@@ -18,7 +18,7 @@
       (dissoc :show-records-opts)))
 
 (defn- names-address-oms-start-with-filter [filters]
-  (let [updf (fn[cur] {:pattern (str cur "%")})]
+  (let [updf (fn [cur] {:pattern (str cur "%")})]
     (loop [keys [:first-name :middle-name :last-name :address :oms]
            r filters]
       (if (empty? keys) r
@@ -80,11 +80,11 @@
 (defn delete-patient-info
   "Mark patient's info record with `id` as deleted. Throw error if record not found."
   [id]
-    (error-when
-     (zero? (repo/set-deleted ds id true))
-     "Can't delete the patient's info: the patient isn't exist or already deleted"
-     {:reason :not-exist-or-already-deleted :id id})
-    (repo/get-info-by-id ds id))
+  (error-when
+   (zero? (repo/set-deleted ds id true))
+   "Can't delete the patient's info: the patient isn't exist or already deleted"
+   {:reason :not-exist-or-already-deleted :id id})
+  (repo/get-info-by-id ds id))
 
 (defn- update-vals-with [m f]
   (->> m
@@ -107,13 +107,13 @@
       (error-when (zero? (repo/update-info ds id update))
                   "Can't update patient's info"
                   {:reason :unknown :id id})
-        (repo/get-info-by-id ds id))))
+      (repo/get-info-by-id ds id))))
 
 (defn restore-patient-info
   "Undelete patient's info with `id` which was deleted before"
   [id]
-    (error-when
-     (zero? (repo/set-deleted ds id false))
-     "Can't restore the patient's info: the patient isn't exist or not mark as deleted"
-     {:reason :not-exist-or-not-mark-deleted :id id})
-    (repo/get-info-by-id ds id))
+  (error-when
+   (zero? (repo/set-deleted ds id false))
+   "Can't restore the patient's info: the patient isn't exist or not mark as deleted"
+   {:reason :not-exist-or-not-mark-deleted :id id})
+  (repo/get-info-by-id ds id))
