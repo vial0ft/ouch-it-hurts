@@ -21,9 +21,6 @@
       [Select {:key "page-size"
                :options (let [default current-page-size
                               all (map (fn [n] {:value n :lable n}) options)]
-                          (map
-                           #(if (not= (:value %) default)
-                              %
-                              (assoc % :default true)) all))
+                          (map #(if (= (:value %) default) (assoc % :selected true) %) all))
                :on-change on-change}])))
 
