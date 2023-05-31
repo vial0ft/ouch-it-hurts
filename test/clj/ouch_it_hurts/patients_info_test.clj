@@ -369,3 +369,30 @@
           id-asc (mapv :id (:data (service/get-all {:filters {} :sorting {:id :asc}})))]
       (is (< (first id-asc) (first (reverse id-asc))))
       (is (> (first id-desc) (first (reverse id-desc)))))))
+
+(deftest fetch-patient-info-result-spec-test
+  (let [oms-values (->> (range 10) (map (fn [_] (tg/oms-gen))))
+        _ (doseq [o oms-values] (service/add-patient-info {:oms o}))]
+    (is (spec/valid? :ouch-it-hurts.specs/query-response (service/get-all {:filters {}})))))
+
+(deftest add-patient-info-result-spec-test
+  (is (spec/valid? :ouch-it-hurts.specs/add-patient-response (service/add-patient-info {:oms (tg/oms-gen)}))))
+
+(deftest get-by-id-patient-info-result-spec-test
+  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})]
+    (is (spec/valid? :ouch-it-hurts.specs/get-patient-by-id-response (service/get-by-id id)))))
+
+(deftest delete-patient-info-result-spec-test
+  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})]
+    (is (spec/valid? :ouch-it-hurts.specs/delete-patient-response (service/delete-patient-info id)))))
+
+(deftest update-patient-info-result-spec-test
+  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})]
+    (is (spec/valid? :ouch-it-hurts.specs/edit-patient-response (service/update-patient-info id {:first-name "John"})))))
+
+(deftest restore-patient-info-result-spec-test
+  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})
+        _ (service/delete-patient-info id)]
+    (is (spec/valid? :ouch-it-hurts.specs/restore-patient-response (service/restore-patient-info id)))))
+
+
