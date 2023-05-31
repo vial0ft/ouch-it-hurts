@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  clojure:
+  clojure-tests:
 
     strategy:
       matrix:
