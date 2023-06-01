@@ -19,7 +19,7 @@
   (let [all-selected? (r/cursor selected-ids-store [:all-selected?])
         ids (ids-cursor selected-ids-store)]
     (fn [e]
-      (let [id (int (.-id (.-target e)))]
+      (let [id (int (js/parseInt (.-id (.-target e))))]
         (swap! (ids id) not)
         (case [@(ids id) @all-selected?]
           [false true] (reset! all-selected? false)
@@ -53,7 +53,7 @@
 (defn- TableRow [selected-ids-store all-ids-count {:keys [id first-name middle-name last-name sex birth-date address oms deleted]}]
   (let [class (if-not deleted "patients-info-table-grid-item" "patients-info-table-grid-deleted-item")]
     (list
-     [RowCell {:class class :value [:input {:id id
+     [RowCell {:class class :value [:input {:id (str id "_row_number")
                                             :type "checkbox"
                                             :checked @(r/cursor selected-ids-store [:ids id])
                                             :on-change (select-row-handler selected-ids-store all-ids-count)}]}]
@@ -77,6 +77,8 @@
           {:keys [data total]} @(r/cursor patients-info [:table-info])
           all-ids (map :id data)]
       [:div
+       [:div {:hidden false} @selected-ids-store]
+       [:div {:hidden false} @paging]
        (-> [:div.patient-info-table-grid-container]
            (into (HeaderRow selected-ids-store all-ids sorting))
            (into (transform-to-rows selected-ids-store all-ids data)))
