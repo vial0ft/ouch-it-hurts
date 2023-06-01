@@ -77,8 +77,6 @@
           {:keys [data total]} @(r/cursor patients-info [:table-info])
           all-ids (map :id data)]
       [:div
-       [:div {:hidden false} @selected-ids-store]
-       [:div {:hidden false} @paging]
        (-> [:div.patient-info-table-grid-container]
            (into (HeaderRow selected-ids-store all-ids sorting))
            (into (transform-to-rows selected-ids-store all-ids data)))
