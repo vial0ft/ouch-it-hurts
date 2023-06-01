@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: patients-app
-        image: vial0ft/ouch-it-hurts-app:main
+        image: vial0ft/ouch-it-hurts-app:p-93
         ports:
         - containerPort: 3500
         env:
