@@ -26,32 +26,43 @@
 (defn- add-new [{{:keys [body]} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/add-patient-form body)
-   #(-> (m/patient-info-deserializer %) (s/add-patient-info) (http-resp/json-ok))
+   #(-> (m/patient-info-deserializer %)
+        (s/add-patient-info)
+        (m/patient-info-serializer)
+        (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
 (defn- get-by-id [{{{:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
-   #(-> (s/get-by-id %) (m/patient-info-serializer) (http-resp/json-ok))
+   #(-> (s/get-by-id %)
+        (m/patient-info-serializer)
+        (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
 (defn- update-info [{{existed-patient :body {:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/patient-info existed-patient)
    #(let [info (m/patient-info-deserializer %)]
-      (-> (s/update-patient-info (:id info)  info) (http-resp/json-ok)))
+      (-> (s/update-patient-info (:id info)  info)
+          (m/patient-info-serializer)
+          (http-resp/json-ok)))
    #(http-resp/json-bad-request {:error %})))
 
 (defn- delete [{{{:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
-   #(-> (s/delete-patient-info %) (http-resp/json-ok))
+   #(-> (s/delete-patient-info %)
+        (m/patient-info-serializer)
+        (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
 (defn- restore-by-id [{{{:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
-   #(-> (s/restore-patient-info %) (http-resp/json-ok))
+   #(-> (s/restore-patient-info %)
+        (m/patient-info-serializer)
+        (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
 (defn routes []
