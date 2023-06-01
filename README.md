@@ -19,7 +19,7 @@ For starting server:
 
 `clojure -M -m figwheel.main -b dev -r`
 or
-`clojure -T:fig:build-front`
+`clojure -M:fig:build-front`
 
 REPL and reload are available
 See `dev.cljs.edn` config file
