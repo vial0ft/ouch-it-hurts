@@ -18,10 +18,11 @@
 (defn copy-dir
   "Copy a directory from `from` to `to`. If `to` already exists, copy the directory
    to a directory with the same name as `from` within the `to` directory."
-  [from to]
-  (let [from-d-path (.getPath from)
-        from-d-files (.list from)
-        to-d-path (.getPath to)]
-    (doseq [file from-d-files]
-      (io/copy (io/file from-d-path file)
-               (io/file to-d-path file)))))
+  ([from to] (copy-dir from to identity))
+  ([from to pred]
+   (let [from-d-path (.getPath from)
+         from-d-files (->> (.list from) (filter pred))
+         to-d-path (.getPath to)]
+     (doseq [file from-d-files]
+       (io/copy (io/file from-d-path file)
+                (io/file to-d-path file))))))
