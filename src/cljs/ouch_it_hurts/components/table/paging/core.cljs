@@ -13,11 +13,11 @@
         before-part  (if (<= left-eps 1) (vec (range 1 current))
                          (->> (range left-eps current)
                               (vec)
-                              (concat [1 :skip])))
+                              (concat [1 :skip-l])))
         after-part (if (>= right-eps max) (vec (range current (inc max)))
                        (-> (range current (inc right-eps))
                            (vec)
-                           (conj :skip max)))]
+                           (conj :skip-r max)))]
     (concat before-part after-part)))
 
 (defn- page-number-on-click [current-page-state]
@@ -32,15 +32,17 @@
        [:div {:style {:display "flex" :flex "nowrap" :justify-content "center" :width "90%"}}
         (if (empty? seq-numbers) [:span]
             (for [number seq-numbers]
-              (if (= number :skip) [SkippedNumber]
-                  (let [attrs
-                        {:key number}
-                        additional-attrs
-                        (if (= number page-number)
-                          (merge attrs {:id "paging-current-number-button"})
-                          (merge attrs {:id "paging-number-button"
-                                        :opt {:on-click (page-number-on-click (r/cursor paging [:page-number]))}}))]
-                    [PageNumber additional-attrs (str number)]))))]
+              (case number
+                :skip-l ^{:key number} [SkippedNumber]
+                :skip-r ^{:key number} [SkippedNumber]
+                (let [key {:key (str number "_page_number")}
+                      attrs key
+                      additional-attrs (if (= number page-number)
+                                         (merge attrs {:id "paging-current-number-button"})
+                                         (merge attrs {:id "paging-number-button"
+                                                       :opt {:on-click (page-number-on-click
+                                                                        (r/cursor paging [:page-number]))}}))]
+                  ^{:key key} [PageNumber additional-attrs (str number)]))))]
        [PageSizeSelector
         (r/cursor paging [:page-size])
         {:options page-size-options

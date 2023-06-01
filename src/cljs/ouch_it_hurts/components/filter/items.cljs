@@ -14,7 +14,7 @@
         to-part-key (str key "-range-end")]
     (fn [{:keys [error]}]
       [FieldSet legend
-       [:div.date-range-block
+       [:div.date-range-block {:key (clojure.string/join [key "date_range_field"])}
         [DatePicker {:key from-part-key
                      :input {:on-change (:on-change from)}} "From: "]
         [DatePicker {:key to-part-key
