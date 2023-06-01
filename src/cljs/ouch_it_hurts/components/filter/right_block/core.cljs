@@ -3,8 +3,6 @@
    [ouch-it-hurts.components.filter.items :refer [DateRangeField]]
    [ouch-it-hurts.components.common.core :refer [SingleFieldSet]]))
 
-
-
 (defn- change-key [key-path] (fn [new-value] (reset! key-path new-value)))
 
 (defn RightBlock [store-path-f]
