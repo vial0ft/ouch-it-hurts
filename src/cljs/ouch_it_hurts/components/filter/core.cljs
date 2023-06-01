@@ -5,8 +5,7 @@
             [goog.string :as gstr]
             [clojure.string :refer [join]]
             [ouch-it-hurts.components.filter.left-block.core :refer [LeftBlock]]
-            [ouch-it-hurts.components.filter.right-block.core :refer [RightBlock]]
-            ))
+            [ouch-it-hurts.components.filter.right-block.core :refer [RightBlock]]))
 
 ;; -------------------------
 ;; States
@@ -27,7 +26,6 @@
 (defn- filter-form-cursor
   ([] (r/cursor filter-form [:filters]))
   ([path] (r/cursor filter-form (into [:filters] path))))
-
 
 (defn store-path-f [store]
   (fn
