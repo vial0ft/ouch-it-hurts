@@ -6,14 +6,14 @@
    [ouch-it-hurts.specs :as specs]))
 
 (defn- result
-  ([action ok-action] (result action ok-action nil))
+  ([action ok-action] (result action ok-action (fn [r] {:error r})))
   ([action ok-action fail-action]
    (let [[result-key result] (action)]
      (case result-key
        :ok (ok-action result)
        (fail-action result)))))
 
-(defn- get-all
+(defn get-all
   [{{:keys [query-params]} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/query-request query-params)
@@ -23,7 +23,7 @@
          (http-resp/json-ok)))
    #(http-resp/json-bad-request {:error %})))
 
-(defn- add-new [{{:keys [body]} :app/request}]
+(defn add-new [{{:keys [body]} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/add-patient-form body)
    #(-> (m/patient-info-deserializer %)
@@ -32,7 +32,7 @@
         (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
-(defn- get-by-id [{{{:keys [id]} :path-params} :app/request}]
+(defn get-by-id [{{{:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
    #(-> (s/get-by-id %)
@@ -40,7 +40,7 @@
         (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
-(defn- update-info [{{existed-patient :body {:keys [id]} :path-params} :app/request}]
+(defn update-info [{{existed-patient :body {:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/patient-info existed-patient)
    #(let [info (m/patient-info-deserializer %)]
@@ -49,7 +49,7 @@
           (http-resp/json-ok)))
    #(http-resp/json-bad-request {:error %})))
 
-(defn- delete [{{{:keys [id]} :path-params} :app/request}]
+(defn delete [{{{:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
    #(-> (s/delete-patient-info %)
@@ -57,7 +57,7 @@
         (http-resp/json-ok))
    #(http-resp/json-bad-request {:error %})))
 
-(defn- restore-by-id [{{{:keys [id]} :path-params} :app/request}]
+(defn restore-by-id [{{{:keys [id]} :path-params} :app/request}]
   (result
    #(specs/confirm-if-valid :ouch-it-hurts.specs/id id)
    #(-> (s/restore-patient-info %)

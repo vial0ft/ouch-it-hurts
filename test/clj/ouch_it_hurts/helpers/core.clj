@@ -25,3 +25,10 @@
     (doseq [file from-d-files]
       (io/copy (io/file from-d-path file)
                (io/file to-d-path file)))))
+
+(defn clean-directory
+  ([directory-path] (clean-directory identity))
+  ([directory-path file-pred]
+   (let [files-to-delete (filter file-pred (file-seq directory-path))]
+     (doseq [file files-to-delete] (io/delete-file (.getPath file))))))
+

@@ -39,7 +39,7 @@
          :total count}))))
 
 (defn insert-info [ds new-patient-info]
-  (sql/insert! @ds :patients.info
+  (-> (sql/insert! @ds :patients.info
                (-> new-patient-info
                    (select-keys
                     [:first-name
@@ -49,7 +49,8 @@
                      :sex
                      :address
                      :oms]))
-               jdbc/unqualified-snake-kebab-opts))
+               jdbc/unqualified-snake-kebab-opts)
+      (patient-info-mapper)))
 
 (defn set-deleted [ds id deleted?]
   (-> (sql/update! @ds :patients.info
