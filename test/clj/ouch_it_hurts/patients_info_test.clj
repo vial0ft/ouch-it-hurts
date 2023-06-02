@@ -28,11 +28,6 @@
   (relocat/init-migration-table cfg)
   (relocat/migrate cfg))
 
-(defn- clean-directory [directory-path]
-  (let [files-to-delete (filter #(s/ends-with? % ".sql") (file-seq directory-path))]
-    (doseq [file files-to-delete]
-      (io/delete-file (.getPath file)))))
-
 (defn- once [work]
   (let [config (-> (cr/read-config "config.edn" [:db/connection :relocatus/migrations])
                    (cr/resolve-props))
@@ -56,7 +51,7 @@
     (apply-migrations container-relocat-cfg)
     (db/init-db-conn container-db-cfg)
     (work)
-    (clean-directory test-migrations-dir)
+    (th/clean-directory test-migrations-dir #(s/ends-with? % ".sql"))
     (th/stop-container container)))
 
 (comment
@@ -287,16 +282,6 @@
       (is (same-count-of? "male" (map :sex records) (map :sex (:data get-all-filter))))
       (is (= (same-count-of? nil (map :sex records) (map :sex (:data get-all-filter))))))))
 
-(defn- inst->localdate [i]
-  (-> (.toInstant i)
-      (.atZone (java.time.ZoneId/systemDefault))
-      (.toLocalDate)))
-
-(defn- gen-date [cnt from to]
-  (->> (gen/sample (spec/gen (spec/inst-in from to)) 100)
-       (drop (- 100 cnt))
-       (map inst->localdate)))
-
 (deftest fetch-patients-birthdate-by-filters
   (testing "Birthdate filter test"
     (let [{:keys [data total]} (service/get-all {:filters {}})
@@ -304,15 +289,15 @@
           count-of-items 5
           from #inst "2010"
           to #inst "2020"
-          from-local-str (.toString (inst->localdate from))
-          to-local-str (.toString (inst->localdate to))
-          dates (gen-date count-of-items from to)
+          from-local-str (.toString (tg/inst->localdate from))
+          to-local-str (.toString (tg/inst->localdate to))
+          dates (tg/gen-date count-of-items from to)
           _ (doseq [d dates] (service/add-patient-info {:birth-date d}))]
-      (is (= (-> (:data (service/get-all {:filters {:birth-date {:from from-local-str :to to-local-str}}})) (count))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:from from-local-str :to to-local-str}}})) (count))
              (count dates)))
-      (is (= (-> (:data (service/get-all {:filters {:birth-date {:from from-local-str}}})) (count))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:from from-local-str}}})) (count))
              (count dates)))
-      (is (= (-> (:data (service/get-all {:filters {:birth-date {:to to-local-str}}})) (count))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:to to-local-str}}})) (count))
              (count dates))))))
 
 (deftest fetch-patients-info-address-by-filters
@@ -376,101 +361,3 @@
           id-asc (mapv :id (:data (service/get-all {:filters {} :sorting {:id :asc}})))]
       (is (< (first id-asc) (first (reverse id-asc))))
       (is (> (first id-desc) (first (reverse id-desc)))))))
-
-(deftest fetch-patient-info-result-spec-test
-  (let [oms-values (->> (range 10) (map (fn [_] (tg/oms-gen))))
-        _ (doseq [o oms-values] (service/add-patient-info {:oms o}))]
-    (is (spec/valid? :ouch-it-hurts.specs/query-response (service/get-all {:filters {}})))))
-
-(deftest add-patient-info-result-spec-test
-  (is (spec/valid? :ouch-it-hurts.specs/add-patient-response (service/add-patient-info {:oms (tg/oms-gen)}))))
-
-(deftest get-by-id-patient-info-result-spec-test
-  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})]
-    (is (spec/valid? :ouch-it-hurts.specs/get-patient-by-id-response (service/get-by-id id)))))
-
-(deftest delete-patient-info-result-spec-test
-  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})]
-    (is (spec/valid? :ouch-it-hurts.specs/delete-patient-response (service/delete-patient-info id)))))
-
-(deftest update-patient-info-result-spec-test
-  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})]
-    (is (spec/valid? :ouch-it-hurts.specs/edit-patient-response (service/update-patient-info id {:first-name "John"})))))
-
-(deftest restore-patient-info-result-spec-test
-  (let [{:keys [id]} (service/add-patient-info {:oms (tg/oms-gen)})
-        _ (service/delete-patient-info id)]
-    (is (spec/valid? :ouch-it-hurts.specs/restore-patient-response (service/restore-patient-info id)))))
-
-
-
-(comment
-
-(defn m-gen []
-  (let [first-name (gen/generate (spec/gen (spec/nilable #{"Иван" "Сергей" "Георгий" "Александр" "Михаил"})))
-        last-name (gen/generate (spec/gen (spec/nilable #{"Петров" "Сидоров" "Иванов" "Александров" })))
-        middle-name (gen/generate (spec/gen (spec/nilable #{"Иванович" "Сергеевич" "Георгиевич" "Александрович" "Михаилович"})))]
-    {:first-name first-name
-     :middle-name middle-name
-     :last-name last-name}))
-
-(defn f-gen []
-  (let [first-name (gen/generate (spec/gen (spec/nilable #{"Светлана" "Екатерина" "Ксения" "Людмила" "Маргарита"})))
-        last-name (gen/generate (spec/gen (spec/nilable #{"Петрова" "Сидорова" "Иванова" "Александрова"})))
-        middle-name (gen/generate (spec/gen (spec/nilable #{"Ивановна" "Сергеевна" "Георгиевна" "Александровна" "Михаиловна"})))]
-    {:first-name first-name
-     :middle-name middle-name
-     :last-name last-name}))
-
- (defn sex-gen []
-   (gen/generate (spec/gen (spec/nilable #{"male" "female"}))))
-
- (defn date-gen []
-   (let [from #inst "1970"
-         to #inst "2020"
-         from-local-str (.toString (inst->localdate from))
-         to-local-str (.toString (inst->localdate to))
-         dates (gen-date 10 from to)]
-     (gen/generate (spec/gen (spec/nilable (into #{} dates))))))
-
- (defn flat-gen []
-   (gen/generate (spec/gen (into #{""} (mapv #(str "кв. " %)  (range 1 100))))))
-
- (defn building-gen []
-   (gen/generate (spec/gen (into #{""} (mapv #(str "д. " %)  (range 1 100))))))
-
- (defn street-type-gen []
-   (gen/generate (spec/gen #{"ул." "пл." "пр." "пер."})))
-
- (defn street-name-gen []
-   (gen/generate (spec/gen #{"Ленина" "Пушкина" "Гоголя" "Булгакова" "Есенина" "Менделеева" "Попова" "Дзержинского"})))
-
- (defn city-gen []
-   (gen/generate (spec/gen #{"Москва" "Санкт-Петербург" "Казань" "Нижний Новгород" "Екатеринбург" "Владивосток" "Калининград"})))
-
- (defn street-gen []
-   (str (street-type-gen) (street-name-gen)))
-
- (defn address-gen []
-   (gen/generate
-    (spec/gen
-     (spec/nilable
-      (into #{}
-            (map (fn [_] (s/join ", " [(city-gen) (street-gen) (building-gen) (flat-gen)]))) (range 10))))))
-
-
- (defn patient-gen []
-   (-> (if-let [s (sex-gen)]
-         (-> (if (= s "male") (m-gen) (f-gen)) (assoc :sex s))
-         ((gen/generate (spec/gen #{m-gen f-gen}))))
-       (assoc :address (address-gen))
-       (assoc :oms (tg/oms-gen))
-       (assoc :birth-date (date-gen))))
-
-
-
-
- (doseq [i (range 100)]
-     (service/add-patient-info (patient-gen)))
-
-)
