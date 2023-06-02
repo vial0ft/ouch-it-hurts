@@ -110,7 +110,7 @@
 
 (s/def :search/sex-opts
   (st/spec
-   {:spec (s/or :many (s/and coll? not-empty (s/coll-of sex-filter-opts)) :one ::sex)
+   {:spec (s/or :many (s/and coll? not-empty (s/coll-of sex-filter-opts)) :one sex-filter-opts)
     :description (str-format "'Sex' options must contain at least one of: %s" (str sex-filter-opts))}))
 
 (s/def :search/show-records-opts
