@@ -18,7 +18,6 @@
             (let [script-hash (h/hash-of-pair (:hash acc) hash)
                   result (repo/do-migration ds migration-table {:migration-name (h/migration-name-without-time name)
                                                                 :hash script-hash} (slurp (io/resource up)))]
-              (printf "Applying migration: %s result: %s\n" name result)
               (if (contains? result :error) result
                   (recur rest (assoc acc :hash script-hash)))))))
 
@@ -37,7 +36,6 @@
                             (assoc acc :start-hash valid-hash)))))))
 
 (defn init-migration-table [{:keys [db migration-db]}]
-  (println "Init migration table if it needs")
   (-> (jdbc/get-datasource db) (repo/create-migration-table migration-db)))
 
 (defn create-migration [{:keys [migration-dir]} name]
@@ -47,7 +45,6 @@
                                    (str formatted-date "_" name ".down.sql")])))
 
 (defn migrate [{:keys [migration-dir db migration-db] :as cfg}]
-  (println "Applying migrations")
   (let [ds (jdbc/get-datasource db)
         migration-table-name (h/schema-table migration-db)
         scripts-map (->> (h/migration-scripts-map migration-dir)
