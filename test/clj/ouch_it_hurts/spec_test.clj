@@ -112,6 +112,10 @@
       (is (s/valid?
            :ouch-it-hurts.specs/query-request
            {:filters {:sex-opts sp/sex-filter-opts} :paging valid-paging}))
+      (for [o sp/sex-filter-opts]
+        (is (s/valid?
+             :ouch-it-hurts.specs/query-request
+             {:filters {:sex-opts o}})))
       (is (s/valid?
            :ouch-it-hurts.specs/query-request
            {:filters {:birth-date-period {:from "2010-01-01"
