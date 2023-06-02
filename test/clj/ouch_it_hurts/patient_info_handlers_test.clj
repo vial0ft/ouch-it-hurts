@@ -47,7 +47,7 @@
         datasource (jdbc/get-datasource container-db-cfg)
         test-migrations-dir (get-migration-dir "config.edn")
         system-migrations-dir (get-migration-dir "system.edn")]
-    (th/copy-dir system-migrations-dir test-migrations-dir)
+    (th/copy-dir system-migrations-dir test-migrations-dir (fn [file-name] (not (s/includes? file-name "test-data"))))
     (apply-migrations container-relocat-cfg)
     (db/init-db-conn container-db-cfg)
     (work)
