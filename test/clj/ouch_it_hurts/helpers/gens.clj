@@ -19,7 +19,7 @@
 
 (defn m-gen []
   (let [first-name (gen/generate (spec/gen (spec/nilable #{"Иван" "Сергей" "Георгий" "Александр" "Михаил"})))
-        last-name (gen/generate (spec/gen (spec/nilable #{"Петров" "Сидоров" "Иванов" "Александров" })))
+        last-name (gen/generate (spec/gen (spec/nilable #{"Петров" "Сидоров" "Иванов" "Александров"})))
         middle-name (gen/generate (spec/gen (spec/nilable #{"Иванович" "Сергеевич" "Георгиевич" "Александрович" "Михаилович"})))]
     {:first-name first-name
      :middle-name middle-name
@@ -33,46 +33,46 @@
      :middle-name middle-name
      :last-name last-name}))
 
- (defn sex-gen []
-   (gen/generate (spec/gen (spec/nilable sp/sex-enum))))
+(defn sex-gen []
+  (gen/generate (spec/gen (spec/nilable sp/sex-enum))))
 
- (defn date-gen []
-   (let [from #inst "1970"
-         to #inst "2020"
-         from-local-str (.toString (inst->localdate from))
-         to-local-str (.toString (inst->localdate to))
-         dates (gen-date 10 from to)]
-     (gen/generate (spec/gen (spec/nilable (into #{} dates))))))
+(defn date-gen []
+  (let [from #inst "1970"
+        to #inst "2020"
+        from-local-str (.toString (inst->localdate from))
+        to-local-str (.toString (inst->localdate to))
+        dates (gen-date 10 from to)]
+    (gen/generate (spec/gen (spec/nilable (into #{} dates))))))
 
- (defn flat-gen []
-   (gen/generate (spec/gen (into #{""} (mapv #(str "кв. " %)  (range 1 100))))))
+(defn flat-gen []
+  (gen/generate (spec/gen (into #{""} (mapv #(str "кв. " %)  (range 1 100))))))
 
- (defn building-gen []
-   (gen/generate (spec/gen (into #{""} (mapv #(str "д. " %)  (range 1 100))))))
+(defn building-gen []
+  (gen/generate (spec/gen (into #{""} (mapv #(str "д. " %)  (range 1 100))))))
 
- (defn street-type-gen []
-   (gen/generate (spec/gen #{"ул." "пл." "пр." "пер."})))
+(defn street-type-gen []
+  (gen/generate (spec/gen #{"ул." "пл." "пр." "пер."})))
 
- (defn street-name-gen []
-   (gen/generate (spec/gen #{"Ленина" "Пушкина" "Гоголя" "Булгакова" "Есенина" "Менделеева" "Попова" "Дзержинского"})))
+(defn street-name-gen []
+  (gen/generate (spec/gen #{"Ленина" "Пушкина" "Гоголя" "Булгакова" "Есенина" "Менделеева" "Попова" "Дзержинского"})))
 
- (defn city-gen []
-   (gen/generate (spec/gen #{"Москва" "Санкт-Петербург" "Казань" "Нижний Новгород" "Екатеринбург" "Владивосток" "Калининград"})))
+(defn city-gen []
+  (gen/generate (spec/gen #{"Москва" "Санкт-Петербург" "Казань" "Нижний Новгород" "Екатеринбург" "Владивосток" "Калининград"})))
 
- (defn street-gen [] (str (street-type-gen) (street-name-gen)))
+(defn street-gen [] (str (street-type-gen) (street-name-gen)))
 
- (defn address-gen []
-   (->> (range 10)
-        (map (fn [_] (s/join ", " [(city-gen) (street-gen) (building-gen) (flat-gen)])) )
-        (into #{})
-        (spec/nilable)
-        (spec/gen)
-        (gen/generate)))
+(defn address-gen []
+  (->> (range 10)
+       (map (fn [_] (s/join ", " [(city-gen) (street-gen) (building-gen) (flat-gen)])))
+       (into #{})
+       (spec/nilable)
+       (spec/gen)
+       (gen/generate)))
 
- (defn patient-gen []
-   (-> (if-let [s (sex-gen)]
-         (-> (if (= s "male") (m-gen) (f-gen)) (assoc :sex s))
-         ((gen/generate (spec/gen #{m-gen f-gen}))))
-       (assoc :address (address-gen))
-       (assoc :oms (oms-gen))
-       (assoc :birth-date (date-gen))))
+(defn patient-gen []
+  (-> (if-let [s (sex-gen)]
+        (-> (if (= s "male") (m-gen) (f-gen)) (assoc :sex s))
+        ((gen/generate (spec/gen #{m-gen f-gen}))))
+      (assoc :address (address-gen))
+      (assoc :oms (oms-gen))
+      (assoc :birth-date (date-gen))))

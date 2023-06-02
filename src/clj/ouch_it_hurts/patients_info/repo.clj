@@ -40,16 +40,16 @@
 
 (defn insert-info [ds new-patient-info]
   (-> (sql/insert! @ds :patients.info
-               (-> new-patient-info
-                   (select-keys
-                    [:first-name
-                     :last-name
-                     :middle-name
-                     :birth-date
-                     :sex
-                     :address
-                     :oms]))
-               jdbc/unqualified-snake-kebab-opts)
+                   (-> new-patient-info
+                       (select-keys
+                        [:first-name
+                         :last-name
+                         :middle-name
+                         :birth-date
+                         :sex
+                         :address
+                         :oms]))
+                   jdbc/unqualified-snake-kebab-opts)
       (patient-info-mapper)))
 
 (defn set-deleted [ds id deleted?]

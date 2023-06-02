@@ -13,7 +13,6 @@
             [clojure.test :refer :all]
             [next.jdbc :as jdbc]))
 
-
 (def ^:dynamic *ds*)
 
 (defn- clear-patients-info-table [ds]
@@ -28,7 +27,6 @@
 (defn- apply-migrations [cfg]
   (relocat/init-migration-table cfg)
   (relocat/migrate cfg))
-
 
 (defn- once [work]
   (let [config (-> (cr/read-config "config.edn" [:db/connection :relocatus/migrations])
@@ -77,22 +75,19 @@
   ([p] (request-path {} p))
   ([r p] (assoc-in r [:app/request :path-params] p)))
 
-
 (deftest add-patient-info-test
   (testing "successful"
-  (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
-        _ (is (= status 200))
-        _ (is (empty? (:data body)))
-        _ (is (zero? (:total body)))
-        {:keys [status body]} (handlers/add-new (request-body (bd->str (tg/patient-gen))))]
-    (is (= status 200))
-    (is (contains? body :id))
-    (is (spec/valid? :ouch-it-hurts.specs/add-patient-response body))))
+    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+          _ (is (= status 200))
+          _ (is (empty? (:data body)))
+          _ (is (zero? (:total body)))
+          {:keys [status body]} (handlers/add-new (request-body (bd->str (tg/patient-gen))))]
+      (is (= status 200))
+      (is (contains? body :id))
+      (is (spec/valid? :ouch-it-hurts.specs/add-patient-response body))))
 
   (testing "fail"
     (is (not= (:status (handlers/add-new (request-body {}))) 200))))
-
-
 
 (deftest fetch-by-filter-test
   (testing "paging requires"
@@ -100,32 +95,31 @@
           _ (is (= status 200))
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))]
-          (handlers/add-new (request-body (bd->str (tg/patient-gen))))
-          (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))]
-            (is (= status 200))
-            (is (= (count (:data body)) 1))
-            (is (= (:total body) 1))
-            (is (spec/valid? :ouch-it-hurts.specs/query-response body)))))
+      (handlers/add-new (request-body (bd->str (tg/patient-gen))))
+      (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))]
+        (is (= status 200))
+        (is (= (count (:data body)) 1))
+        (is (= (:total body) 1))
+        (is (spec/valid? :ouch-it-hurts.specs/query-response body)))))
 
   (testing "fail"
     (is (not= (:status (handlers/get-all (request-query {:filters {}}))) 200))
     (is (not= (:status (handlers/get-all (request-query {:sorting {}}))) 200))
-    (is (not= (:status (handlers/get-all (request-query {:sorting {:id :asc} :filters{}}))) 200))))
+    (is (not= (:status (handlers/get-all (request-query {:sorting {:id :asc} :filters {}}))) 200))))
 
 (deftest get-by-id-test
   (testing "successful"
-  (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
-        _ (is (= status 200))
-        _ (is (empty? (:data body)))
-        _ (is (zero? (:total body)))
-        {:keys [status body] :as added} (handlers/add-new (request-body (bd->str (tg/patient-gen))))
-        by-id (handlers/get-by-id (request-path {:id (:id body)}))]
-    (is (= (:status by-id) 200))
-    (is (spec/valid? :ouch-it-hurts.specs/get-patient-by-id-response (:body by-id)))))
+    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+          _ (is (= status 200))
+          _ (is (empty? (:data body)))
+          _ (is (zero? (:total body)))
+          {:keys [status body] :as added} (handlers/add-new (request-body (bd->str (tg/patient-gen))))
+          by-id (handlers/get-by-id (request-path {:id (:id body)}))]
+      (is (= (:status by-id) 200))
+      (is (spec/valid? :ouch-it-hurts.specs/get-patient-by-id-response (:body by-id)))))
 
   (testing "fail"
     (is (not= (:status (handlers/get-by-id (request-path {}))) 200))))
-
 
 (deftest update-test
   (testing "successful"
@@ -145,29 +139,29 @@
 
 (deftest delete-test
   (testing "successful"
-  (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
-        _ (is (= status 200))
-        _ (is (empty? (:data body)))
-        _ (is (zero? (:total body)))
-        added (handlers/add-new (request-body (bd->str (tg/patient-gen))))
-        {:keys [status body] :as deleted} (handlers/delete (request-path {:id (get-in added [:body :id])}))]
-    (is (= status 200))
-    (is (spec/valid? :ouch-it-hurts.specs/delete-patient-response body))))
+    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+          _ (is (= status 200))
+          _ (is (empty? (:data body)))
+          _ (is (zero? (:total body)))
+          added (handlers/add-new (request-body (bd->str (tg/patient-gen))))
+          {:keys [status body] :as deleted} (handlers/delete (request-path {:id (get-in added [:body :id])}))]
+      (is (= status 200))
+      (is (spec/valid? :ouch-it-hurts.specs/delete-patient-response body))))
 
   (testing "fail"
     (is (not= (:status (handlers/delete (request-path {}))) 200))))
 
 (deftest restore-test
   (testing "successful"
-  (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
-        _ (is (= status 200))
-        _ (is (empty? (:data body)))
-        _ (is (zero? (:total body)))
-        {:keys [body]} (handlers/add-new (request-body (bd->str (tg/patient-gen))))
-        _ (handlers/delete (request-path {:id (:id body)}))
-        {:keys [status body]} (handlers/restore-by-id (request-path {:id (:id body)}))]
-    (is (= status 200))
-    (is (spec/valid? :ouch-it-hurts.specs/restore-patient-response body))))
+    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+          _ (is (= status 200))
+          _ (is (empty? (:data body)))
+          _ (is (zero? (:total body)))
+          {:keys [body]} (handlers/add-new (request-body (bd->str (tg/patient-gen))))
+          _ (handlers/delete (request-path {:id (:id body)}))
+          {:keys [status body]} (handlers/restore-by-id (request-path {:id (:id body)}))]
+      (is (= status 200))
+      (is (spec/valid? :ouch-it-hurts.specs/restore-patient-response body))))
 
   (testing "fail"
     (is (not= (:status (handlers/restore-by-id (request-path {}))) 200))))

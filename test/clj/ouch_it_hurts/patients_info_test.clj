@@ -28,7 +28,6 @@
   (relocat/init-migration-table cfg)
   (relocat/migrate cfg))
 
-
 (defn- once [work]
   (let [config (-> (cr/read-config "config.edn" [:db/connection :relocatus/migrations])
                    (cr/resolve-props))
