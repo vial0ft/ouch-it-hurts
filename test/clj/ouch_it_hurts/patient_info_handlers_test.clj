@@ -82,7 +82,7 @@
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))
           {:keys [status body]} (handlers/add-new (request-body (bd->str (tg/patient-gen))))]
-      (is (= status 200))
+      (is (= status 201))
       (is (contains? body :id))
       (is (spec/valid? :ouch-it-hurts.specs/add-patient-response body))))
 
