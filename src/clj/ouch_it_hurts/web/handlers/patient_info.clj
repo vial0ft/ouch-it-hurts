@@ -29,7 +29,7 @@
    #(-> (m/patient-info-deserializer %)
         (s/add-patient-info)
         (m/patient-info-serializer)
-        (http-resp/json-ok))
+        (http-resp/json-created))
    #(http-resp/json-bad-request {:error %})))
 
 (defn get-by-id [{{{:keys [id]} :path-params} :app/request}]

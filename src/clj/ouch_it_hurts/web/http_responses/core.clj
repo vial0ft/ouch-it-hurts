@@ -10,6 +10,13 @@
     :headers {}
     :body body}))
 
+(defn created
+  ([] (created nil))
+  ([body]
+   {:status 201
+    :headers {}
+    :body body}))
+
 (defn bad-request
   ([]  (bad-request nil))
   ([body]
@@ -46,6 +53,11 @@
 (defn response-as-json
   [response]
   (with-headers response {"content-type" "application/json"}))
+
+(defn json-created
+  ([] (created nil))
+  ([body] (-> (created body)
+              (response-as-json))))
 
 (defn json-ok
   ([] (json-ok nil))
