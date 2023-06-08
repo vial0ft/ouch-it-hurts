@@ -1,19 +1,12 @@
 (ns ouch-it-hurts.query-builder.core
   (:require [clojure.string :as s]
             [ouch-it-hurts.query-builder.ops :as ops]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]
-            [next.jdbc.prepare :as p]))
-
-
-(defn keyword->str [kw]
-  (str (when-let [ns (namespace kw)] (str ns "."))  (name kw)))
-
+            [ouch-it-hurts.query-builder.utils :as u]))
 
 (defn expr [expression]
   (cond
     (vector? expression)  (mapv expr expression)
-    (keyword? expression) (symbol (keyword->str expression))
+    (keyword? expression) (symbol (u/keyword->str expression))
     (symbol? expression) expression
     :else {:arg expression}
     ))
