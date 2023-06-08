@@ -6,6 +6,7 @@
    [next.jdbc :as jdbc]
    [next.jdbc.result-set :as rs]
    [next.jdbc.sql :as sql]
+   [next.jdbc.prepare :as p]
    [next.jdbc.date-time]))
 
 (defn- patient-info-mapper [info]
@@ -22,19 +23,23 @@
     (when result (patient-info-mapper result))))
 
 (defn query-infos [ds {:keys [offset limit filters sorting]}]
-  (let [condition (qb-utils/map->where filters qb-utils/as-snake-name)
-        query       (-> (qb/select :*)
-                        (qb/from :patients.info)
-                        (qb/where condition)
-                        (qb/order-by (qb-utils/map->order-by sorting qb-utils/as-snake-name))
-                        (qb/offset offset)
-                        (qb/limit limit))
-        total-query (-> (qb/select-count :*)
-                        (qb/from :patients.info)
-                        (qb/where condition))]
+  (let [condition (qb-utils/map->where ops/_and  filters qb-utils/as-snake-name)
+        [query & args]       (-> (qb/select [:*])
+                                 (qb/from [:patients.info])
+                                 (qb/where [condition])
+                                 (qb/order-by [(qb-utils/map->order-by sorting qb-utils/as-snake-name)])
+                                 (qb/offset offset)
+                                 (qb/limit limit)
+                                 (qb/build))
+        [total-query & total-args] (-> (qb/select [(ops/_count)])
+                                       (qb/from [:patients.info])
+                                       (qb/where [condition])
+                                       (qb/build))]
     (jdbc/with-transaction [tx @ds]
-      (let [result (sql/query tx [query] {:builder-fn rs/as-unqualified-kebab-maps})
-            [{:keys [count]}] (sql/query tx [total-query])]
+      (let [ps (jdbc/prepare tx [query])
+            result (jdbc/execute! (p/set-parameters ps args) nil {:builder-fn rs/as-unqualified-kebab-maps})
+            total-ps (jdbc/prepare tx [total-query])
+            [{:keys [count]}] (jdbc/execute! (p/set-parameters total-ps total-args))]
         {:data (when result (map patient-info-mapper result))
          :total count}))))
 

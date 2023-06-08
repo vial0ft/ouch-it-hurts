@@ -1,78 +1,69 @@
 (ns ouch-it-hurts.query-builder.core
   (:require [clojure.string :as s]
-            [ouch-it-hurts.query-builder.ops :as ops]))
+            [ouch-it-hurts.query-builder.ops :as ops]
+            [next.jdbc :as jdbc]
+            [next.jdbc.result-set :as rs]
+            [next.jdbc.prepare :as p]))
 
-(defn- convert-value [value]
+
+(defn keyword->str [kw]
+  (str (when-let [ns (namespace kw)] (str ns "."))  (name kw)))
+
+
+(defn expr [expression]
   (cond
-    (and (string? value)
-         (and (not (s/includes? value "'")) (not (s/includes? value "\"")))) (str "'" value "'")
-    (keyword? value) (if-let [ns (namespace value)] (s/join "." [(namespace value) (name value)])
-                             (name value))
-    (coll? value) (str "(" (s/join "," (map convert-value value)) ")")
-    :else (str value)))
+    (vector? expression)  (mapv expr expression)
+    (keyword? expression) (symbol (keyword->str expression))
+    (symbol? expression) expression
+    :else {:arg expression}
+    ))
 
-(defn- aliasing [head rest]
-  (if-not (= (first rest) :as) [head rest]
-          [(str head (format " as %s" (convert-value (first (next rest)))))
-           (next (next rest))]))
+(defn resolve-expression [expr [acc args :as all]]
+  (cond
+    (vector? expr) (map #(resolve-expression % all) expr)
+    (map? expr) [(conj acc (symbol "?")) (conj args (:arg expr))]
+    :else [(conj acc expr) args]
+    ))
 
-(defn- build-with-aliasing [[head & rest] join-f acc]
-  (if-not head acc
-          (let [[new-part new-rest] (aliasing (convert-value head) rest)]
-            (recur new-rest join-f (join-f acc new-part)))))
+(defn build-expression-line [expressions]
+  (flatten (interpose (symbol ",") (map expr expressions))))
 
-(defn select-count
-  ([& columns] (->> (build-with-aliasing columns #(conj %1 %2) [])
-                    (s/join ", ")
-                    (format "select count(%s)"))))
+(defn join-parts [acc source] (reduce  #(resolve-expression %2 %1) acc source))
 
-(defn select
-  ([& columns] (->> (build-with-aliasing columns #(conj %1 %2) [])
-                    (s/join ", ")
-                    (str "select "))))
+(defn select [columns]
+  (let [select-line (build-expression-line columns)]
+    (join-parts [[(symbol "select")] []] select-line)))
 
 (defn from
-  ([from-part]  (->> (build-with-aliasing from-part #(conj %1 %2) [])
-                     (s/join ", ")
-                     (str "from ")))
-  ([query & from-part] (str query " " (from from-part))))
+  ([from-part] (from [[][]] from-part))
+  ([[query-part args] from-part]
+   [(vec (concat query-part [(symbol "from")] (build-expression-line from-part))) args]))
 
-(defn- build-converted-expression [expr]
-  (cond
-    (and (coll? expr) (contains? ops/supported-ops (second expr))) (str "(" (s/join " " (map build-converted-expression expr)) ")")
-    :else (convert-value expr)))
-
-(defn- build-condition-part [[condition linked-word & rest]  acc]
-  (if-not condition acc
-          (if-not linked-word (conj acc (build-converted-expression condition))
-                  (recur rest (conj acc (build-converted-expression condition) (convert-value linked-word))))))
 
 (defn where
-  ([] "")
-  ([conditions] (when conditions (->> (build-condition-part conditions []) (s/join " ") (str "where "))))
-  ([query conditions] (str query " " (where conditions))))
-
-(defn- asc-desc [field rest]
-  (if-not (contains? #{:asc :desc "asc" "desc"} (first rest)) [(convert-value field) rest]
-          [(str (convert-value field) " " (convert-value (first rest))) (next rest)]))
-
-(defn- build-ordering-part [[head & rest] acc]
-  (if-not head acc
-          (let [[new-head new-rest] (asc-desc head rest)]
-            (recur new-rest (conj acc new-head)))))
+  ([where-part] (where [[][]] where-part))
+  ([[query-part args] where-part]
+   (let [where-line (build-expression-line where-part)]
+     (join-parts [query-part args] (conj where-line (symbol "where"))))))
 
 (defn order-by
-  ([] "")
-  ([orders] (if orders (->> (build-ordering-part orders []) (s/join ", ") (str "order by ")) ""))
-  ([query orders] (str query " " (order-by orders))))
-
-(defn offset
-  ([] "")
-  ([offset-num] (if offset-num (str "offset " offset-num) ""))
-  ([query offset-num] (str query " " (offset offset-num))))
+  ([order-by-part] (order-by [[][]] order-by-part))
+  ([[query-part args] order-by-part]
+   (let [order-by-line (build-expression-line order-by-part)]
+     [(vec (concat query-part [(symbol "order by")] order-by-line)) args])))
 
 (defn limit
-  ([] "")
-  ([limit-num] (if limit-num (str "limit " limit-num) ""))
-  ([query limit-num] (str query " " (limit limit-num))))
+  ([limit-part] (limit [[][]] limit-part))
+  ([[query-part args] limit-part]
+   (let [limit-line (list {:arg limit-part})]
+     (join-parts [query-part args] (conj limit-line (symbol "limit"))))))
+
+(defn offset
+  ([offset-part] (offset [[][]] offset-part))
+  ([[query-part args] offset-part]
+   (let [offset-line (list {:arg offset-part})]
+     (join-parts [query-part args] (conj offset-line (symbol "offset"))))))
+
+(defn build [[query args]]
+    (concat [(clojure.string/join " " (map str query))] args))
 
