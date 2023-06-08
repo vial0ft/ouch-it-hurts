@@ -3,6 +3,9 @@
             [clojure.string :as str]
             [ouch-it-hurts.query-builder.ops :as ops]))
 
+(defn keyword->str [kw]
+  (str (when-let [ns (namespace kw)] (str ns "."))  (name kw)))
+
 (defn as-snake-name [value]
   (let [replacement-f #(str/replace % #"-" "_")]
     (cond
@@ -16,18 +19,19 @@
   (cond
     (and (map? v) (not-empty (intersection (set (keys v)) #{:from :to}))) ops/between
     (and (map? v) (contains? v :pattern)) ops/like
-    (coll? v) ops/in
+    (coll? v) ops/_any
     :else ops/eq))
 
-(defn map->where [m column-names-converter]
+(defn map->where [combinator m column-names-converter]
   (->> m
        (map (fn [[k v]] ((qb-operator k v) (column-names-converter k) v)))
-       (apply ops/_and)))
+       (apply combinator)))
 
 (defn map->order-by [orders column-names-converter]
   (let [res   (->> orders
                    (map (fn [[k v]] [(column-names-converter k) v]))
-                   (flatten))]
+                   (flatten)
+                   (into []))]
     (if-not (empty? res) res nil)))
 
 (defn sql-date->local-date [date]

@@ -289,15 +289,15 @@
           count-of-items 5
           from #inst "2010"
           to #inst "2020"
-          from-local-str (.toString (tg/inst->localdate from))
-          to-local-str (.toString (tg/inst->localdate to))
+          from-local (tg/inst->localdate from)
+          to-local (tg/inst->localdate to)
           dates (tg/gen-date count-of-items from to)
           _ (doseq [d dates] (service/add-patient-info {:birth-date d}))]
-      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:from from-local-str :to to-local-str}}})) (count))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:from from-local :to to-local}}})) (count))
              (count dates)))
-      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:from from-local-str}}})) (count))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:from from-local}}})) (count))
              (count dates)))
-      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:to to-local-str}}})) (count))
+      (is (= (-> (:data (service/get-all {:filters {:birth-date-period {:to to-local}}})) (count))
              (count dates))))))
 
 (deftest fetch-patients-info-address-by-filters
