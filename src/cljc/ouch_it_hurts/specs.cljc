@@ -19,7 +19,8 @@
 
 (def oms-pattern (re-pattern (str-format "^\\d{%d}$" oms-length)))
 
-(defn valid-oms? [str] (some? (re-matches oms-pattern str)))
+(defn valid-oms? [pattern]
+  (fn [str] (some? (re-matches pattern str))))
 
 (defn valid-date-format? [date-like-str]
   (some?
@@ -59,7 +60,7 @@
 
 (s/def ::oms
   (st/spec
-   {:spec (s/nilable (s/and string? not-empty  valid-oms?))
+   {:spec (s/nilable (s/and string? not-empty (valid-oms? oms-pattern)))
     :description (str-format "'CMI' value must fit the format '%s'" (string/join (repeat oms-length "0")))}))
 
 (s/def ::maybe-date-YYYY-MM-DD
@@ -117,9 +118,11 @@
   (st/spec
    {:spec (s/and keyword? #(contains? show-records-opts %))}))
 
+(def oms-search-pattern (re-pattern (str-format "^\\d{1,%d}$" oms-length)))
+
 (s/def :search/oms
   (st/spec
-   {:spec (s/nilable (s/and string? not-empty #(and (< (count %) oms-length))))
+   {:spec (s/nilable (s/and string? (valid-oms? oms-search-pattern)))
     :description (str-format "'CMI' value limited by %s symbols" oms-length)}))
 
 (s/def ::filters

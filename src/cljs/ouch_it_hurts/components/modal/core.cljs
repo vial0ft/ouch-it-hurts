@@ -1,9 +1,10 @@
 (ns ouch-it-hurts.components.modal.core
   (:require [reagent.core :as r]
+            [re-frame.core :as re :refer [subscribe]]
             [ouch-it-hurts.components.common.core :refer [Modal]]))
 
-(defn PatientModal [modal-state]
-  (fn [modal-state]
-    (let [{:keys [form args]} @modal-state]
-      [Modal (r/cursor modal-state [:visible?])
-       [form modal-state args]])))
+(defn PatientModal []
+  (fn []
+    (let [{:keys [form args]} @(subscribe [:modal/info])]
+      (when form
+        [Modal [form args] #(re/dispatch [:close-modal])]))))

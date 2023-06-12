@@ -1,5 +1,6 @@
 (ns ouch-it-hurts.components.patients-table-container
   (:require [reagent.core :as r]
+            [re-frame.core :as re :refer [subscribe]]
             [ouch-it-hurts.components.filter.core :refer [FilterForm]]
             [ouch-it-hurts.components.table.core :refer [TableBlock]]
             [ouch-it-hurts.components.modal.core :refer [PatientModal]]
@@ -83,25 +84,13 @@
                                             :restore-callback restore-callback}}))
         (.catch (error-handler app-state)))))
 
-(defn PatientsTableContainer [app-state]
+(defn PatientsTableContainer []
   (let [!modal (r/atom {:visible? false})]
-    (fetch-patients-info patients-info app-state)
-    (fn [app-state]
-      (fetch-patients-info patients-info app-state)
-      [:div.patient-table-container
-       [FilterForm #(swap! app-state (fn [cur] (-> cur (assoc :filters %) (assoc-in [:paging :page-number] 1))))]
-       [TableBlock
-        patients-info
-        (r/cursor app-state [:sorting])
-        (r/cursor app-state [:paging])]
-       [ButtonsLine
-        !modal
-        (r/cursor patients-info [:selected-ids :ids])
-        {:delete-callback (delete-callback app-state patients-info)
-         :add-callback (add-callback app-state patients-info)
-         :edit-callback (edit-callback app-state patients-info)
-         :view-callback (view-callback app-state)
-         :restore-callback (restore-callback app-state patients-info)}]
-       [PatientModal !modal]])))
-
-
+    (fn []
+      (let [patients-info @(subscribe [:table/info])]
+        [:div.patient-table-container
+         [FilterForm]
+         [TableBlock patients-info]
+         [ButtonsLine (get-in patients-info [:patients :data])]
+         [PatientModal]
+         ]))))

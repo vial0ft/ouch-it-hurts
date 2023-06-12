@@ -3,11 +3,12 @@
             [ouch-it-hurts.utils.state :as s]
             [ouch-it-hurts.specs :as specs]
             [ouch-it-hurts.utils.datetime-utils :as dtu]
+            [re-frame.core :as re]
             [clojure.string :refer [join]]))
 
-(defn AddPatientForm [modal-state {:keys [add-callback]}]
+(defn AddPatientForm []
   (let [[get-value reset-value] (s/use-state {})]
-    (fn [modal-state {:keys [add-callback]}]
+    (fn []
       [:div {:style {:margin "20px"}}
        [:h1 "New Patient's Info"]
        [:form {:on-submit (fn [e]
@@ -16,11 +17,8 @@
                                   (->> (update-vals @(get-value) #(if (= "" %) nil %))
                                        (specs/confirm-if-valid :ouch-it-hurts.specs/add-patient-form))]
                               (case result
-                                :ok (do
-                                      (add-callback details)
-                                      (reset! modal-state {:visible? false}))
-                                :error (reset-value [:error] (join "\n" details))
-                                :do-nothing)))}
+                                :ok (re/dispatch [:add-patient details])
+                                (reset-value [:error] (join "\n" details)))))}
         [FieldSet "Patient name"
          [LabledField {:key "first-name"
                        :class "filter-form-block-item"

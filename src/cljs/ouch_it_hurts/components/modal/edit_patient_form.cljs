@@ -4,25 +4,22 @@
             [ouch-it-hurts.utils.datetime-utils :as dtu]
             [clojure.string :refer [join]]
             [ouch-it-hurts.specs :as specs]
-            [clojure.data :refer [diff]]))
+            [clojure.data :refer [diff]]
+            [re-frame.core :as re]))
 
-(defn EditPatientForm [modal-state  {:keys [patient-info edit-callback]}]
+(defn EditPatientForm [patient-info]
   (let [[get-value reset-value] (s/use-state patient-info)]
-    (fn [modal-state  {:keys [patient-info]}]
+    (fn [patient-info]
       [:div {:style {:margin "20px"}}
        [:h1 "Edit Patient's Info"]
        [:form {:on-submit (fn [e]
                             (.preventDefault e)
-                            (println @(get-value))
                             (let [[result details]
                                   (->> (update-vals @(get-value) #(if (= "" %) nil %))
                                        (merge patient-info)
                                        (specs/confirm-if-valid :ouch-it-hurts.specs/edit-patient-form))]
-                              (println result details)
                               (case result
-                                :ok (do
-                                      (edit-callback details)
-                                      (reset! modal-state {:visible? false}))
+                                :ok (re/dispatch-sync [:edit-patient details])
                                 :error (reset-value [:error] (join "\n" details))
                                 :do-nothing)))}
         [FieldSet "Patient name"

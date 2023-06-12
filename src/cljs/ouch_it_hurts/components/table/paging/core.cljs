@@ -1,10 +1,11 @@
 (ns ouch-it-hurts.components.table.paging.core
   (:require [ouch-it-hurts.components.table.paging.items :refer [PageNumber SkippedNumber PageSizeSelector]]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [re-frame.core :as re :refer [subscribe]]))
 
 (def page-size-options [10 25 50])
 
-(defn count-pages [total page-size]
+(defn- count-pages [total page-size]
   (+ (quot total page-size) (if (pos-int? (mod total page-size)) 1 0)))
 
 (defn- seq-page-numbers [current max eps]
@@ -20,12 +21,9 @@
                            (conj :skip-r max)))]
     (concat before-part after-part)))
 
-(defn- page-number-on-click [current-page-state]
-  #(reset! current-page-state (js/parseInt (.-id (.-target %)))))
-
 (defn Paging [total paging]
   (fn [total paging]
-    (let [{:keys [page-number page-size]} @paging
+    (let [{:keys [page-number page-size]} paging
           count-of-pages  (count-pages total page-size)
           seq-numbers (seq-page-numbers page-number count-of-pages 2)]
       [:div.paging-line
@@ -40,10 +38,11 @@
                       additional-attrs (if (= number page-number)
                                          (merge attrs {:id "paging-current-number-button"})
                                          (merge attrs {:id "paging-number-button"
-                                                       :opt {:on-click (page-number-on-click
-                                                                        (r/cursor paging [:page-number]))}}))]
+                                                       :opt {:on-click #(re/dispatch [:table/paging-change {:page-size page-size
+                                                                                                            :page-number number}])}}))]
                   ^{:key key} [PageNumber additional-attrs (str number)]))))]
        [PageSizeSelector
-        (r/cursor paging [:page-size])
-        {:options page-size-options
-         :on-change #(reset! paging {:page-size (js/parseInt %) :page-number 1})}]])))
+        {:current page-size
+         :options page-size-options
+         :on-change #(re/dispatch [:table/paging-change {:page-size (js/parseInt %)
+                                                         :page-number 1}])}]])))

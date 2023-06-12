@@ -19,7 +19,7 @@
     [:div.error-message (when err-msg err-msg)]))
 
 (defn LabledField [{:keys [key class lable input error]}]
-  (fn [{:keys [error]}]
+  (fn [{:keys [key class lable input error]}]
     [:div
      [:div {:class class}
       [:label {:for key :class (:class lable)} (:text lable)]
@@ -39,14 +39,15 @@
       [ErrorSpan error]]]))
 
 (defn FieldSet [legend & fields]
+  (fn [legend & fields]
   [:div
    [:fieldset
     [:legend legend]
-    fields]])
+    fields]]))
 
 (defn SingleFieldSet
   [{:keys [key input error]} legend]
-  (fn [{:keys [error]}]
+  (fn [{:keys [key input error]}]
     [FieldSet legend
      [:div
       [:input (merge input
@@ -71,15 +72,14 @@
     :on-click on-click
     :value "×"}])
 
-(defn Modal [visible-state body]
+(defn Modal [body close-action]
   (let [ref (r/atom nil)]
-    (fn [visible-state body]
+    (fn [body close-action]
       [:<>
-       (if @visible-state
-         [:div
-          [:div.modal-wrapper
-           [:div.modal {:ref #(reset! ref %) :on-click #(.-stopPropagation %)}
-            [CloseButton {:on-click #(reset! visible-state false)}]
-            body]]]
-         [:<>])])))
+       [:div
+        [:div.modal-wrapper
+         [:div.modal {:ref #(reset! ref %)
+                      :on-click #(.-stopPropagation %)}
+          [CloseButton {:on-click close-action}]
+          body]]]])))
 

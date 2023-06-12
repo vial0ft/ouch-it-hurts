@@ -1,5 +1,6 @@
 (ns ouch-it-hurts.components.filter.core
   (:require [reagent.core :as r]
+            [re-frame.core :as re :refer [subscribe]]
             [ouch-it-hurts.components.common.core :refer [ErrorSpan]]
             [ouch-it-hurts.specs :as specs]
             [goog.string :as gstr]
@@ -7,71 +8,25 @@
             [ouch-it-hurts.components.filter.left-block.core :refer [LeftBlock]]
             [ouch-it-hurts.components.filter.right-block.core :refer [RightBlock]]))
 
-;; -------------------------
-;; States
-
-(def ^private default-filter {:first-name {:value ""}
-                              :last-name {:value ""}
-                              :middle-name {:value ""}
-                              :address {:value ""}
-                              :birth-date-period {:value {}}
-                              :sex-opts {:value #{}}
-                              :oms {:value ""}
-                              :show-records-opts {:value ""}})
-
-(def ^private error-state (r/atom nil))
-
-(def ^private filter-form (r/atom {:filters default-filter :error nil}))
-
-(defn- filter-form-cursor
-  ([] (r/cursor filter-form [:filters]))
-  ([path] (r/cursor filter-form (into [:filters] path))))
-
-(defn store-path-f [store]
-  (fn
-    ([] (r/cursor store [:filters]))
-    ([path] (r/cursor store (into [:filters] path)))))
-
-(def xform
-  (comp
-   (filter (fn [[k v]] (not (empty? (:value v)))))
-   (map (fn [[k v]] {k (:value v)}))))
-
-(defn- local-2-global [local-filters]
-  (transduce
-   xform
-   into {}
-   @local-filters))
-
-(defn- on-click-clean [callback]
-  (fn [_]
-    (do
-      (reset! filter-form  {:filters default-filter :error nil})
-      (callback {}))))
-
-(defn- on-submit-form [callback]
+(defn- on-submit-form []
   (fn [e]
     (.preventDefault e)
-    (let [[result details]
-          (->> (local-2-global (filter-form-cursor))
-               (specs/confirm-if-valid :ouch-it-hurts.specs/filters))]
+    (let [[result details] (specs/confirm-if-valid :ouch-it-hurts.specs/filters @(subscribe [:filters]))]
       (case result
-        :ok (do
-              (reset! (r/cursor filter-form [:error]) nil)
-              (callback details))
-        (reset! (r/cursor filter-form [:error]) (join "\n" details))))))
+        :ok (re/dispatch [:fetch-patients-info])
+        (re/dispatch [:filters/error (join "\n" details)])))))
 
-(defn FilterForm [state-update-callback]
-  (fn [state-update-callback]
+(defn FilterForm [filters]
+  (fn [filters]
     [:div {:style {:padding "10px"}}
      [:h2 "Filters"]
-     [:form {:on-submit (on-submit-form state-update-callback)}
+     [:form {:on-submit (on-submit-form)}
       [:div.filter-form {:name "filterForm"}
-       [LeftBlock (store-path-f filter-form)]
-       [RightBlock (store-path-f filter-form)]]
-      [ErrorSpan @(r/cursor filter-form [:error])]
+       [LeftBlock]
+       [RightBlock]]
+      [ErrorSpan @(subscribe [:filter-error])]
       [:div.filter-form-buttons-block
-       [:button.filter-form-button {:on-click (on-click-clean state-update-callback)
+       [:button.filter-form-button {:on-click #(re/dispatch [:filters/clean])
                                     :type :reset} "Clear filters"]
        [:button.filter-form-button {:type :submit} "Apply filters"]]]]))
 
