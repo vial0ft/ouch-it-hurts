@@ -2,34 +2,32 @@
   (:require
    [reagent.core :as r]
    [reagent.dom :as d]
-   [ouch-it-hurts.components.filter.core :refer [FilterForm]]
+   [re-frame.core :as re :refer [subscribe]]
+   [ouch-it-hurts.events]
+   [ouch-it-hurts.effects]
+   [ouch-it-hurts.subs]
    [ouch-it-hurts.components.footer :refer [Footer]]
    [ouch-it-hurts.components.header :refer [Header]]
-   [ouch-it-hurts.components.table.core :refer [TableBlock]]
+   [ouch-it-hurts.components.common.core :refer [ErrorSpan]]
    [ouch-it-hurts.components.patients-table-container :refer [PatientsTableContainer]]))
 
 (enable-console-print!)
 
-(def app-state (r/atom {:filters {}
-                        :sorting {:id :asc}
-                        :paging {:page-number 1
-                                 :page-size 10}
-                        :error {:ok? true
-                                :message ""}}))
+
 ;; -------------------------
 ;; States
 
 (defn MainPage []
-  [:div.root
-   [Header]
-   [:div {:hidden @(r/cursor app-state [:error :ok?])}
-    [:span (str @(r/cursor app-state [:error :message]))]
-    [:button {:style {:float "right"}
-              :on-click #(reset! (r/cursor app-state [:error]) {:ok? true :message ""})}
-     "Refresh"]]
-   [PatientsTableContainer app-state]
-   [Footer]])
+  (re/dispatch [:fetch-patients-info])
+  (fn []
+    [:div.root
+     [Header]
+     [ErrorSpan @(subscribe [:error-app])]
+     [PatientsTableContainer]
+     [Footer]]
+    ))
 
-(d/render [MainPage]
-          (js/document.getElementById "main"))
-
+(do
+  (re/dispatch-sync [:initialize-db])
+  (d/render [MainPage]
+            (js/document.getElementById "main")))

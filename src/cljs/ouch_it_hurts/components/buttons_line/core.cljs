@@ -1,17 +1,16 @@
 (ns ouch-it-hurts.components.buttons-line.core
-  (:require [goog.string :as gstr]
+  (:require [re-frame.core :as re :refer [subscribe]]
             [ouch-it-hurts.components.modal.view-patient-form :refer [ViewPatientForm]]
             [ouch-it-hurts.components.modal.add-patient-form :refer [AddPatientForm]]
             [ouch-it-hurts.components.modal.del-patient-form :refer [DelPatientForm]]
-            [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]
-            [ouch-it-hurts.api :as api]))
+            [ouch-it-hurts.components.modal.edit-patient-form :refer [EditPatientForm]]))
 
 (defn- selected-true [selected-ids]
   (filter #(val %) selected-ids))
 
-(defn ButtonsLine [modal selected-ids {:keys [add-callback delete-callback edit-callback view-callback restore-callback]}]
-  (fn [modal selected-ids {:keys [add-callback del-callback edit-callback view-callback restore-callback]}]
-    (let [selected (selected-true @selected-ids)
+(defn ButtonsLine [patients]
+  (fn [patients]
+    (let [selected (filter #(:selected? %) patients)
           [disable-show disable-del] (case (count selected)
                                        0 [true true]
                                        1 [false false]
@@ -19,17 +18,14 @@
       [:div.buttons-line
        [:button.filter-form-button
         {:disabled disable-show
-         :on-click #(view-callback (first (keys selected)) modal edit-callback restore-callback)}
+         :on-click #(do
+                      (re/dispatch-sync [:get-patient-by-id  (:id (first selected))])
+                      (re/dispatch [:show-modal ViewPatientForm]))}
         "Show patient's info"]
        [:button.filter-form-button
-        {:on-click #(reset! modal {:visible? true
-                                   :form AddPatientForm
-                                   :args {:add-callback add-callback}})}
+        {:on-click #(re/dispatch [:show-modal AddPatientForm])}
         "Add patient"]
        [:button.filter-form-button
         {:disabled disable-del
-         :on-click #(reset! modal {:visible? true
-                                   :form DelPatientForm
-                                   :args {:ids (keys selected)
-                                          :delete-callback delete-callback}})}
+         :on-click #(re/dispatch [:show-modal DelPatientForm (map :id selected)])}
         "Delete patient(s)"]])))

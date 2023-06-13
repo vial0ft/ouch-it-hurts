@@ -2,61 +2,40 @@
   (:require
    [ouch-it-hurts.components.common.core :refer [FieldSet LabledField SingleFieldSet Select ErrorSpan]]
    [ouch-it-hurts.components.filter.items :refer [CheckboxButton]]
-   [goog.string :as gstr]
-   [ouch-it-hurts.specs :as specs]))
+   [ouch-it-hurts.specs :as specs]
+   [re-frame.core :as re :refer [subscribe]]))
 
 (def all-sex-options specs/sex-filter-opts)
 
-(defn- change-key [key-path] (fn [new-value] (reset! key-path new-value)))
-
-(defn- patient-name-filter-block [store-path-by]
+(defn- patient-name-filter-block []
   [FieldSet "Patient name"
    (for [[key text] [[:first-name "First name: "]
                      [:middle-name "Middle name: "]
                      [:last-name "Last name: "]]]
-     ^{:key (gstr/format "%s__filter_name" (name key))}
+     ^{:key (str (name key) "_filter_name" )}
      [LabledField {:key (name key)
                    :class "filter-form-block-item"
                    :lable {:class "filter-form-block-item-lable" :text text}
                    :input {:class "filter-form-block-item-text-input"
                            :type "text"
-                           :on-change (change-key (store-path-by [key :value]))}}])])
-
-(defn- set-elems-value [id-value-pairs]
-  (doseq [[id value]  id-value-pairs]
-    (when-let [elem (js/document.getElementById id)]
-      (set! (.-checked elem) value))))
-
-(defn- sex-filter-on-change [store-path-by sex-keys]
-  (fn [e]
-    (let [checked? (.-checked (.-target e))
-          id (.-id (.-target e))]
-      (case [id checked?]
-        ["all" true] (do
-                       (set-elems-value (into {"all" true} (map (fn [s] [s false]) sex-keys)))
-                       (reset! (store-path-by [:sex-opts :value]) #{}))
-        (if checked?
-          (do
-            (set-elems-value {"all" false id true})
-            (swap! (store-path-by [:sex-opts :value]) conj id))
-          (do
-            (swap! (store-path-by [:sex-opts :value]) (fn [old] (disj old id)))
-            (when (empty? @(store-path-by [:sex-opts :value])) (set-elems-value {"all" true}))))))))
+                           :on-change #(re/dispatch [:filters/change key %])}}])])
 
 (defn- patient-sex-filter-selector [store-path-by]
   [FieldSet "Sex options"
    [:div.sex-filed-set {:key "filter_sex_opt_block"}
     (let [opts (->> (for [so all-sex-options]
                       {:key so
-                       :on-change (sex-filter-on-change store-path-by  all-sex-options)
-                       :label (gstr/toTitleCase so)})
+                       :checked @(subscribe [:filters/sex-opts-selected? so])
+                       :on-change #(re/dispatch [:filters/sex-opts so (.-checked (.-target %))])
+                       :label (clojure.string/capitalize so)})
                     (cons {:key "all"
-                           :on-change (sex-filter-on-change store-path-by all-sex-options)
-                           :label "All"
-                           :defaultChecked true}))]
-      (for [o opts]
-        ^{:key (gstr/format "%s__filter_sex_opt" (:key o))}
-        [CheckboxButton {:key (:key o) :opt (select-keys o [:on-change :defaultChecked])}  (:label o)]))]])
+                           :checked @(subscribe [:filters/all-sex-opts-selected?])
+                           :on-change #(if (.-checked (.-target %)) (re/dispatch [:filters/sex-opts :all true])
+                                           (do (.preventDefault %) (.stopPropagation %) true))
+                           :label "All"}))]
+      (for [o (into [] opts)]
+        ^{:key (str (:key o) "_filter_sex_opt")}
+        [CheckboxButton {:key (:key o) :opt (select-keys o [:on-change :checked])}  (:label o)]))]])
 
 (defn- patient-show-options [store-path-by]
   [FieldSet "Show record options"
@@ -66,10 +45,10 @@
                                 {:value :deleted-only :lable "Deleted only"}
                                 {:value :all :lable "All"}]]
                        (map #(if (= (:value %) default) (assoc % :selected true) %) all))
-            :on-change #(reset! (store-path-by [:show-records-opts :value])  %)}]])
+            :on-change #(re/dispatch [:filters/change :show-records-opts %])}]])
 
-(defn LeftBlock [store-path-f]
+(defn LeftBlock []
   [:div.filter-form-block
-   [patient-name-filter-block store-path-f]
-   [patient-sex-filter-selector store-path-f]
-   [patient-show-options store-path-f]])
+   [patient-name-filter-block]
+   [patient-sex-filter-selector]
+   [patient-show-options]])

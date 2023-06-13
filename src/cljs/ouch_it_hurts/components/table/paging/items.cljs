@@ -15,12 +15,11 @@
   [:div {:id "paging-skipped-number-button"}
    [:label [:span "..."]]])
 
-(defn PageSizeSelector [page-size-state {:keys [options on-change]}]
-  (fn [page-size-state {:keys [on-change]}]
-    (let [current-page-size @page-size-state]
+(defn PageSizeSelector [{:keys [current options on-change]}]
+  (fn [{:keys [on-change]}]
       [Select {:key "page-size"
-               :options (let [default current-page-size
+               :options (let [default current
                               all (map (fn [n] {:value n :lable n}) options)]
                           (map #(if (= (:value %) default) (assoc % :selected true) %) all))
-               :on-change on-change}])))
+               :on-change on-change}]))
 
