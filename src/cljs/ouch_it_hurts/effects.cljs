@@ -33,7 +33,7 @@
         (fn [ids]
           (-> (map api/delete-patient-info ids)
               (js/Promise.all)
-              (.then (fn [infos] (re/dispatch [:fetch-patients-info])))
+              (.then (fn [infos] (re/dispatch [:table/paging-change {:page-number 1}])))
               (.catch (fn [err]  (re/dispatch [:error (str err)]))))))
 
 (reg-fx :edit-info
@@ -64,7 +64,7 @@
                 (let [new-db (-> (assoc db :filters {})
                                  (assoc :filter-error nil))]
                   {:db new-db
-                   :dispatch [:fetch-patients-info]})))
+                   :dispatch [:table/paging-change {:page-number 1}]})))
 
 (reg-event-fx :get-patient-by-id
               (fn [{:keys [db]} [_ id]]

@@ -13,7 +13,7 @@
     (.preventDefault e)
     (let [[result details] (specs/confirm-if-valid :ouch-it-hurts.specs/filters @(subscribe [:filters]))]
       (case result
-        :ok (re/dispatch [:fetch-patients-info])
+        :ok (re/dispatch [:table/paging-change {:page-number 1}])
         (re/dispatch [:filters/error (join "\n" details)])))))
 
 (defn FilterForm [filters]
