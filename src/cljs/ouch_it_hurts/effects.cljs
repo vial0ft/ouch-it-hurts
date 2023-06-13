@@ -55,7 +55,7 @@
 
 (reg-event-fx :table/paging-change
               (fn [{:keys [db]} [_ paging]]
-                (let [new-db (assoc db :paging paging)]
+                (let [new-db (update db :paging #(merge %paging))]
                   {:db new-db
                    :dispatch [:fetch-patients-info]})))
 
