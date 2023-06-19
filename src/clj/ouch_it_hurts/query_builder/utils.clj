@@ -6,33 +6,22 @@
 (defn keyword->str [kw]
   (str (when-let [ns (namespace kw)] (str ns "."))  (name kw)))
 
-(defn as-snake-name [value]
-  (let [replacement-f #(str/replace % #"-" "_")]
-    (cond
-      (keyword? value) (if-let [ns (namespace value)]
-                         (keyword ns (replacement-f (name value)))
-                         (keyword (replacement-f (name value))))
-      (string? value) (replacement-f value)
-      :else value)))
-
 (defn- qb-operator [k v]
   (cond
     (and (map? v) (not-empty (intersection (set (keys v)) #{:from :to}))) ops/between
     (and (map? v) (contains? v :pattern)) ops/like
-    (coll? v) ops/_any
+    (coll? v) ops/_in
     :else ops/eq))
 
-(defn map->where [combinator m column-names-converter]
-  (->> m
-       (map (fn [[k v]] ((qb-operator k v) (column-names-converter k) v)))
-       (apply combinator)))
+(defn map->where [combinator m]
+  (if (= 1 (count m))
+    (let [[k v] (first m)]
+      ((qb-operator k v) k v))
+    (reduce (fn [acc [k v]]
+              (conj acc ((qb-operator k v) k v))) [combinator] m)))
 
-(defn map->order-by [orders column-names-converter]
-  (let [res   (->> orders
-                   (map (fn [[k v]] [(column-names-converter k) v]))
-                   (flatten)
-                   (into []))]
-    (if-not (empty? res) res nil)))
+(defn map->order-by [orders]
+  (reduce (fn [acc [k v]] (conj acc [k v])) [] orders))
 
 (defn sql-date->local-date [date]
   (-> date
