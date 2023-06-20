@@ -12,7 +12,7 @@
   (let [params (select-keys request-params [:filters :sorting :paging])]
     (new js/Promise
          (fn [resolve reject]
-           (GET (url "/patients")
+           (POST (url "/patients")
              {:params params
               :format :json
               :response-format :json
