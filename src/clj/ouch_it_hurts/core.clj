@@ -1,13 +1,8 @@
 (ns ouch-it-hurts.core
   (:require
-   [clojure.java.io :as io]
    [ouch-it-hurts.config-reader.core :as c]
-   [ouch-it-hurts.web.middlewares.core :as mid]
-   [ouch-it-hurts.web.middlewares.cors :as cors]
-   [ouch-it-hurts.web.middlewares.routes-resolver :as r]
-   [ouch-it-hurts.web.middlewares.assets-resolver :refer :all]
    [ouch-it-hurts.web.routes.api :refer [routes-data]]
-   [ouch-it-hurts.web.routes.pages :refer [pages]]
+   [ouch-it-hurts.web.middlewares.core :as mid]
    [ouch-it-hurts.db.core :as d]
    [ouch-it-hurts.server.core :as serv]
    [ouch-it-hurts.relocatus.core :as relocat])
@@ -20,11 +15,7 @@
   (let [config  (c/load-config "system.edn")]
     (-> config
         (assoc
-         :handler (-> (r/routing (routes-data nil) (pages))
-                      (mid/wrap-handler)
-                      (cors/cors)
-                      (assets-resolver-wrapper (:application/assets config))
-                      (mid/wrap-handler-with-logging))
+         :handler (mid/wrap-handler (routes-data nil) config)
          :port (get-port config)))))
 
 (defn- relocatus-migrations [config]

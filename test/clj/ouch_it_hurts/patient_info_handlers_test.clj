@@ -67,17 +67,14 @@
 
 (defn- request-body
   ([b] (request-body {} b))
-  ([r b] (assoc-in r [:app/request :body] b)))
-(defn- request-query
-  ([q] (request-query {} q))
-  ([r q] (assoc-in r [:app/request :query-params] q)))
+  ([r b] (assoc r :body b)))
 (defn- request-path
   ([p] (request-path {} p))
-  ([r p] (assoc-in r [:app/request :path-params] p)))
+  ([r p] (assoc r :path-params p)))
 
 (deftest add-patient-info-test
   (testing "successful"
-    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+    (let [{:keys [status body]} (handlers/get-all (request-body {:paging {:page-number 1 :page-size 10}}))
           _ (is (= status 200))
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))
@@ -91,25 +88,25 @@
 
 (deftest fetch-by-filter-test
   (testing "paging requires"
-    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+    (let [{:keys [status body]} (handlers/get-all (request-body {:paging {:page-number 1 :page-size 10}}))
           _ (is (= status 200))
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))]
       (handlers/add-new (request-body (bd->str (tg/patient-gen))))
-      (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))]
+      (let [{:keys [status body]} (handlers/get-all (request-body {:paging {:page-number 1 :page-size 10}}))]
         (is (= status 200))
         (is (= (count (:data body)) 1))
         (is (= (:total body) 1))
         (is (spec/valid? :ouch-it-hurts.specs/query-response body)))))
 
   (testing "fail"
-    (is (not= (:status (handlers/get-all (request-query {:filters {}}))) 200))
-    (is (not= (:status (handlers/get-all (request-query {:sorting {}}))) 200))
-    (is (not= (:status (handlers/get-all (request-query {:sorting {:id :asc} :filters {}}))) 200))))
+    (is (not= (:status (handlers/get-all (request-body {:filters {}}))) 200))
+    (is (not= (:status (handlers/get-all (request-body {:sorting {}}))) 200))
+    (is (not= (:status (handlers/get-all (request-body {:sorting {:id :asc} :filters {}}))) 200))))
 
 (deftest get-by-id-test
   (testing "successful"
-    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+    (let [{:keys [status body]} (handlers/get-all (request-body {:paging {:page-number 1 :page-size 10}}))
           _ (is (= status 200))
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))
@@ -123,7 +120,7 @@
 
 (deftest update-test
   (testing "successful"
-    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+    (let [{:keys [status body]} (handlers/get-all (request-body {:paging {:page-number 1 :page-size 10}}))
           _ (is (= status 200))
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))
@@ -139,7 +136,7 @@
 
 (deftest delete-test
   (testing "successful"
-    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+    (let [{:keys [status body]} (handlers/get-all (request-body {:paging {:page-number 1 :page-size 10}}))
           _ (is (= status 200))
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))
@@ -153,7 +150,7 @@
 
 (deftest restore-test
   (testing "successful"
-    (let [{:keys [status body]} (handlers/get-all (request-query {:paging {:page-number 1 :page-size 10}}))
+    (let [{:keys [status body]} (handlers/get-all (request-body {:paging {:page-number 1 :page-size 10}}))
           _ (is (= status 200))
           _ (is (empty? (:data body)))
           _ (is (zero? (:total body)))

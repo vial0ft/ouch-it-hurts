@@ -1,7 +1,21 @@
 (ns ouch-it-hurts.web.routes.api
   (:require
-   [ouch-it-hurts.web.handlers.patient-info :as p]
+   [reitit.ring :as ring]
+   [reitit.ring.middleware.exception :as exception]
+   [ouch-it-hurts.web.handlers.patient-info :as pi]
    [ouch-it-hurts.web.handlers.health :as h]))
 
 (defn routes-data [opt] ;; TODO: add basic-url opt
-  (reduce into [] [(h/routes) (p/routes)]))
+  (ring/ring-handler
+   (ring/router
+    [
+     ["/health" {:get {:handler h/healthcheck!}}]
+     ["/patients" {:post {:handler pi/get-all}}]
+     ["/patient" {:post {:handler pi/add-new}}]
+     ["/patient/:id" {:get {:handler pi/get-by-id}
+                      :put {:handler pi/update-info}
+                      :delete {:handler pi/delete}}]
+     ["/patient/:id/restore" {:post {:handler pi/restore-by-id}}]]
+    {:data {:middleware [exception/exception-middleware]}})
+   (ring/create-default-handler {:not-found pi/not-found}))
+  )

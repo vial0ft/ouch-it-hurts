@@ -1,22 +1,17 @@
 (ns ouch-it-hurts.web.middlewares.core
   (:require
-   [ouch-it-hurts.web.middlewares.exceptions :refer [exceptions-handler-wrapper]]
-   [ouch-it-hurts.web.middlewares.format :refer :all]
-   [clojure.tools.logging :as log]))
+   [ring.middleware.resource :refer [wrap-resource]]
+   [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+   [ring.middleware.params :refer [wrap-params]]
+   [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+   [ring.middleware.cors :refer [wrap-cors]]))
 
-(defn log-request-response [handler]
-  (fn [req]
-    (let [resp (handler req)]
-      (log/infof "\n>>> %s\n-------\n<<< %s" req resp)
-      resp)))
-
-(defn wrap-handler [handler]
+(defn wrap-handler [handler opts]
   (-> handler
-      (format-response-body)
-      (format-query-string)
-      (format-request-body)
-      (exceptions-handler-wrapper)))
-
-(defn wrap-handler-with-logging [handler]
-  (log-request-response handler))
-
+      (wrap-resource  (first (:application/assets opts)))
+      (wrap-json-body {:keywords? true})
+      wrap-json-response
+      wrap-keyword-params
+      wrap-params
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete])))

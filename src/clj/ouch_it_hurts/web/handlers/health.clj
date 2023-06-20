@@ -1,16 +1,23 @@
 (ns ouch-it-hurts.web.handlers.health
   (:require
-   [ouch-it-hurts.web.http-responses.core :as http-response])
+   [ring.util.http-response :as http-response]
+   [ring.util.response :as resp])
   (:import
    [java.util Date]))
 
 (defn healthcheck!
-  [req]
-  (http-response/ok
-   {:time     (str (Date. (System/currentTimeMillis)))
-    :up-since (str (Date. (.getStartTime (java.lang.management.ManagementFactory/getRuntimeMXBean))))
-    :app      {:status  "up"
-               :message ""}}))
+  ([req]
+   (http-response/ok
+    {:time     (str (Date. (System/currentTimeMillis)))
+     :up-since (str (Date. (.getStartTime (java.lang.management.ManagementFactory/getRuntimeMXBean))))
+     :app      {:status  "up"
+                :message ""}}))
+  ([req responde raise]
+   (responde (http-response/ok
+              {:time     (str (Date. (System/currentTimeMillis)))
+               :up-since (str (Date. (.getStartTime (java.lang.management.ManagementFactory/getRuntimeMXBean))))
+               :app      {:status  "up"
+                          :message ""}}))))
 
-(defn routes []
-  [["/health" {:get {:handler healthcheck!}}]])
+(def routes
+    [["/health" {:get {:handler healthcheck!}}]])
