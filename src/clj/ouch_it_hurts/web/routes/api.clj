@@ -3,6 +3,7 @@
    [reitit.ring :as ring]
    [reitit.ring.middleware.exception :as exception]
    [ouch-it-hurts.web.handlers.patient-info :as pi]
+   [ring.util.response :refer [redirect]]
    [ouch-it-hurts.web.handlers.health :as h]))
 
 (defn routes-data [opt] ;; TODO: add basic-url opt
