@@ -17,5 +17,5 @@
                       :delete {:handler pi/delete}}]
      ["/patient/:id/restore" {:post {:handler pi/restore-by-id}}]]
     {:data {:middleware [exception/exception-middleware]}})
-   (ring/create-default-handler {:not-found pi/not-found}))
+   (ring/create-default-handler {:not-found (fn [_] (redirect "/index.html"))}))
   )
