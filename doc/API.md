@@ -1,6 +1,8 @@
 # API
 
-## `GET /patients` fetch patients information by filter
+## `POST /patients` fetch patients information by filter
+
+Use `post-as-get` for query
 
 ### Query parameters
 
@@ -79,23 +81,50 @@ Enumeration
 | not-deleted-only | Show only NOT deleted records |
 
 
-### Query example:
+### Request example:
 
-`GET /patients?filters[first-name]=name&paging[page-number]=1&paging[page-size]=5&sorting[id]=asc`
+`POST /patients`
+
+body:
+```json
+{"filters" : {"first-name" : "First",
+             "middle-name" : "Middle",
+             "last-name" : "Last",
+             "address" : "City, street, house",
+             "sex" : "male",
+             "birth-date": "2020-01-01",
+             "oms" : "00000"},
+ "sorting" : {"id" "asc"},
+ "paging" : {"page-size": 10,
+             "page-number: : 1}
+```
 
 ### Response example
 
 ``` json
 {"data" : [
-            {"first-name" : "name"},
-            {"first-name" : "name of ",
-             "middle-name" : "patient",
-             "address" : "City, street, house"},
-            {"first-name" : "name like",
-             "sex" : "male"},
-            {"first-name" : "names",
-             "birth-date" : "2020-01-01"},
-            {"first-name" : "name"}
+            {"first-name" : "First",
+             "middle-name" : "Middle",
+             "last-name" : "Last",
+             "address" : "City, street, house",
+             "sex" : "male",
+             "birth-date": "2020-01-01",
+             "oms" : "0000000000000000"},
+             {"first-name" : "First",
+             "middle-name" : "Middle",
+             "last-name" : "Last",
+             "address" : "City, street, house",
+             "sex" : "male",
+             "birth-date": "2020-01-01",
+             "oms" : "0000000000000001"},
+             {"first-name" : "First",
+             "middle-name" : "Middle",
+             "last-name" : "Last",
+             "address" : "City, street, house",
+             "sex" : "male",
+             "birth-date": "2020-01-01",
+             "oms" : "0000000000000002"},
+             ...
             ]
  "total" : 20}
 ```
